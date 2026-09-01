@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "516030053621",
+    "project_id": "gen-lang-client-0305827106",
+    "storage_bucket": "gen-lang-client-0305827106.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:516030053621:android:0750354ba91751fbba19bc",
+        "android_client_info": {
+          "package_name": "com.fl0w.speye.play"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjEF7B2Loohf3E-IxPywgFN4PYnhZRbjc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

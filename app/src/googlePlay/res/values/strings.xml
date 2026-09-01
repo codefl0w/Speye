@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Google Drive Backup</string>
+    <string name="drive_backup_sub">Sync with your cloud account</string>
+    <string name="drive_title">GOOGLE DRIVE BACKUP</string>
+    <string name="backup_now">BACKUP NOW</string>
+    <string name="connected_account">CONNECTED ACCOUNT</string>
+    <string name="not_signed_in">Not signed in</string>
+    <string name="drive_sync_active">Drive sync active</string>
+    <string name="sign_in_to_enable">Sign in to enable cloud backup</string>
+    <string name="fetching_storage">Fetching storage info...</string>
+    <string name="sign_in_google">SIGN IN WITH GOOGLE</string>
+    <string name="sign_out">SIGN OUT</string>
+    <string name="sync_settings">SYNC SETTINGS</string>
+    <string name="auto_backup">Automatic Backup</string>
+    <string name="auto_backup_sub">Sync data in the background</string>
+    <string name="backup_frequency">Backup Frequency</string>
+    <string name="freq_daily">Daily</string>
+    <string name="freq_weekly">Weekly</string>
+    <string name="freq_monthly">Monthly</string>
+    <string name="freq_manual">Manual</string>
+    <string name="last_backup">Last Backup</string>
+    <string name="never">Never</string>
+    <string name="danger_zone">DANGER ZONE</string>
+    <string name="delete_cloud_saves">Delete Cloud Saves</string>
+    <string name="delete_cloud_saves_sub">Wipe all Speye data from Drive</string>
+    <string name="delete_cloud_confirm">Delete Cloud Data?</string>
+    <string name="delete_cloud_desc">This will permanently remove all backups and attachments associated with Speye from your Google Drive account. This cannot be undone.</string>
+    <string name="delete_all">DELETE ALL</string>
+    <string name="uploading">UPLOADING...</string>
+    <string name="merging">MERGING...</string>
+    <string name="restore">RESTORE</string>
+    <string name="storage_info">%1$.1f GB free of %2$.1f GB</string>
+
+    <!-- Billing -->
+    <string name="pro_active">PRO VERSION ACTIVE</string>
+    <string name="remove_ads">REMOVE ADS (ONE-TIME)</string>
+    <string name="restore_purchases">Restore Purchases</string>
+    <string name="restore_purchases_sub">Restore previously purchased Pro status</string>
+    <string name="purchases_restored">Pro purchase successfully restored!</string>
+    <string name="no_purchases_found">No active purchases found for this Google account.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Network Error: Please check your connection.</string>
+    <string name="err_config">Configuration Error: Developer needs to check SHA-1 and Package Name.</string>
+    <string name="err_12500">Sign-in failed (12500): Check if Google Play Services is updated.</string>
+    <string name="err_cancelled">Sign-in cancelled by user.</string>
+</resources>

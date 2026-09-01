@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">Histórico</string>
+    <string name="nav_apps">Aplicativos</string>
+    <string name="nav_settings">Configurações</string>
+
+    <!-- Notification List -->
+    <string name="test">TESTE</string>
+    <string name="test_cycle">Teste de ciclo (Novo/Editar/Excluir)</string>
+    <string name="test_long_text">Teste de texto longo</string>
+    <string name="test_image">Teste de imagem anexa</string>
+    <string name="no_notifications">Nenhuma notificação salva ainda</string>
+    <string name="no_title">Sem título</string>
+    <string name="no_results">Nenhuma notificação encontrada</string>
+    <string name="delete_all">Excluir tudo</string>
+    <string name="dismiss">Dispensar</string>
+    <string name="copy_content">Copiar conteúdo</string>
+    <string name="go">Abrir</string>
+    <string name="delete">Excluir</string>
+    <string name="close">FECHAR</string>
+    <string name="save_to_gallery">SALVAR NA GALERIA</string>
+    <string name="saved_to_gallery_success">Salvo na galeria</string>
+    <string name="image_not_found">Arquivo de imagem não encontrado</string>
+    <string name="image_load_failed">Falha ao carregar imagem</string>
+    <string name="gallery_save_failed">Falha ao salvar imagem</string>
+    <string name="confirm_deletion">Confirmar exclusão</string>
+    <string name="confirm_delete_all">Tem certeza de que deseja excluir TODAS as notificações?</string>
+    <string name="confirm_delete_group">Excluir todas as notificações deste aplicativo?</string>
+    <string name="confirm_delete_item">Excluir esta notificação?</string>
+    <string name="cancel">CANCELAR</string>
+    <string name="notification_count">%d notificações</string>
+    <string name="dismissed">DISPENSADA</string>
+    <string name="edited">EDITADA (%d)</string>
+    <string name="history">HISTÓRICO</string>
+    <string name="search_placeholder">Pesquisar notificações…</string>
+
+    <!-- App List -->
+    <string name="app_list_description">Selecione aplicativos para rastrear ou ignorar notificações.</string>
+    <string name="filter_all">Todos</string>
+    <string name="filter_user">Usuário</string>
+    <string name="filter_system">Sistema</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">MENU DE DEPURADOR</string>
+    <string name="disable_debug">Desativar menu de depuração</string>
+    <string name="disable_debug_sub">Ocultar estas opções</string>
+    <string name="show_test_button">Mostrar botão de teste</string>
+    <string name="show_test_button_sub">Alternar visibilidade do menu de teste global</string>
+    <string name="enable_accordion">Ativar animação de sanfona</string>
+    <string name="enable_accordion_sub">Usar animações deslizantes para grupos de histórico</string>
+    <string name="enable_logging">Ativar registro de logs</string>
+    <string name="enable_logging_sub">Rastrear atividades e erros</string>
+    <string name="view_logs">Ver registros de atividade</string>
+    <string name="view_logs_sub">Ver e compartilhar logs em segundo plano</string>
+    <string name="data_management">GERENCIAMENTO DE DADOS</string>
+    <string name="export_history">Exportar notificações</string>
+    <string name="export_history_sub">Salvar histórico em arquivo .spy</string>
+    <string name="import_history">Importar notificações</string>
+    <string name="import_history_sub">Restaurar histórico de arquivo .spy</string>
+    <string name="about">SOBRE</string>
+    <string name="faq">Perguntas Frequentes</string>
+    <string name="faq_sub">Dúvidas frequentes sobre o Speye</string>
+    <string name="contact_developer">Contatar o desenvolvedor</string>
+    <string name="privacy_policy">Política de Privacidade</string>
+    <string name="privacy_policy_sub">Como tratamos seus dados</string>
+    <string name="feedback_subject">Feedback do Speye</string>
+    <string name="no_email_app">Nenhum aplicativo de e-mail encontrado</string>
+    <string name="debug_mode_enabled">Modo de depuração ativado</string>
+    <string name="export_success">Exportação concluída com sucesso</string>
+    <string name="export_failed">Falha na exportação</string>
+    <string name="import_success">Importação concluída com sucesso</string>
+    <string name="import_failed">Falha na importação</string>
+    <string name="billing_product_not_found">Erro de compra: produto não encontrado</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">PERGUNTAS GERAIS</string>
+    <string name="faq_q1">O que é o Speye?</string>
+    <string name="faq_a1">O Speye é um aplicativo gratuito para registrar e manter o histórico de todas as suas notificações, para você nunca perder nada.</string>
+    <string name="faq_q2">Como posso fazer backup das minhas notificações?</string>
+    <string name="faq_a2">Você pode exportar suas notificações para um arquivo .spy na página de Configurações e importá-las de volta quando quiser, em qualquer aparelho. Além disso, pode conectar sua conta do Google Drive para fazer backups periódicos automáticos e restaurá-los.</string>
+    <string name="faq_q3">O Speye é gratuito?</string>
+    <string name="faq_a3">O Speye é totalmente gratuito e de código aberto, mas contém anúncios. Você pode fazer uma compra única para remover anúncios para sempre. Como alternativa, pode usar a versão sem anúncios do F-Droid, mas ela não conta com integração com o Google Drive.</string>
+
+    <string name="faq_security">SEGURANÇA E PRIVACIDADE</string>
+    <string name="faq_q4">O Speye armazena meus dados?</string>
+    <string name="faq_a4">O Speye não armazena nenhum dado remoto por conta própria e salva todas as suas notificações exclusivamente no armazenamento local do seu dispositivo. Os serviços do Google AdMob podem coletar identificadores para anúncios personalizados, fora do controle direto do Speye.</string>
+    <string name="faq_q5">Como funciona o backup na nuvem?</string>
+    <string name="faq_a5">Por padrão, todos os dados ficam apenas no seu telefone. Se você ativar o Backup no Google Drive, um arquivo .spy criptografado é salvo na sua pasta privada de dados do aplicativo. O arquivo contém apenas notificações salvas (textos e anexos).</string>
+    <string name="faq_q6">Outras pessoas podem ver minhas mensagens?</string>
+    <string name="faq_a6">O Speye não compartilha e nunca compartilhará seus dados pessoais. No entanto, se alguém tiver acesso ao seu arquivo de backup .spy, poderá importá-lo em outro celular para ver o histórico salvo.</string>
+
+    <string name="faq_misc">OUTRAS DÚVIDAS</string>
+    <string name="faq_q7">Como ativar o modo de depuração?</string>
+    <string name="faq_a7">Na página de Configurações, toque no logotipo do Speye 5 vezes.</string>
+    <string name="faq_q8">Como relatar um bug?</string>
+    <string name="faq_a8">Nas opções de depurador, ative a opção Ativar registro de logs e realize a ação desejada (importar/exportar, login na nuvem, etc.). Nos registros de atividade, os erros ficarão visíveis. Copie-os e envie pelo botão de contato nas Configurações.</string>
+    <string name="faq_q9">Como testar as notificações?</string>
+    <string name="faq_a9">Nas opções de depurador, ative a opção Mostrar botão de teste e volte para a tela inicial de histórico. O botão de teste permitirá enviar notificações simuladas para verificar o funcionamento.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">POLÍTICA DE PRIVACIDADE</string>
+    <string name="privacy_data_collection">COLETA DE DADOS</string>
+    <string name="privacy_local_storage">Armazenamento Local</string>
+    <string name="privacy_local_storage_text">O Speye foi desenvolvido priorizando a sua privacidade. Todas as notificações, incluindo textos, histórico de edições e imagens anexas, são salvas localmente em um banco de dados privado no seu dispositivo. Nós não coletamos nem transmitimos nenhum dado sensível.</string>
+    <string name="privacy_third_party">Serviços de Terceiros</string>
+    <string name="privacy_third_party_text">Embora o Speye não transmita dados sensíveis, a versão da Google Play integra serviços como AdMob e Google Play Services. Esses serviços podem coletar identificadores de dispositivo e estatísticas de uso para personalização de anúncios e análises. Recomendamos consultar a Política de Privacidade do Google para mais detalhes.</string>
+    <string name="privacy_cloud">Backup na Nuvem</string>
+    <string name="privacy_cloud_text">Se você optar por ativar o Backup no Google Drive, o Speye enviará seus dados para uma pasta privada na sua conta pessoal do Google Drive. Esses dados não são acessíveis pelos desenvolvedores nem por terceiros e ficam totalmente sob o seu controle.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Conceda as seguintes permissões para começar a usar o Speye</string>
+    <string name="perm_post_notif">Enviar Notificações</string>
+    <string name="perm_post_notif_desc">Usado para alertas do sistema e recursos de teste.</string>
+    <string name="perm_notif_access">Acesso às Notificações</string>
+    <string name="perm_notif_access_desc">Essencial para capturar e salvar seu histórico de notificações.</string>
+    <string name="perm_background">Segundo Plano Irrestrito</string>
+    <string name="perm_background_desc">Garante que a captura e sincronização nunca sejam interrompidas.</string>
+    <string name="optional">OPCIONAL</string>
+    <string name="grant">CONCEDER</string>
+    <string name="granted">CONCEDIDO</string>
+    <string name="start_app">Iniciar!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">Sincronização na Nuvem</string>
+    <string name="sync_success_title">Sincronização Concluída</string>
+    <string name="sync_success_msg">Seu histórico foi salvo no Google Drive.</string>
+    <string name="sync_failed_title">Falha na Sincronização</string>
+    <string name="sync_failed_msg">Não foi possível salvar no Google Drive. Tentaremos novamente mais tarde.</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">Formato de anexos de imagem</string>
+    <string name="image_quality_sub">Formato usado para salvar imagens de notificações</string>
+    <string name="format_png">PNG (Sem perdas)</string>
+    <string name="format_jpeg_high">JPEG (Alta qualidade ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (Equilibrado ~80%)</string>
+    <string name="format_webp">WEBP (Compacto ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">Exclusão automática de histórico</string>
+    <string name="retention_sub">Remover notificações antigas automaticamente</string>
+    <string name="retention_forever">Manter para sempre</string>
+    <string name="retention_30_days">Com mais de 30 dias</string>
+    <string name="retention_60_days">Com mais de 60 dias</string>
+    <string name="retention_90_days">Com mais de 90 dias</string>
+    <string name="retention_180_days">Com mais de 180 dias</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Acessibilidade</string>
+    <string name="accessibility_sub">Tamanho do texto, alto contraste e exibição</string>
+    <string name="accessibility_section_display">EXIBIÇÃO E TEXTO</string>
+    <string name="accessibility_section_vision">VISÃO E MOVIMENTO</string>
+    <string name="text_size_title">Tamanho do texto</string>
+    <string name="text_size_sub">Ajustar a escala da fonte em todo o aplicativo</string>
+    <string name="text_size_default">Padrão (100%)</string>
+    <string name="text_size_large">Grande (115%)</string>
+    <string name="text_size_xlarge">Extragrande (130%)</string>
+    <string name="accessibility_preview_app">App de exemplo</string>
+    <string name="accessibility_preview_title">Notificação de exemplo</string>
+    <string name="accessibility_preview_desc">Esta prévia ilustra como o texto e o contraste das notificações ficarão no Speye.</string>
+    <string name="high_contrast_title">Alto contraste</string>
+    <string name="high_contrast_sub">Aumentar o contraste para melhorar a legibilidade</string>
+    <string name="reduce_motion_title">Reduzir movimento</string>
+    <string name="reduce_motion_sub">Minimizar animações e transições da interface</string>
+</resources>

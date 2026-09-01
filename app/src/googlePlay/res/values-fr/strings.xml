@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Sauvegarde Google Drive</string>
+    <string name="drive_backup_sub">Synchronisez avec votre compte cloud</string>
+    <string name="drive_title">SAUVEGARDE GOOGLE DRIVE</string>
+    <string name="backup_now">SAUVEGARDER MAINTENANT</string>
+    <string name="connected_account">COMPTE ASSOCIÉ</string>
+    <string name="not_signed_in">Non connecté</string>
+    <string name="drive_sync_active">Synchronisation Drive active</string>
+    <string name="sign_in_to_enable">Connectez-vous pour activer la sauvegarde cloud</string>
+    <string name="fetching_storage">Récupération des infos de stockage…</string>
+    <string name="sign_in_google">SE CONNECTER AVEC GOOGLE</string>
+    <string name="sign_out">SE DÉCONNECTER</string>
+    <string name="sync_settings">PARAMÈTRES DE SYNCHRONISATION</string>
+    <string name="auto_backup">Sauvegarde Automatique</string>
+    <string name="auto_backup_sub">Synchroniser les données en arrière-plan</string>
+    <string name="backup_frequency">Fréquence de Sauvegarde</string>
+    <string name="freq_daily">Quotidienne</string>
+    <string name="freq_weekly">Hebdomadaire</string>
+    <string name="freq_monthly">Mensuelle</string>
+    <string name="freq_manual">Manuelle</string>
+    <string name="last_backup">Dernière Sauvegarde</string>
+    <string name="never">Jamais</string>
+    <string name="danger_zone">ZONE DE DANGER</string>
+    <string name="delete_cloud_saves">Supprimer les Sauvegardes Cloud</string>
+    <string name="delete_cloud_saves_sub">Effacer toutes les données de Speye sur Drive</string>
+    <string name="delete_cloud_confirm">Supprimer les Données Cloud ?</string>
+    <string name="delete_cloud_desc">Cela supprimera définitivement toutes les sauvegardes et pièces jointes de Speye de votre compte Google Drive. Cette action est irréversible.</string>
+    <string name="delete_all">TOUT SUPPRIMER</string>
+    <string name="uploading">TÉLÉVERSEMENT...</string>
+    <string name="merging">FUSION...</string>
+    <string name="restore">RESTAURER</string>
+    <string name="storage_info">%1$.1f Go libres sur %2$.1f Go</string>
+
+    <!-- Billing -->
+    <string name="pro_active">VERSION PRO ACTIVE</string>
+    <string name="remove_ads">SUPPRIMER LES PUBS (ACHAT UNIQUE)</string>
+    <string name="restore_purchases">Restaurer les achats</string>
+    <string name="restore_purchases_sub">Restaurer le statut Pro acheté précédemment</string>
+    <string name="purchases_restored">Achat Pro restauré avec succès !</string>
+    <string name="no_purchases_found">Aucun achat actif trouvé pour ce compte Google.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Erreur réseau : veuillez vérifier votre connexion Internet.</string>
+    <string name="err_config">Erreur de configuration : vérifiez le SHA-1 et le nom de package.</string>
+    <string name="err_12500">Échec de connexion (12500) : vérifiez les services Google Play.</string>
+    <string name="err_cancelled">Connexion annulée par l\'utilisateur.</string>
+</resources>

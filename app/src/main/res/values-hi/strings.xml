@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">इतिहास</string>
+    <string name="nav_apps">ऐप्स</string>
+    <string name="nav_settings">सेटिंग्स</string>
+
+    <!-- Notification List -->
+    <string name="test">परीक्षण</string>
+    <string name="test_cycle">चक्र परीक्षण (नया/संपादित/हटाएं)</string>
+    <string name="test_long_text">लंबा पाठ परीक्षण</string>
+    <string name="test_image">छवि संलग्नक परीक्षण</string>
+    <string name="no_notifications">अभी तक कोई सूचनाएं सहेजी नहीं गई हैं</string>
+    <string name="no_title">बिना शीर्षक</string>
+    <string name="no_results">कोई मेल खाने वाली सूचना नहीं मिली</string>
+    <string name="delete_all">सभी हटाएं</string>
+    <string name="dismiss">खारिज करें</string>
+    <string name="copy_content">सामग्री कॉपी करें</string>
+    <string name="go">खोलें</string>
+    <string name="delete">हटाएं</string>
+    <string name="close">बंद करें</string>
+    <string name="save_to_gallery">गैलरी में सहेजें</string>
+    <string name="saved_to_gallery_success">गैलरी में सहेजा गया</string>
+    <string name="image_not_found">छवि फ़ाइल नहीं मिली</string>
+    <string name="image_load_failed">छवि लोड करने में विफल</string>
+    <string name="gallery_save_failed">छवि सहेजने में विफल</string>
+    <string name="confirm_deletion">हटाने की पुष्टि करें</string>
+    <string name="confirm_delete_all">क्या आप वाकई सभी सूचनाएं हटाना चाहते हैं?</string>
+    <string name="confirm_delete_group">इस ऐप के लिए सभी सूचनाएं हटाएं?</string>
+    <string name="confirm_delete_item">यह सूचना हटाएं?</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="notification_count">%d सूचनाएं</string>
+    <string name="dismissed">खारिज की गई</string>
+    <string name="edited">संपादित (%d)</string>
+    <string name="history">इतिहास</string>
+    <string name="search_placeholder">सूचनाएं खोजें…</string>
+
+    <!-- App List -->
+    <string name="app_list_description">सूचनाओं को ट्रैक या अनदेखा करने के लिए ऐप्स चुनें।</string>
+    <string name="filter_all">सभी</string>
+    <string name="filter_user">उपयोगकर्ता</string>
+    <string name="filter_system">सिस्टम</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">डीबग मेनू</string>
+    <string name="disable_debug">डीबग मेनू अक्षम करें</string>
+    <string name="disable_debug_sub">इन सेटिंग्स को छुपाएं</string>
+    <string name="show_test_button">परीक्षण बटन दिखाएं</string>
+    <string name="show_test_button_sub">परीक्षण मेनू दृश्यता टॉगल करें</string>
+    <string name="enable_accordion">अकॉर्डियन एनीमेशन सक्षम करें</string>
+    <string name="enable_accordion_sub">इतिहास समूहों के लिए स्लाइडिंग एनिमेशन का उपयोग करें</string>
+    <string name="enable_logging">लॉगिंग सक्षम करें</string>
+    <string name="enable_logging_sub">गतिविधि और त्रुटियों को ट्रैक करें</string>
+    <string name="view_logs">गतिविधि लॉग देखें</string>
+    <string name="view_logs_sub">पृष्ठभूमि लॉग देखें और साझा करें</string>
+    <string name="data_management">डेटा प्रबंधन</string>
+    <string name="export_history">सूचनाएं निर्यात करें</string>
+    <string name="export_history_sub">इतिहास को .spy फ़ाइल में सहेजें</string>
+    <string name="import_history">सूचनाएं आयात करें</string>
+    <string name="import_history_sub">.spy फ़ाइल से इतिहास पुनर्स्थापित करें</string>
+    <string name="about">के बारे में</string>
+    <string name="faq">अक्सर पूछे जाने वाले प्रश्न</string>
+    <string name="faq_sub">सामान्य प्रश्न और उत्तर</string>
+    <string name="contact_developer">डेवलपर से संपर्क करें</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
+    <string name="privacy_policy_sub">हम आपके डेटा को कैसे संभालते हैं</string>
+    <string name="feedback_subject">Speye प्रतिक्रिया</string>
+    <string name="no_email_app">कोई ईमेल ऐप नहीं मिला</string>
+    <string name="debug_mode_enabled">डीबग मोड सक्षम किया गया</string>
+    <string name="export_success">निर्यात सफल रहा</string>
+    <string name="export_failed">निर्यात विफल रहा</string>
+    <string name="import_success">आयात सफल रहा</string>
+    <string name="import_failed">आयात विफल रहा</string>
+    <string name="billing_product_not_found">बिलिंग त्रुटि: उत्पाद नहीं मिला</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">सामान्य प्रश्न</string>
+    <string name="faq_q1">Speye क्या है?</string>
+    <string name="faq_a1">Speye आपकी सूचनाओं का ट्रैक रखने और उन्हें कभी न खोने के लिए एक निःशुल्क ऐप है।</string>
+    <string name="faq_q2">मैं अपनी सूचनाओं का बैकअप कैसे ले सकता हूँ?</string>
+    <string name="faq_a2">आप सेटिंग्स पृष्ठ से अपनी सूचनाओं को .spy फ़ाइल में निर्यात कर सकते हैं और उन्हें किसी भी समय, किसी भी डिवाइस पर पुनर्स्थापित कर सकते हैं। इसके अलावा, आप अपने डेटा का आवधिक बैकअप लेने के लिए अपने Google Drive खाते को कनेक्ट कर सकते हैं।</string>
+    <string name="faq_q3">क्या Speye निःशुल्क है?</string>
+    <string name="faq_a3">Speye पूरी तरह से मुफ़्त और ओपन-सोर्स है, लेकिन इसमें विज्ञापन शामिल हैं। विज्ञापनों को हमेशा के लिए हटाने के लिए आप एक बार खरीदारी कर सकते हैं। वैकल्पिक रूप से, आप F-Droid से विज्ञापन-मुक्त संस्करण प्राप्त कर सकते हैं, लेकिन उसमें Google Drive कनेक्टिविटी उपलब्ध नहीं होगी।</string>
+
+    <string name="faq_security">सुरक्षा और गोपनीयता</string>
+    <string name="faq_q4">क्या Speye मेरा डेटा संग्रहीत करता है?</string>
+    <string name="faq_a4">Speye स्वयं कोई रिमोट डेटा संग्रहीत नहीं करता है और आपकी सभी सूचनाओं को आपके डिवाइस के स्थानीय स्टोरेज में सुरक्षित रखता है। Google AdMob सेवाएं विज्ञापनों के लिए डिवाइस पहचानकर्ताओं का उपयोग कर सकती हैं, जो सीधे Speye द्वारा नियंत्रित नहीं है।</string>
+    <string name="faq_q5">क्लाउड सिंक कैसे काम करता है?</string>
+    <string name="faq_a5">डिफ़ॉल्ट रूप से सारा डेटा आपके डिवाइस पर रहता है। यदि आप Google Drive बैकअप सक्षम करते हैं, तो एक एन्क्रिप्टेड .spy फ़ाइल आपके निजी ऐप डेटा फ़ोल्डर में संग्रहीत होती है। इसमें केवल सहेजा गया अधिसूचना डेटा (पाठ और संलग्नक) शामिल होता है।</string>
+    <string name="faq_q6">क्या अन्य लोग मेरे संदेश देख सकते हैं?</string>
+    <string name="faq_a6">Speye आपके व्यक्तिगत डेटा को कभी साझा नहीं करता है। हालांकि, यदि कोई आपकी .spy बैकअप फ़ाइल की प्रतिलिपि बनाता है, तो वह आपका इतिहास देखने के लिए इसे अपने फ़ोन पर आयात कर सकता है।</string>
+
+    <string name="faq_misc">अन्य प्रश्न</string>
+    <string name="faq_q7">डीबग मोड कैसे सक्षम करें?</string>
+    <string name="faq_a7">सेटिंग्स पृष्ठ पर Speye लोगो पर लगातार 5 बार टैप करें।</string>
+    <string name="faq_q8">बग की रिपोर्ट कैसे करें?</string>
+    <string name="faq_a8">डीबग विकल्पों में लॉगिंग सक्षम करें विकल्प चालू करें, फिर अपनी इच्छित कार्रवाई करें (आयात/निर्यात, क्लाउड लॉगिन आदि)। गतिविधि लॉग में त्रुटियां दिखाई देंगी। उन्हें कॉपी करें और सेटिंग्स पृष्ठ पर संपर्क विकल्प के माध्यम से साझा करें।</string>
+    <string name="faq_q9">सूचनाओं का परीक्षण कैसे करें?</string>
+    <string name="faq_a9">डीबग विकल्पों में परीक्षण बटन दिखाएं सक्षम करें और इतिहास पृष्ठ पर लौटें। अब आप परीक्षण सूचनाएं भेजने के लिए बटन का उपयोग कर सकेंगे।</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">गोपनीयता नीति</string>
+    <string name="privacy_data_collection">डेटा संग्रह</string>
+    <string name="privacy_local_storage">स्थानीय संग्रहण</string>
+    <string name="privacy_local_storage_text">Speye गोपनीयता को ध्यान में रखकर बनाया गया है। टेक्स्ट, इतिहास और छवि अनुलग्नकों सहित सभी अधिसूचना डेटा आपके डिवाइस पर एक निजी डेटाबेस में स्थानीय रूप से संग्रहीत किया जाता है। हम स्वयं कोई संवेदनशील डेटा संग्रहीत या प्रसारित नहीं करते हैं।</string>
+    <string name="privacy_third_party">तृतीय-पक्ष सेवाएं</string>
+    <string name="privacy_third_party_text">यद्यपि Speye संवेदनशील डेटा प्रसारित नहीं करता है, ऐप का Google Play संस्करण AdMob और Google Play Services जैसी तृतीय-पक्ष सेवाओं को एकीकृत करता है। ये सेवाएं विज्ञापन वैयक्तिकरण और विश्लेषण के लिए डिवाइस पहचानकर्ता एकत्र कर सकती हैं। अधिक विवरण के लिए हम Google की गोपनीयता नीति की समीक्षा करने की अनुशंसा करते हैं।</string>
+    <string name="privacy_cloud">क्लाउड बैकअप</string>
+    <string name="privacy_cloud_text">यदि आप Google Drive बैकअप सक्षम करना चुनते हैं, तो Speye आपके व्यक्तिगत Google Drive खाते में एक निजी फ़ोल्डर में आपका डेटा अपलोड करता है। यह डेटा डेवलपर्स या किसी अन्य तीसरे पक्ष के लिए सुलभ नहीं है और आपके नियंत्रण में रहता है।</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Speye का उपयोग शुरू करने के लिए निम्नलिखित अनुमतियां दें</string>
+    <string name="perm_post_notif">सूचनाएं भेजें</string>
+    <string name="perm_post_notif_desc">सिस्टम चेतावनियों और परीक्षण सुविधाओं के लिए उपयोग किया जाता है।</string>
+    <string name="perm_notif_access">अधिसूचना पहुंच</string>
+    <string name="perm_notif_access_desc">आपके अधिसूचना इतिहास को कैप्चर और सहेजने के लिए आवश्यक।</string>
+    <string name="perm_background">अप्रतिबंधित पृष्ठभूमि</string>
+    <string name="perm_background_desc">यह सुनिश्चित करता है कि कैप्चर और बैकअप कभी न रुके।</string>
+    <string name="optional">वैकल्पिक</string>
+    <string name="grant">अनुमति दें</string>
+    <string name="granted">स्वीकृत</string>
+    <string name="start_app">शुरू करें!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">क्लाउड सिंक</string>
+    <string name="sync_success_title">सिंक सफल रहा</string>
+    <string name="sync_success_msg">आपका इतिहास Google Drive पर बैकअप हो गया है।</string>
+    <string name="sync_failed_title">सिंक विफल रहा</string>
+    <string name="sync_failed_msg">Google Drive पर बैकअप नहीं लिया जा सका। बाद में पुनः प्रयास करेंगे।</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">छवि संलग्नक प्रारूप</string>
+    <string name="image_quality_sub">अधिसूचना छवियों को सहेजने के लिए उपयोग किया जाने वाला प्रारूप</string>
+    <string name="format_png">PNG (दोषरहित)</string>
+    <string name="format_jpeg_high">JPEG (उच्च गुणवत्ता ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (संतुलित ~80%)</string>
+    <string name="format_webp">WEBP (कॉम्पैक्ट ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">इतिहास स्वतः हटाएं</string>
+    <string name="retention_sub">पुरानी सूचनाओं को स्वचालित रूप से हटाएं</string>
+    <string name="retention_forever">हमेशा रखें</string>
+    <string name="retention_30_days">30 दिनों से अधिक पुरानी</string>
+    <string name="retention_60_days">60 दिनों से अधिक पुरानी</string>
+    <string name="retention_90_days">90 दिनों से अधिक पुरानी</string>
+    <string name="retention_180_days">180 दिनों से अधिक पुरानी</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">सुलभता</string>
+    <string name="accessibility_sub">टेक्स्ट का आकार, उच्च कंट्रास्ट और डिस्प्ले</string>
+    <string name="accessibility_section_display">डिस्प्ले और टेक्स्ट</string>
+    <string name="accessibility_section_vision">दृष्टि और गति</string>
+    <string name="text_size_title">टेक्स्ट का आकार</string>
+    <string name="text_size_sub">पूरे ऐप में फ़ॉन्ट स्केल समायोजित करें</string>
+    <string name="text_size_default">डिफ़ॉल्ट (100%)</string>
+    <string name="text_size_large">बड़ा (115%)</string>
+    <string name="text_size_xlarge">अतिरिक्त बड़ा (130%)</string>
+    <string name="accessibility_preview_app">नमूना ऐप</string>
+    <string name="accessibility_preview_title">नमूना अधिसूचना</string>
+    <string name="accessibility_preview_desc">यह पूर्वावलोकन दर्शाता है कि Speye में अधिसूचना टेक्स्ट और कंट्रास्ट कैसा दिखेगा।</string>
+    <string name="high_contrast_title">उच्च कंट्रास्ट</string>
+    <string name="high_contrast_sub">पठनीयता में सुधार के लिए कंट्रास्ट बढ़ाएं</string>
+    <string name="reduce_motion_title">गति कम करें</string>
+    <string name="reduce_motion_sub">एनिमेशन और ट्रांज़िशन न्यूनतम करें</string>
+</resources>

@@ -1,0 +1,25 @@
+{
+  "project_info": {
+    "project_number": "0",
+    "project_id": "foss",
+    "storage_bucket": "foss"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "0",
+        "android_client_info": {
+          "package_name": "com.fl0w.speye"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "0"
+        }
+      ],
+      "services": {}
+    }
+  ],
+  "configuration_version": "1"
+}

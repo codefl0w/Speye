@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Google Drive Backup</string>
+    <string name="drive_backup_sub">Mit Ihrem Cloud-Konto synchronisieren</string>
+    <string name="drive_title">GOOGLE DRIVE BACKUP</string>
+    <string name="backup_now">JETZT SICHERN</string>
+    <string name="connected_account">VERBUNDENES KONTO</string>
+    <string name="not_signed_in">Nicht angemeldet</string>
+    <string name="drive_sync_active">Drive-Synchronisierung aktiv</string>
+    <string name="sign_in_to_enable">Anmelden, um Cloud-Backup zu aktivieren</string>
+    <string name="fetching_storage">Speicherinfos werden abgerufen…</string>
+    <string name="sign_in_google">MIT GOOGLE ANMELDEN</string>
+    <string name="sign_out">ABMELDEN</string>
+    <string name="sync_settings">SYNCHRONISIERUNG</string>
+    <string name="auto_backup">Automatisches Backup</string>
+    <string name="auto_backup_sub">Daten im Hintergrund synchronisieren</string>
+    <string name="backup_frequency">Backup-Häufigkeit</string>
+    <string name="freq_daily">Täglich</string>
+    <string name="freq_weekly">Wöchentlich</string>
+    <string name="freq_monthly">Monatlich</string>
+    <string name="freq_manual">Manuell</string>
+    <string name="last_backup">Letztes Backup</string>
+    <string name="never">Nie</string>
+    <string name="danger_zone">GEFAHRENZONE</string>
+    <string name="delete_cloud_saves">Cloud-Speicher löschen</string>
+    <string name="delete_cloud_saves_sub">Alle Speye-Daten von Drive löschen</string>
+    <string name="delete_cloud_confirm">Cloud-Daten löschen?</string>
+    <string name="delete_cloud_desc">Dies wird alle Backups und Anhänge, die mit Speye verknüpft sind, dauerhaft aus Ihrem Google Drive-Konto entfernen. Dies kann nicht rückgängig gemacht werden.</string>
+    <string name="delete_all">ALLES LÖSCHEN</string>
+    <string name="uploading">WIRD HOCHGELADEN...</string>
+    <string name="merging">WIRD ZUSAMMENGEFÜHRT...</string>
+    <string name="restore">WIEDERHERSTELLEN</string>
+    <string name="storage_info">%1$.1f GB frei von %2$.1f GB</string>
+
+    <!-- Billing -->
+    <string name="pro_active">PRO-VERSION AKTIV</string>
+    <string name="remove_ads">WERBUNG ENTFERNEN (EINMALIG)</string>
+    <string name="restore_purchases">Käufe wiederherstellen</string>
+    <string name="restore_purchases_sub">Zuvor erworbenen Pro-Status wiederherstellen</string>
+    <string name="purchases_restored">Pro-Kauf erfolgreich wiederhergestellt!</string>
+    <string name="no_purchases_found">Keine aktiven Käufe für dieses Google-Konto gefunden.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Netzwerkfehler: Bitte prüfen Sie Ihre Verbindung.</string>
+    <string name="err_config">Konfigurationsfehler: SHA-1 und Paketname prüfen.</string>
+    <string name="err_12500">Anmeldung fehlgeschlagen (12500): Google Play Dienste prüfen.</string>
+    <string name="err_cancelled">Anmeldung vom Nutzer abgebrochen.</string>
+</resources>

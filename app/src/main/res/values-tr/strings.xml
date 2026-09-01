@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">Geçmiş</string>
+    <string name="nav_apps">Uygulamalar</string>
+    <string name="nav_settings">Ayarlar</string>
+
+    <!-- Notification List -->
+    <string name="test">TEST</string>
+    <string name="test_cycle">Döngü Testi (Yeni/Düzenle/Sil)</string>
+    <string name="test_long_text">Uzun Metin Testi</string>
+    <string name="test_image">Görsel Eki Testi</string>
+    <string name="no_notifications">Henüz kaydedilmiş bildirim yok</string>
+    <string name="no_title">Başlıksız</string>
+    <string name="no_results">Eşleşen bildirim bulunamadı</string>
+    <string name="delete_all">Hepsini Sil</string>
+    <string name="dismiss">Kapat</string>
+    <string name="copy_content">İçeriği Kopyala</string>
+    <string name="go">Git</string>
+    <string name="delete">Sil</string>
+    <string name="close">KAPAT</string>
+    <string name="save_to_gallery">GALERİYE KAYDET</string>
+    <string name="saved_to_gallery_success">Galeriye kaydedildi</string>
+    <string name="image_not_found">Görsel dosyası bulunamadı</string>
+    <string name="image_load_failed">Görsel yüklenemedi</string>
+    <string name="gallery_save_failed">Görsel kaydedilemedi</string>
+    <string name="confirm_deletion">Silmeyi Onayla</string>
+    <string name="confirm_delete_all">TÜM bildirimleri silmek istediğinizden emin misiniz?</string>
+    <string name="confirm_delete_group">Bu uygulama için tüm bildirimler silinsin mi?</string>
+    <string name="confirm_delete_item">Bu bildirim silinsin mi?</string>
+    <string name="cancel">İPTAL</string>
+    <string name="notification_count">%d bildirim</string>
+    <string name="dismissed">SİLİNDİ</string>
+    <string name="edited">DÜZENLENDİ (%d)</string>
+    <string name="history">GEÇMİŞ</string>
+    <string name="search_placeholder">Bildirimlerde ara…</string>
+
+    <!-- App List -->
+    <string name="app_list_description">Bildirimleri takip edilecek veya yok sayılacak uygulamaları seçin.</string>
+    <string name="filter_all">Tümü</string>
+    <string name="filter_user">Kullanıcı</string>
+    <string name="filter_system">Sistem</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">HATA AYIKLAMA MENÜSÜ</string>
+    <string name="disable_debug">Hata Ayıklama Menüsünü Kapat</string>
+    <string name="disable_debug_sub">Bu ayarları gizle</string>
+    <string name="show_test_button">Test Butonunu Göster</string>
+    <string name="show_test_button_sub">Genel test menüsü görünürlüğünü değiştir</string>
+    <string name="enable_accordion">Akordiyon Animasyonunu Aç</string>
+    <string name="enable_accordion_sub">Geçmiş grupları için kayan animasyonlar kullan</string>
+    <string name="enable_logging">Günlük Kaydını Aç</string>
+    <string name="enable_logging_sub">Etkinliği ve hataları takip et</string>
+    <string name="view_logs">Etkinlik Günlüklerini Görüntüle</string>
+    <string name="view_logs_sub">Arka plan günlüklerini gör ve paylaş</string>
+    <string name="data_management">VERİ YÖNETİMİ</string>
+    <string name="export_history">Bildirimleri Dışa Aktar</string>
+    <string name="export_history_sub">Geçmişi .spy dosyasına kaydet</string>
+    <string name="import_history">Bildirimleri İçe Aktar</string>
+    <string name="import_history_sub">Geçmişi .spy dosyasından geri yükle</string>
+    <string name="about">HAKKINDA</string>
+    <string name="faq">SSS</string>
+    <string name="faq_sub">Sıkça sorulan sorular</string>
+    <string name="contact_developer">Geliştiriciyle İletişime Geç</string>
+    <string name="privacy_policy">Gizlilik Politikası</string>
+    <string name="privacy_policy_sub">Verilerinizi nasıl işliyoruz</string>
+    <string name="feedback_subject">Speye Geri Bildirim</string>
+    <string name="no_email_app">E-posta uygulaması bulunamadı</string>
+    <string name="debug_mode_enabled">Hata Ayıklama Modu Etkinleştirildi</string>
+    <string name="export_success">Dışa aktarma başarılı</string>
+    <string name="export_failed">Dışa aktarma başarısız</string>
+    <string name="import_success">İçe aktarma başarılı</string>
+    <string name="import_failed">İçe aktarma başarısız</string>
+    <string name="billing_product_not_found">Ödeme Hatası: Ürün bulunamadı</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">GENEL SORULAR</string>
+    <string name="faq_q1">Speye nedir?</string>
+    <string name="faq_a1">Speye, bildirimlerinizi takip etmek ve onları asla kaybetmemek için oluşturulmuş ücretsiz bir uygulamadır.</string>
+    <string name="faq_q2">Bildirimlerimi nasıl yedekleyebilirim?</string>
+    <string name="faq_a2">Ayarlar sayfasından bildirimlerinizi bir .spy dosyasına aktarabilir ve istediğiniz zaman, herhangi bir cihazda geri yükleyebilirsiniz. Alternatif olarak, verilerinizin periyodik yedeklerini oluşturmak ve geri yüklemek için Google Drive hesabınızı bağlayabilirsiniz.</string>
+    <string name="faq_q3">Speye ücretsiz mi?</string>
+    <string name="faq_a3">Speye tamamen ücretsizdir ve açık kaynaklıdır, ancak reklam içerir. Reklamları sonsuza dek kaldırmak için tek seferlik bir satın alma yapabilirsiniz. Alternatif olarak, F-Droid\'den reklamsız sürümü edinebilirsiniz, ancak bu durumda Google Drive\'a bağlanma özelliğini kaybedersiniz.</string>
+
+    <string name="faq_security">GÜVENLİK SORULARI</string>
+    <string name="faq_q4">Speye verilerimi saklıyor mu?</string>
+    <string name="faq_a4">Speye kendi başına herhangi bir uzak veri saklamaz ve bildirimlerinizi yerel depolama alanınızda kaydeder. Google AdMob hizmetleri, Speye\'ın kontrolü dışında olan hedeflenmiş reklamlar için hesap verilerinizi kullanabilir.</string>
+    <string name="faq_q5">Bulut senkronizasyonu nasıl çalışır?</string>
+    <string name="faq_a5">Varsayılan olarak tüm veriler cihazınızda kalır. Google Drive Yedekleme\'yi etkinleştirirseniz, özel uygulama veri klasörünüzde şifrelenmiş bir .spy dosyası saklanır. Bir .spy dosyası yalnızca metinler ve ekler gibi kaydedilmiş bildirim verilerini içerir.</string>
+    <string name="faq_q6">Başkaları mesajlarımı görebilir mi?</string>
+    <string name="faq_a6">Speye kişisel verilerinizi asla paylaşmaz ve paylaşmayacaktır. Ancak, birisi .spy yedeğinizi kopyalarsa, bildirim geçmişinizi görüntülemek için kendi telefonuna aktarabilir.</string>
+
+    <string name="faq_misc">ÇEŞİTLİ SORULAR</string>
+    <string name="faq_q7">Hata ayıklama modunu nasıl etkinleştirebilirim?</string>
+    <string name="faq_a7">Ayarlar sayfasında Speye logosuna 5 kez tıklayın.</string>
+    <string name="faq_q8">Nasıl hata bildirebilirim?</string>
+    <string name="faq_a8">Hata ayıklama seçeneklerinden Günlük kaydını etkinleştir seçeneğini açın, ardından istediğiniz işlemi (içe/dışa aktarma, bulut girişi vb.) gerçekleştirin. Etkinlik günlüklerinde herhangi bir hata artık görünür olmalıdır. Bunları kopyalayın ve Ayarlar sayfasındaki iletişim seçeneği aracılığıyla benimle paylaşın.</string>
+    <string name="faq_q9">Bildirimleri nasıl test edebilirim?</string>
+    <string name="faq_a9">Hata ayıklama seçeneklerinden Test Butonunu Göster seçeneğini etkinleştirin ve Geçmiş sayfasına dönün. Artık kendinize farklı türde test bildirimleri göndermek için test butonuna erişebileceksiniz.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">GİZLİLİK POLİTİKASI</string>
+    <string name="privacy_data_collection">VERİ TOPLAMA</string>
+    <string name="privacy_local_storage">Yerel Depolama</string>
+    <string name="privacy_local_storage_text">Speye, gizlilik ön planda tutularak tasarlanmıştır. Metin, geçmiş ve resim ekleri dahil tüm bildirim verileri cihazınızda özel bir veritabanında yerel olarak saklanır. Kendi başımıza herhangi bir hassas veri saklamıyor veya iletmiyoruz.</string>
+    <string name="privacy_third_party">Üçüncü Taraf Hizmetleri</string>
+    <string name="privacy_third_party_text">Speye\'nin kendisi herhangi bir hassas veri saklamasa da, uygulamanın Google Play sürümü AdMob ve Google Play Hizmetleri gibi üçüncü taraf hizmetleri entegre eder. Bu hizmetler, reklam kişiselleştirme ve analiz gibi amaçlarla cihaz tanımlayıcıları ve kullanım istatistikleri gibi belirli bilgileri toplayabilir. Daha fazla ayrıntı için Google\'ın Gizlilik Politikası\'nı incelemenizi öneririz.</string>
+    <string name="privacy_cloud">Bulut Yedekleme</string>
+    <string name="privacy_cloud_text">Google Drive Yedekleme\'yi etkinleştirmeyi seçerseniz, Speye verilerinizi kişisel Google Drive hesabınızdaki özel bir klasöre yükler. Bu verilere geliştiriciler veya başka herhangi bir üçüncü taraf erişemez ve veriler sizin kontrolünüzde kalır.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Speye\'ı kullanmaya başlamak için aşağıdaki izinleri verin</string>
+    <string name="perm_post_notif">Bildirim Gönder</string>
+    <string name="perm_post_notif_desc">Sistem uyarıları ve test özellikleri için kullanılır.</string>
+    <string name="perm_notif_access">Bildirim Erişimi</string>
+    <string name="perm_notif_access_desc">Bildirim geçmişinizi yakalamak ve kaydetmek için gereklidir.</string>
+    <string name="perm_background">Kısıtlanmamış Pil</string>
+    <string name="perm_background_desc">Arka plan senkronizasyonunun ve yakalamanın asla durmamasını sağlar.</string>
+    <string name="optional">OPSİYONEL</string>
+    <string name="grant">İZİN VER</string>
+    <string name="granted">VERİLDİ</string>
+    <string name="start_app">Başlat!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">Bulut Senkronizasyonu</string>
+    <string name="sync_success_title">Senkronizasyon Başarılı</string>
+    <string name="sync_success_msg">Geçmişiniz Google Drive\'a yedeklendi.</string>
+    <string name="sync_failed_title">Senkronizasyon Başarısız</string>
+    <string name="sync_failed_msg">Google Drive\'a yedeklenemedi. Daha sonra tekrar denenecek.</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">Görsel Eki Formatı</string>
+    <string name="image_quality_sub">Bildirim görsellerini kaydetmek için kullanılan format</string>
+    <string name="format_png">PNG (Kayıpsız)</string>
+    <string name="format_jpeg_high">JPEG (Yüksek Kalite ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (Dengeli ~80%)</string>
+    <string name="format_webp">WEBP (Kompakt ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">Geçmişi Otomatik Sil</string>
+    <string name="retention_sub">Eski bildirimleri otomatik olarak kaldır</string>
+    <string name="retention_forever">Sonsuza dek sakla</string>
+    <string name="retention_30_days">30 günden eski</string>
+    <string name="retention_60_days">60 günden eski</string>
+    <string name="retention_90_days">90 günden eski</string>
+    <string name="retention_180_days">180 günden eski</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Erişilebilirlik</string>
+    <string name="accessibility_sub">Metin boyutu, yüksek kontrast ve ekran</string>
+    <string name="accessibility_section_display">EKRAN VE METİN</string>
+    <string name="accessibility_section_vision">GÖRME VE HAREKET</string>
+    <string name="text_size_title">Metin Boyutu</string>
+    <string name="text_size_sub">Uygulama genelinde yazı tipi boyutunu ayarlayın</string>
+    <string name="text_size_default">Varsayılan (%100)</string>
+    <string name="text_size_large">Büyük (%115)</string>
+    <string name="text_size_xlarge">Çok Büyük (%130)</string>
+    <string name="accessibility_preview_app">Örnek Uygulama</string>
+    <string name="accessibility_preview_title">Örnek Bildirim</string>
+    <string name="accessibility_preview_desc">Bu önizleme, bildirim metni ve kontrastının Speye içinde nasıl görüneceğini gösterir.</string>
+    <string name="high_contrast_title">Yüksek Kontrast</string>
+    <string name="high_contrast_sub">Daha iyi okunabilirlik için kontrastı artırın</string>
+    <string name="reduce_motion_title">Hareketi Azalt</string>
+    <string name="reduce_motion_sub">Animasyonları ve geçişleri en aza indirin</string>
+</resources>

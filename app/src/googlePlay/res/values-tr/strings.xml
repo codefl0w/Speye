@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Google Drive Yedekleme</string>
+    <string name="drive_backup_sub">Bulut hesabınızla senkronize edin</string>
+    <string name="drive_title">GOOGLE DRIVE YEDEKLEME</string>
+    <string name="backup_now">ŞİMDİ YEDEKLE</string>
+    <string name="connected_account">BAĞLI HESAP</string>
+    <string name="not_signed_in">Oturum açılmadı</string>
+    <string name="drive_sync_active">Drive senkronizasyonu etkin</string>
+    <string name="sign_in_to_enable">Bulut yedeklemeyi etkinleştirmek için oturum açın</string>
+    <string name="fetching_storage">Depolama bilgileri alınıyor…</string>
+    <string name="sign_in_google">GOOGLE İLE OTURUM AÇ</string>
+    <string name="sign_out">OTURUMU KAPAT</string>
+    <string name="sync_settings">SENKRONİZASYON AYARLARI</string>
+    <string name="auto_backup">Otomatik Yedekleme</string>
+    <string name="auto_backup_sub">Verileri arka planda senkronize et</string>
+    <string name="backup_frequency">Yedekleme Sıklığı</string>
+    <string name="freq_daily">Günlük</string>
+    <string name="freq_weekly">Haftalık</string>
+    <string name="freq_monthly">Aylık</string>
+    <string name="freq_manual">Manuel</string>
+    <string name="last_backup">Son Yedekleme</string>
+    <string name="never">Hiçbir zaman</string>
+    <string name="danger_zone">TEHLİKELİ BÖLGE</string>
+    <string name="delete_cloud_saves">Bulut Kayıtlarını Sil</string>
+    <string name="delete_cloud_saves_sub">Tüm Speye verilerini Drive\'dan temizle</string>
+    <string name="delete_cloud_confirm">Bulut Verileri Silinsin mi?</string>
+    <string name="delete_cloud_desc">Bu işlem, Speye ile ilişkili tüm yedekleri ve ekleri Google Drive hesabınızdan kalıcı olarak kaldıracaktır. Bu işlem geri alınamaz.</string>
+    <string name="delete_all">HEPSİNİ SİL</string>
+    <string name="uploading">YÜKLENİYOR...</string>
+    <string name="merging">BİRLEŞTİRİLİYOR...</string>
+    <string name="restore">GERİ YÜKLE</string>
+    <string name="storage_info">%1$.1f GB boş / %2$.1f GB toplam</string>
+
+    <!-- Billing -->
+    <string name="pro_active">PRO SÜRÜM ETKİN</string>
+    <string name="remove_ads">REKLAMLARI KALDIR (TEK SEFERLİK)</string>
+    <string name="restore_purchases">Satın Alımları Geri Yükle</string>
+    <string name="restore_purchases_sub">Önceden satın alınan Pro durumunu geri yükle</string>
+    <string name="purchases_restored">Pro satın alımı başarıyla geri yüklendi!</string>
+    <string name="no_purchases_found">Bu Google hesabı için etkin bir satın alma bulunamadı.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Ağ Hatası: Lütfen bağlantınızı kontrol edin.</string>
+    <string name="err_config">Yapılandırma Hatası: Geliştiricinin SHA-1 ve Paket Adını kontrol etmesi gerekiyor.</string>
+    <string name="err_12500">Oturum açma başarısız (12500): Google Play Hizmetlerinin güncel olduğundan emin olun.</string>
+    <string name="err_cancelled">Oturum açma kullanıcı tarafından iptal edildi.</string>
+</resources>

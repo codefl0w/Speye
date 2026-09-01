@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">Riwayat</string>
+    <string name="nav_apps">Aplikasi</string>
+    <string name="nav_settings">Pengaturan</string>
+
+    <!-- Notification List -->
+    <string name="test">UJI</string>
+    <string name="test_cycle">Uji Siklus (Baru/Edit/Hapus)</string>
+    <string name="test_long_text">Uji Teks Panjang</string>
+    <string name="test_image">Uji Lampiran Gambar</string>
+    <string name="no_notifications">Belum ada notifikasi yang disimpan</string>
+    <string name="no_title">Tanpa Judul</string>
+    <string name="no_results">Tidak ada notifikasi yang cocok</string>
+    <string name="delete_all">Hapus Semua</string>
+    <string name="dismiss">Tutup</string>
+    <string name="copy_content">Salin Konten</string>
+    <string name="go">Buka</string>
+    <string name="delete">Hapus</string>
+    <string name="close">TUTUP</string>
+    <string name="save_to_gallery">SIMPAN KE GALERI</string>
+    <string name="saved_to_gallery_success">Disimpan ke galeri</string>
+    <string name="image_not_found">File gambar tidak ditemukan</string>
+    <string name="image_load_failed">Gagal memuat gambar</string>
+    <string name="gallery_save_failed">Gagal menyimpan gambar</string>
+    <string name="confirm_deletion">Konfirmasi Penghapusan</string>
+    <string name="confirm_delete_all">Apakah Anda yakin ingin menghapus SEMUA notifikasi?</string>
+    <string name="confirm_delete_group">Hapus semua notifikasi untuk aplikasi ini?</string>
+    <string name="confirm_delete_item">Hapus notifikasi ini?</string>
+    <string name="cancel">BATAL</string>
+    <string name="notification_count">%d notifikasi</string>
+    <string name="dismissed">DITUTUP</string>
+    <string name="edited">DIEDIT (%d)</string>
+    <string name="history">RIWAYAT</string>
+    <string name="search_placeholder">Cari notifikasi…</string>
+
+    <!-- App List -->
+    <string name="app_list_description">Pilih aplikasi untuk melacak atau mengabaikan notifikasi.</string>
+    <string name="filter_all">Semua</string>
+    <string name="filter_user">Pengguna</string>
+    <string name="filter_system">Sistem</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">MENU DEBUG</string>
+    <string name="disable_debug">Nonaktifkan Menu Debug</string>
+    <string name="disable_debug_sub">Sembunyikan opsi ini</string>
+    <string name="show_test_button">Tampilkan Tombol Uji</string>
+    <string name="show_test_button_sub">Beralih visibilitas menu uji global</string>
+    <string name="enable_accordion">Aktifkan Animasi Akordeon</string>
+    <string name="enable_accordion_sub">Gunakan animasi geser untuk grup riwayat</string>
+    <string name="enable_logging">Aktifkan Pencatatan Log</string>
+    <string name="enable_logging_sub">Lacak aktivitas dan kesalahan</string>
+    <string name="view_logs">Lihat Log Aktivitas</string>
+    <string name="view_logs_sub">Lihat dan bagikan log latar belakang</string>
+    <string name="data_management">MANAJEMEN DATA</string>
+    <string name="export_history">Ekspor Notifikasi</string>
+    <string name="export_history_sub">Simpan riwayat ke file .spy</string>
+    <string name="import_history">Impor Notifikasi</string>
+    <string name="import_history_sub">Pulihkan riwayat dari file .spy</string>
+    <string name="about">TENTANG</string>
+    <string name="faq">FAQ</string>
+    <string name="faq_sub">Pertanyaan yang sering diajukan</string>
+    <string name="contact_developer">Hubungi Pengembang</string>
+    <string name="privacy_policy">Kebijakan Privasi</string>
+    <string name="privacy_policy_sub">Bagaimana kami mengelola data Anda</string>
+    <string name="feedback_subject">Umpan Balik Speye</string>
+    <string name="no_email_app">Tidak ada aplikasi email yang ditemukan</string>
+    <string name="debug_mode_enabled">Mode Debug Diaktifkan</string>
+    <string name="export_success">Ekspor berhasil</string>
+    <string name="export_failed">Ekspor gagal</string>
+    <string name="import_success">Impor berhasil</string>
+    <string name="import_failed">Impor gagal</string>
+    <string name="billing_product_not_found">Kesalahan Pembelian: Produk tidak ditemukan</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">PERTANYAAN UMUM</string>
+    <string name="faq_q1">Apa itu Speye?</string>
+    <string name="faq_a1">Speye adalah aplikasi gratis untuk mencatat dan menyimpan riwayat notifikasi Anda agar tidak pernah terlewatkan.</string>
+    <string name="faq_q2">Bagaimana cara mencadangkan notifikasi saya?</string>
+    <string name="faq_a2">Anda dapat mengekspor notifikasi ke file .spy di halaman Pengaturan dan mengimpornya kembali kapan saja di perangkat apa pun. Selain itu, Anda dapat menghubungkan akun Google Drive untuk membuat dan memulihkan cadangan otomatis secara berkala.</string>
+    <string name="faq_q3">Apakah Speye gratis?</string>
+    <string name="faq_a3">Speye sepenuhnya gratis dan open source, tetapi berisi iklan. Anda dapat melakukan pembelian satu kali untuk menghapus iklan selamanya. Sebagai alternatif, Anda dapat mengunduh versi bebas iklan dari F-Droid, tetapi tidak mendukung sinkronisasi Google Drive.</string>
+
+    <string name="faq_security">KEAMANAN DAN PRIVASI</string>
+    <string name="faq_q4">Apakah Speye menyimpan data saya?</string>
+    <string name="faq_a4">Speye tidak menyimpan data jarak jauh sendiri dan menyimpan semua notifikasi secara lokal di perangkat Anda. Layanan Google AdMob dapat menggunakan data akun untuk iklan yang dipersonalisasi, yang tidak dikontrol langsung oleh Speye.</string>
+    <string name="faq_q5">Bagaimana cara kerja sinkronisasi cloud?</string>
+    <string name="faq_a5">Secara default, semua data tetap berada di perangkat Anda. Jika Anda mengaktifkan Cadangan Google Drive, file .spy terenkripsi disimpan di folder data aplikasi pribadi Anda. File hanya berisi data notifikasi yang tersimpan (teks dan lampiran).</string>
+    <string name="faq_q6">Bisakah orang lain melihat pesan saya?</string>
+    <string name="faq_a6">Speye tidak pernah dan tidak akan membagikan data pribadi Anda. Namun, jika seseorang menyalin file cadangan .spy Anda, mereka dapat mengimpornya ke ponsel mereka untuk melihat riwayat notifikasi Anda.</string>
+
+    <string name="faq_misc">PERTANYAAN LAINNYA</string>
+    <string name="faq_q7">Bagaimana cara mengaktifkan mode debug?</string>
+    <string name="faq_a7">Di halaman Pengaturan, ketuk logo Speye sebanyak 5 kali.</string>
+    <string name="faq_q8">Bagaimana cara melaporkan bug?</string>
+    <string name="faq_a8">Dari opsi debug, aktifkan opsi Aktifkan Pencatatan Log, lalu lakukan tindakan yang diinginkan (impor/ekspor, login cloud, dll.). Di log aktivitas, pesan kesalahan akan terlihat. Salin dan kirimkan melalui opsi kontak di Pengaturan.</string>
+    <string name="faq_q9">Bagaimana cara menguji notifikasi?</string>
+    <string name="faq_a9">Dari opsi debug, aktifkan opsi Tampilkan Tombol Uji dan kembali ke halaman Riwayat. Anda sekarang dapat menggunakan tombol uji untuk mengirimkan notifikasi percobaan.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">KEBIJAKAN PRIVASI</string>
+    <string name="privacy_data_collection">PENGUMPULAN DATA</string>
+    <string name="privacy_local_storage">Penyimpanan Lokal</string>
+    <string name="privacy_local_storage_text">Speye dirancang dengan memprioritaskan privasi. Semua data notifikasi, termasuk teks, riwayat pengeditan, dan lampiran gambar, disimpan secara lokal di perangkat Anda dalam database pribadi. Kami tidak menyimpan atau mengirimkan data sensitif.</string>
+    <string name="privacy_third_party">Layanan Pihak Ketiga</string>
+    <string name="privacy_third_party_text">Meskipun Speye tidak mengirimkan data sensitif, versi Google Play mengintegrasikan layanan pihak ketiga seperti AdMob dan Google Play Services. Layanan ini dapat mengumpulkan pengidentifikasi perangkat dan statistik penggunaan untuk personalisasi iklan dan analitik. Kami sarankan untuk meninjau Kebijakan Privasi Google untuk informasi lebih lanjut.</string>
+    <string name="privacy_cloud">Cadangan Cloud</string>
+    <string name="privacy_cloud_text">Jika Anda mengaktifkan Cadangan Google Drive, Speye mengunggah data Anda ke folder pribadi di akun Google Drive pribadi Anda. Data ini tidak dapat diakses oleh pengembang atau pihak ketiga mana pun, dan tetap berada di bawah kendali Anda sepenuhnya.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Berikan izin berikut untuk mulai menggunakan Speye</string>
+    <string name="perm_post_notif">Kirim Notifikasi</string>
+    <string name="perm_post_notif_desc">Digunakan untuk pemberitahuan sistem dan fitur pengujian.</string>
+    <string name="perm_notif_access">Akses Notifikasi</string>
+    <string name="perm_notif_access_desc">Sangat penting untuk menangkap dan menyimpan riwayat notifikasi Anda.</string>
+    <string name="perm_background">Latar Belakang Tanpa Batas</string>
+    <string name="perm_background_desc">Memastikan penangkapan dan sinkronisasi tidak pernah terhenti.</string>
+    <string name="optional">OPSIONAL</string>
+    <string name="grant">IZINKAN</string>
+    <string name="granted">DIIZINKAN</string>
+    <string name="start_app">Mulai!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">Sinkronisasi Cloud</string>
+    <string name="sync_success_title">Sinkronisasi Berhasil</string>
+    <string name="sync_success_msg">Riwayat Anda telah dicadangkan ke Google Drive.</string>
+    <string name="sync_failed_title">Sinkronisasi Gagal</string>
+    <string name="sync_failed_msg">Tidak dapat mencadangkan ke Google Drive. Akan dicoba lagi nanti.</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">Format Lampiran Gambar</string>
+    <string name="image_quality_sub">Format yang digunakan untuk menyimpan gambar notifikasi</string>
+    <string name="format_png">PNG (Tanpa Kompresi)</string>
+    <string name="format_jpeg_high">JPEG (Kualitas Tinggi ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (Seimbang ~80%)</string>
+    <string name="format_webp">WEBP (Ringkas ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">Hapus Riwayat Otomatis</string>
+    <string name="retention_sub">Hapus notifikasi lama secara otomatis</string>
+    <string name="retention_forever">Simpan Selamanya</string>
+    <string name="retention_30_days">Lebih dari 30 hari</string>
+    <string name="retention_60_days">Lebih dari 60 hari</string>
+    <string name="retention_90_days">Lebih dari 90 hari</string>
+    <string name="retention_180_days">Lebih dari 180 hari</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Aksesibilitas</string>
+    <string name="accessibility_sub">Ukuran teks, kontras tinggi, dan tampilan</string>
+    <string name="accessibility_section_display">TAMPILAN &amp; TEKS</string>
+    <string name="accessibility_section_vision">PENGLIHATAN &amp; GERAKAN</string>
+    <string name="text_size_title">Ukuran Teks</string>
+    <string name="text_size_sub">Sesuaikan skala font di seluruh aplikasi</string>
+    <string name="text_size_default">Default (100%)</string>
+    <string name="text_size_large">Besar (115%)</string>
+    <string name="text_size_xlarge">Sangat Besar (130%)</string>
+    <string name="accessibility_preview_app">Aplikasi Contoh</string>
+    <string name="accessibility_preview_title">Contoh Notifikasi</string>
+    <string name="accessibility_preview_desc">Pratinjau ini mengilustrasikan bagaimana teks dan kontras notifikasi akan terlihat di Speye.</string>
+    <string name="high_contrast_title">Kontras Tinggi</string>
+    <string name="high_contrast_sub">Tingkatkan kontras untuk kemudahan membaca</string>
+    <string name="reduce_motion_title">Kurangi Gerakan</string>
+    <string name="reduce_motion_sub">Minimalkan animasi dan transisi antarmuka</string>
+</resources>

@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Copia en Google Drive</string>
+    <string name="drive_backup_sub">Sincroniza con tu cuenta en la nube</string>
+    <string name="drive_title">COPIA DE SEGURIDAD EN DRIVE</string>
+    <string name="backup_now">RESPALDAR AHORA</string>
+    <string name="connected_account">CUENTA CONECTADA</string>
+    <string name="not_signed_in">Sesión no iniciada</string>
+    <string name="drive_sync_active">Sincronización activa</string>
+    <string name="sign_in_to_enable">Inicia sesión para activar la copia</string>
+    <string name="fetching_storage">Obteniendo info de almacenamiento…</string>
+    <string name="sign_in_google">INICIAR SESIÓN CON GOOGLE</string>
+    <string name="sign_out">CERRAR SESIÓN</string>
+    <string name="sync_settings">AJUSTES DE SINCRONIZACIÓN</string>
+    <string name="auto_backup">Copia automática</string>
+    <string name="auto_backup_sub">Sincroniza datos en segundo plano</string>
+    <string name="backup_frequency">Frecuencia de copia</string>
+    <string name="freq_daily">Diariamente</string>
+    <string name="freq_weekly">Semanalmente</string>
+    <string name="freq_monthly">Mensualmente</string>
+    <string name="freq_manual">Manual</string>
+    <string name="last_backup">Última copia</string>
+    <string name="never">Nunca</string>
+    <string name="danger_zone">ZONA DE PELIGRO</string>
+    <string name="delete_cloud_saves">Borrar datos de la nube</string>
+    <string name="delete_cloud_saves_sub">Limpia todos los datos de Drive</string>
+    <string name="delete_cloud_confirm">¿Borrar datos de la nube?</string>
+    <string name="delete_cloud_desc">Esto eliminará permanentemente todas las copias y archivos adjuntos de Speye en tu cuenta de Google Drive. Esta acción no se puede deshacer.</string>
+    <string name="delete_all">BORRAR TODO</string>
+    <string name="uploading">SUBIENDO...</string>
+    <string name="merging">COMBINANDO...</string>
+    <string name="restore">RESTAURAR</string>
+    <string name="storage_info">%1$.1f GB libres de %2$.1f GB</string>
+
+    <!-- Billing -->
+    <string name="pro_active">VERSIÓN PRO ACTIVA</string>
+    <string name="remove_ads">QUITAR PUBLICIDAD (PAGO ÚNICO)</string>
+    <string name="restore_purchases">Restaurar compras</string>
+    <string name="restore_purchases_sub">Restaurar el estado Pro adquirido previamente</string>
+    <string name="purchases_restored">¡Compra Pro restaurada con éxito!</string>
+    <string name="no_purchases_found">No se encontraron compras activas para esta cuenta de Google.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Error de red: verifica tu conexión.</string>
+    <string name="err_config">Error de config: verifica el SHA-1 y el nombre del paquete.</string>
+    <string name="err_12500">Error de sesión (12500): verifica Google Play Services.</string>
+    <string name="err_cancelled">Sesión cancelada por el usuario.</string>
+</resources>

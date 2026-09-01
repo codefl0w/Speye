@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Backup no Google Drive</string>
+    <string name="drive_backup_sub">Sincronize com sua conta na nuvem</string>
+    <string name="drive_title">BACKUP NO GOOGLE DRIVE</string>
+    <string name="backup_now">FAZER BACKUP AGORA</string>
+    <string name="connected_account">CONTA CONECTADA</string>
+    <string name="not_signed_in">Não conectado</string>
+    <string name="drive_sync_active">Sincronização com Drive ativa</string>
+    <string name="sign_in_to_enable">Faça login para ativar o backup na nuvem</string>
+    <string name="fetching_storage">Obtendo informações de armazenamento…</string>
+    <string name="sign_in_google">FAZER LOGIN COM O GOOGLE</string>
+    <string name="sign_out">DESCONECTAR</string>
+    <string name="sync_settings">CONFIGURAÇÕES DE SINCRONIZAÇÃO</string>
+    <string name="auto_backup">Backup Automático</string>
+    <string name="auto_backup_sub">Sincronizar dados em segundo plano</string>
+    <string name="backup_frequency">Frequência do Backup</string>
+    <string name="freq_daily">Diariamente</string>
+    <string name="freq_weekly">Semanalmente</string>
+    <string name="freq_monthly">Mensalmente</string>
+    <string name="freq_manual">Manual</string>
+    <string name="last_backup">Último Backup</string>
+    <string name="never">Nunca</string>
+    <string name="danger_zone">ZONA DE PERIGO</string>
+    <string name="delete_cloud_saves">Excluir Backups na Nuvem</string>
+    <string name="delete_cloud_saves_sub">Limpar todos os dados do Speye no Drive</string>
+    <string name="delete_cloud_confirm">Excluir Dados na Nuvem?</string>
+    <string name="delete_cloud_desc">Isso removerá permanentemente todos os backups e anexos vinculados ao Speye da sua conta do Google Drive. Esta ação não pode ser desfeita.</string>
+    <string name="delete_all">EXCLUIR TUDO</string>
+    <string name="uploading">ENVIANDO...</string>
+    <string name="merging">MESCLANDO...</string>
+    <string name="restore">RESTAURAR</string>
+    <string name="storage_info">%1$.1f GB livres de %2$.1f GB</string>
+
+    <!-- Billing -->
+    <string name="pro_active">VERSÃO PRO ATIVA</string>
+    <string name="remove_ads">REMOVER ANÚNCIOS (PAGAMENTO ÚNICO)</string>
+    <string name="restore_purchases">Restaurar compras</string>
+    <string name="restore_purchases_sub">Restaurar o status Pro adquirido anteriormente</string>
+    <string name="purchases_restored">Compra Pro restaurada com sucesso!</string>
+    <string name="no_purchases_found">Nenhuma compra ativa encontrada para esta conta do Google.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Erro de rede: verifique sua conexão com a internet.</string>
+    <string name="err_config">Erro de configuração: verifique o SHA-1 e o nome do pacote.</string>
+    <string name="err_12500">Falha no login (12500): verifique se o Google Play Services está atualizado.</string>
+    <string name="err_cancelled">Login cancelado pelo usuário.</string>
+</resources>

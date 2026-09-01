@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">Verlauf</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- Notification List -->
+    <string name="test">TEST</string>
+    <string name="test_cycle">Zyklus-Test (Neu/Bearbeiten/Löschen)</string>
+    <string name="test_long_text">Langer Text Test</string>
+    <string name="test_image">Bildanhang Test</string>
+    <string name="no_notifications">Noch keine Benachrichtigungen gespeichert</string>
+    <string name="no_title">Kein Titel</string>
+    <string name="no_results">Keine passenden Benachrichtigungen gefunden</string>
+    <string name="delete_all">Alle löschen</string>
+    <string name="dismiss">Verwerfen</string>
+    <string name="copy_content">Inhalt kopieren</string>
+    <string name="go">Los</string>
+    <string name="delete">Löschen</string>
+    <string name="close">SCHLIESSEN</string>
+    <string name="save_to_gallery">IN GALERIE SPEICHERN</string>
+    <string name="saved_to_gallery_success">In Galerie gespeichert</string>
+    <string name="image_not_found">Bilddatei nicht gefunden</string>
+    <string name="image_load_failed">Bild konnte nicht geladen werden</string>
+    <string name="gallery_save_failed">Speichern des Bildes fehlgeschlagen</string>
+    <string name="confirm_deletion">Löschen bestätigen</string>
+    <string name="confirm_delete_all">Sind Sie sicher, dass Sie ALLE Benachrichtigungen löschen möchten?</string>
+    <string name="confirm_delete_group">Alle Benachrichtigungen für diese App löschen?</string>
+    <string name="confirm_delete_item">Diese Benachrichtigung löschen?</string>
+    <string name="cancel">ABBRECHEN</string>
+    <string name="notification_count">%d Benachrichtigungen</string>
+    <string name="dismissed">VERWORFEN</string>
+    <string name="edited">BEARBEITET (%d)</string>
+    <string name="history">VERLAUF</string>
+    <string name="search_placeholder">Benachrichtigungen suchen…</string>
+
+    <!-- App List -->
+    <string name="app_list_description">Wählen Sie Apps aus, um Benachrichtigungen zu verfolgen oder zu ignorieren.</string>
+    <string name="filter_all">Alle</string>
+    <string name="filter_user">Benutzer</string>
+    <string name="filter_system">System</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">DEBUG-MENÜ</string>
+    <string name="disable_debug">Debug-Menü deaktivieren</string>
+    <string name="disable_debug_sub">Diese Einstellungen ausblenden</string>
+    <string name="show_test_button">Test-Button anzeigen</string>
+    <string name="show_test_button_sub">Sichtbarkeit des globalen Test-Menüs umschalten</string>
+    <string name="enable_accordion">Akkordeon-Animation aktivieren</string>
+    <string name="enable_accordion_sub">Schiebe-Animationen für Verlaufsgruppen verwenden</string>
+    <string name="enable_logging">Protokollierung aktivieren</string>
+    <string name="enable_logging_sub">Aktivitäten und Fehler verfolgen</string>
+    <string name="view_logs">Aktivitätsprotokolle anzeigen</string>
+    <string name="view_logs_sub">Hintergrundprotokolle sehen und teilen</string>
+    <string name="data_management">DATENVERWALTUNG</string>
+    <string name="export_history">Benachrichtigungen exportieren</string>
+    <string name="export_history_sub">Verlauf in .spy-Datei speichern</string>
+    <string name="import_history">Benachrichtigungen importieren</string>
+    <string name="import_history_sub">Verlauf aus .spy-Datei wiederherstellen</string>
+    <string name="about">ÜBER</string>
+    <string name="faq">FAQ</string>
+    <string name="faq_sub">Häufig gestellte Fragen</string>
+    <string name="contact_developer">Entwickler kontaktieren</string>
+    <string name="privacy_policy">Datenschutzerklärung</string>
+    <string name="privacy_policy_sub">Wie wir mit Ihren Daten umgehen</string>
+    <string name="feedback_subject">Speye Feedback</string>
+    <string name="no_email_app">Keine E-Mail-App gefunden</string>
+    <string name="debug_mode_enabled">Debug-Modus aktiviert</string>
+    <string name="export_success">Export erfolgreich</string>
+    <string name="export_failed">Export fehlgeschlagen</string>
+    <string name="import_success">Import erfolgreich</string>
+    <string name="import_failed">Import fehlgeschlagen</string>
+    <string name="billing_product_not_found">Abrechnungsfehler: Produkt nicht gefunden</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">ALLGEMEINE FRAGEN</string>
+    <string name="faq_q1">Was ist Speye?</string>
+    <string name="faq_a1">Speye ist eine kostenlose App, um Ihre Benachrichtigungen zu verfolgen und sie nie zu verlieren.</string>
+    <string name="faq_q2">Wie kann ich meine Benachrichtigungen sichern?</string>
+    <string name="faq_a2">Sie können Ihre Benachrichtigungen auf der Einstellungsseite in eine .spy-Datei exportieren und sie jederzeit auf jedem Gerät wieder importieren. Alternativ können Sie Ihr Google Drive-Konto verbinden, um regelmäßige Backups Ihrer Daten zu erstellen und diese wiederherzustellen.</string>
+    <string name="faq_q3">Ist Speye kostenlos?</string>
+    <string name="faq_a3">Speye ist völlig kostenlos und Open Source, enthält aber Werbung. Sie können einen einmaligen Kauf tätigen, um die Werbung für immer zu entfernen. Alternativ können Sie die werbefreie Version von F-Droid beziehen, verlieren dann jedoch die Möglichkeit, eine Verbindung zu Google Drive herzustellen.</string>
+
+    <string name="faq_security">SICHERHEITSFRAGEN</string>
+    <string name="faq_q4">Speichert Speye meine Daten?</string>
+    <string name="faq_a4">Speye selbst speichert keine Remote-Daten und sichert Ihre Benachrichtigungen in Ihrem lokalen Speicher. Google AdMob-Dienste können Ihre Kontodaten für zielgerichtete Werbung verwenden, was nicht von Speye selbst kontrolliert wird.</string>
+    <string name="faq_q5">Wie funktioniert der Cloud-Sync?</string>
+    <string name="faq_a5">Standardmäßig bleiben alle Daten auf Ihrem Gerät. Wenn Sie das Google Drive-Backup aktivieren, wird eine verschlüsselte .spy-Datei in Ihrem privaten App-Datenordner gespeichert. Eine .spy-Datei enthält nur gespeicherte Benachrichtigungsdaten wie Texte und Anhänge.</string>
+    <string name="faq_q6">Können andere meine Texte sehen?</string>
+    <string name="faq_a6">Speye teilt Ihre persönlichen Daten nicht und wird dies auch nie tun. Wenn jedoch jemand Ihr .spy-Backup kopiert, kann er es auf seinem Telefon importieren, um Ihren Benachrichtigungsverlauf anzuzeigen.</string>
+
+    <string name="faq_misc">SONSTIGE FRAGEN</string>
+    <string name="faq_q7">Wie kann ich den Debug-Modus aktivieren?</string>
+    <string name="faq_a7">Klicken Sie auf der Einstellungsseite 5 Mal auf das Speye-Logo.</string>
+    <string name="faq_q8">Wie kann ich einen Fehler melden?</string>
+    <string name="faq_a8">Aktivieren Sie in den Debugging-Optionen die Option Protokollierung aktivieren und führen Sie dann die gewünschte Aktion aus (Import/Export, Cloud-Login usw.). In den Aktivitätsprotokollen sollten nun alle Fehler sichtbar sein. Kopieren Sie diese und teilen Sie sie mir über die Kontaktoption auf der Einstellungsseite mit.</string>
+    <string name="faq_q9">Wie kann ich die Benachrichtigungen testen?</string>
+    <string name="faq_a9">Aktivieren Sie in den Debugging-Optionen die Option Test-Button anzeigen und kehren Sie zur Verlaufsseite zurück. Sie haben nun Zugriff auf die Test-Schaltfläche, um sich verschiedene Arten von Test-Benachrichtigungen zu senden.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">DATENSCHUTZERKLÄRUNG</string>
+    <string name="privacy_data_collection">DATENERFASSUNG</string>
+    <string name="privacy_local_storage">Lokale Speicherung</string>
+    <string name="privacy_local_storage_text">Speye wurde mit Blick auf den Datenschutz entwickelt. Alle Benachrichtigungsdaten, einschließlich Text, Verlauf und Bildanhänge, werden lokal auf Ihrem Gerät in einer privaten Datenbank gespeichert. Wir selbst speichern oder übertragen keine sensiblen Daten.</string>
+    <string name="privacy_third_party">Dienste von Drittanbietern</string>
+    <string name="privacy_third_party_text">Während Speye selbst keine sensiblen Daten speichert oder überträgt, integriert die Google Play-Version der App Dienste von Drittanbietern wie AdMob und Google Play Services. Diese Dienste können bestimmte Informationen sammeln, wie z. B. Gerätekennungen und Nutzungsstatistiken, die für Anzeigenpersonalisierung und Analysen verwendet werden könnten. Wir empfehlen, die Datenschutzerklärung von Google für weitere Details zu lesen.</string>
+    <string name="privacy_cloud">Cloud-Backup</string>
+    <string name="privacy_cloud_text">Wenn Sie das Google Drive Backup aktivieren, lädt Speye Ihre Daten in einen privaten Ordner in Ihrem persönlichen Google Drive-Konto hoch. Diese Daten sind für die Entwickler oder andere Dritte nicht zugänglich und bleiben unter Ihrer Kontrolle.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Erteilen Sie die folgenden Berechtigungen, um Speye zu nutzen</string>
+    <string name="perm_post_notif">Benachrichtigungen senden</string>
+    <string name="perm_post_notif_desc">Wird für Systemwarnungen und Testfunktionen verwendet.</string>
+    <string name="perm_notif_access">Benachrichtigungszugriff</string>
+    <string name="perm_notif_access_desc">Erforderlich, um Ihren Benachrichtigungsverlauf zu erfassen und zu speichern.</string>
+    <string name="perm_background">Uneingeschränkter Hintergrund</string>
+    <string name="perm_background_desc">Stellt sicher, dass die Hintergrundsynchronisierung nie stoppt.</string>
+    <string name="optional">OPTIONAL</string>
+    <string name="grant">ERTEILEN</string>
+    <string name="granted">ERTEILT</string>
+    <string name="start_app">Starten!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">Cloud-Synchronisierung</string>
+    <string name="sync_success_title">Synchronisierung erfolgreich</string>
+    <string name="sync_success_msg">Ihr Verlauf wurde in Google Drive gesichert.</string>
+    <string name="sync_failed_title">Synchronisierung fehlgeschlagen</string>
+    <string name="sync_failed_msg">Sicherung in Google Drive fehlgeschlagen. Späterer Versuch folgt.</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">Bildanhang-Format</string>
+    <string name="image_quality_sub">Format zum Speichern von Benachrichtigungsbildern</string>
+    <string name="format_png">PNG (Verlustfrei)</string>
+    <string name="format_jpeg_high">JPEG (Hohe Qualität ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (Ausgewogen ~80%)</string>
+    <string name="format_webp">WEBP (Kompakt ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">Verlauf automatisch löschen</string>
+    <string name="retention_sub">Ältere Benachrichtigungen automatisch entfernen</string>
+    <string name="retention_forever">Für immer behalten</string>
+    <string name="retention_30_days">Älter als 30 Tage</string>
+    <string name="retention_60_days">Älter als 60 Tage</string>
+    <string name="retention_90_days">Älter als 90 Tage</string>
+    <string name="retention_180_days">Älter als 180 Tage</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Barrierefreiheit</string>
+    <string name="accessibility_sub">Textgröße, hoher Kontrast und Anzeige</string>
+    <string name="accessibility_section_display">ANZEIGE &amp; TEXT</string>
+    <string name="accessibility_section_vision">SEHEN &amp; BEWEGUNG</string>
+    <string name="text_size_title">Textgröße</string>
+    <string name="text_size_sub">Schriftgröße in der gesamten App anpassen</string>
+    <string name="text_size_default">Standard (100%)</string>
+    <string name="text_size_large">Groß (115%)</string>
+    <string name="text_size_xlarge">Sehr groß (130%)</string>
+    <string name="accessibility_preview_app">Beispiel-App</string>
+    <string name="accessibility_preview_title">Beispiel-Benachrichtigung</string>
+    <string name="accessibility_preview_desc">Diese Vorschau zeigt, wie Benachrichtigungstext und Kontrast in Speye aussehen.</string>
+    <string name="high_contrast_title">Hoher Kontrast</string>
+    <string name="high_contrast_sub">Kontrast für bessere Lesbarkeit erhöhen</string>
+    <string name="reduce_motion_title">Bewegung reduzieren</string>
+    <string name="reduce_motion_sub">Animationen und Übergänge minimieren</string>
+</resources>

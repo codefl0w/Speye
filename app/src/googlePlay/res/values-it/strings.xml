@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Backup su Google Drive</string>
+    <string name="drive_backup_sub">Sincronizza con il tuo account cloud</string>
+    <string name="drive_title">BACKUP SU GOOGLE DRIVE</string>
+    <string name="backup_now">ESEGUI BACKUP ORA</string>
+    <string name="connected_account">ACCOUNT COLLEGATO</string>
+    <string name="not_signed_in">Non connesso</string>
+    <string name="drive_sync_active">Sincronizzazione Drive attiva</string>
+    <string name="sign_in_to_enable">Accedi per attivare il backup su cloud</string>
+    <string name="fetching_storage">Recupero informazioni spazio…</string>
+    <string name="sign_in_google">ACCEDI CON GOOGLE</string>
+    <string name="sign_out">DISCONNETTI</string>
+    <string name="sync_settings">IMPOSTAZIONI SINCRONIZZAZIONE</string>
+    <string name="auto_backup">Backup Automatico</string>
+    <string name="auto_backup_sub">Sincronizza i dati in background</string>
+    <string name="backup_frequency">Frequenza Backup</string>
+    <string name="freq_daily">Giornaliero</string>
+    <string name="freq_weekly">Settimanale</string>
+    <string name="freq_monthly">Mensile</string>
+    <string name="freq_manual">Manuale</string>
+    <string name="last_backup">Ultimo Backup</string>
+    <string name="never">Mai</string>
+    <string name="danger_zone">ZONA DI PERICOLO</string>
+    <string name="delete_cloud_saves">Elimina Dati su Cloud</string>
+    <string name="delete_cloud_saves_sub">Cancella tutti i dati di Speye da Drive</string>
+    <string name="delete_cloud_confirm">Eliminare i Dati su Cloud?</string>
+    <string name="delete_cloud_desc">Questo rimuoverà definitivamente tutti i backup e gli allegati associati a Speye dal tuo account Google Drive. L\'azione non può essere annullata.</string>
+    <string name="delete_all">ELIMINA TUTTO</string>
+    <string name="uploading">CARICAMENTO...</string>
+    <string name="merging">UNIONE...</string>
+    <string name="restore">RIPRISTINA</string>
+    <string name="storage_info">%1$.1f GB liberi di %2$.1f GB</string>
+
+    <!-- Billing -->
+    <string name="pro_active">VERSIONE PRO ATTIVA</string>
+    <string name="remove_ads">RIMUOVI PUBBLICITÀ (UNA TANTUM)</string>
+    <string name="restore_purchases">Ripristina acquisti</string>
+    <string name="restore_purchases_sub">Ripristina lo stato Pro acquistato in precedenza</string>
+    <string name="purchases_restored">Acquisto Pro ripristinato con successo!</string>
+    <string name="no_purchases_found">Nessun acquisto attivo trovato per questo account Google.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Errore di rete: verifica la connessione a Internet.</string>
+    <string name="err_config">Errore di configurazione: verificare SHA-1 e nome pacchetto.</string>
+    <string name="err_12500">Accesso non riuscito (12500): verificare Google Play Services.</string>
+    <string name="err_cancelled">Accesso annullato dall\'utente.</string>
+</resources>

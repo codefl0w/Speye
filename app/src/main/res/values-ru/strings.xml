@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">История</string>
+    <string name="nav_apps">Приложения</string>
+    <string name="nav_settings">Настройки</string>
+
+    <!-- Notification List -->
+    <string name="test">ТЕСТ</string>
+    <string name="test_cycle">Циклический тест (Нов/Изм/Уд)</string>
+    <string name="test_long_text">Тест длинного текста</string>
+    <string name="test_image">Тест вложения изображения</string>
+    <string name="no_notifications">Уведомления еще не сохранены</string>
+    <string name="no_title">Без заголовка</string>
+    <string name="no_results">Подходящих уведомлений не найдено</string>
+    <string name="delete_all">Удалить все</string>
+    <string name="dismiss">Скрыть</string>
+    <string name="copy_content">Копировать содержимое</string>
+    <string name="go">Перейти</string>
+    <string name="delete">Удалить</string>
+    <string name="close">ЗАКРЫТЬ</string>
+    <string name="save_to_gallery">СОХРАНИТЬ В ГАЛЕРЕЮ</string>
+    <string name="saved_to_gallery_success">Сохранено в галерею</string>
+    <string name="image_not_found">Файл изображения не найден</string>
+    <string name="image_load_failed">Не удалось загрузить изображение</string>
+    <string name="gallery_save_failed">Не удалось сохранить изображение</string>
+    <string name="confirm_deletion">Подтвердите удаление</string>
+    <string name="confirm_delete_all">Вы уверены, что хотите удалить ВСЕ уведомления?</string>
+    <string name="confirm_delete_group">Удалить все уведомления для этого приложения?</string>
+    <string name="confirm_delete_item">Удалить это уведомление?</string>
+    <string name="cancel">ОТМЕНА</string>
+    <string name="notification_count">Уведомлений: %d</string>
+    <string name="dismissed">СКРЫТО</string>
+    <string name="edited">ИЗМЕНЕНО (%d)</string>
+    <string name="history">ИСТОРИЯ</string>
+    <string name="search_placeholder">Поиск уведомлений…</string>
+
+    <!-- App List -->
+    <string name="app_list_description">Выберите приложения для отслеживания или игнорирования уведомлений.</string>
+    <string name="filter_all">Все</string>
+    <string name="filter_user">Пользовательские</string>
+    <string name="filter_system">Системные</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">МЕНЮ ОТЛАДКИ</string>
+    <string name="disable_debug">Отключить меню отладки</string>
+    <string name="disable_debug_sub">Скрыть эти настройки</string>
+    <string name="show_test_button">Показать кнопку теста</string>
+    <string name="show_test_button_sub">Переключить видимость меню теста</string>
+    <string name="enable_accordion">Включить анимацию аккордеона</string>
+    <string name="enable_accordion_sub">Использовать скользящую анимацию для групп</string>
+    <string name="enable_logging">Включить логирование</string>
+    <string name="enable_logging_sub">Отслеживать активность и ошибки</string>
+    <string name="view_logs">Просмотр логов активности</string>
+    <string name="view_logs_sub">Смотреть и делиться фоновыми логами</string>
+    <string name="data_management">УПРАВЛЕНИЕ ДАННЫМИ</string>
+    <string name="export_history">Экспорт уведомлений</string>
+    <string name="export_history_sub">Сохранить историю в файл .spy</string>
+    <string name="import_history">Импорт уведомлений</string>
+    <string name="import_history_sub">Восстановить историю из файла .spy</string>
+    <string name="about">О ПРИЛОЖЕНИИ</string>
+    <string name="faq">Частые вопросы</string>
+    <string name="faq_sub">Часто задаваемые вопросы</string>
+    <string name="contact_developer">Связаться с разработчиком</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="privacy_policy_sub">Как мы обрабатываем ваши данные</string>
+    <string name="feedback_subject">Отзыв о Speye</string>
+    <string name="no_email_app">Почтовое приложение не найдено</string>
+    <string name="debug_mode_enabled">Режим отладки включен</string>
+    <string name="export_success">Экспорт выполнен успешно</string>
+    <string name="export_failed">Экспорт не удался</string>
+    <string name="import_success">Импорт выполнен успешно</string>
+    <string name="import_failed">Импорт не удался</string>
+    <string name="billing_product_not_found">Ошибка оплаты: товар не найден</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">ОБЩИЕ ВОПРОСЫ</string>
+    <string name="faq_q1">Что такое Speye?</string>
+    <string name="faq_a1">Speye — это бесплатное приложение для отслеживания уведомлений, чтобы вы никогда их не теряли.</string>
+    <string name="faq_q2">Как я могу создать резервную копию уведомлений?</string>
+    <string name="faq_a2">Вы можете экспортировать свои уведомления в файл .spy на странице настроек и импортировать их обратно в любое время на любом устройстве. Кроме того, вы можете подключить свой аккаунт Google Drive для создания периодических резервных копий ваших данных и их восстановления.</string>
+    <string name="faq_q3">Является ли Speye бесплатным?</string>
+    <string name="faq_a3">Speye полностью бесплатен и имеет открытый исходный код, но содержит рекламу. Вы можете совершить разовую покупку, чтобы навсегда отключить рекламу. Кроме того, вы можете получить версию без рекламы в F-Droid, но при этом потеряете возможность подключения к Google Drive.</string>
+
+    <string name="faq_security">ВОПРОСЫ БЕЗОПАСНОСТИ</string>
+    <string name="faq_q4">Сохраняет ли Speye мои данные?</string>
+    <string name="faq_a4">Speye сам по себе не хранит никаких удаленных данных и сохраняет ваши уведомления в локальном хранилище. Сервисы Google AdMob могут использовать данные вашего аккаунта для таргетированной рекламы, что не контролируется самим Speye.</string>
+    <string name="faq_q5">Как работает облачная синхронизация?</string>
+    <string name="faq_a5">По умолчанию все данные остаются на вашем устройстве. Если вы включите резервное копирование в Google Drive, зашифрованный файл .spy будет храниться в вашей личной папке данных приложения. Файл .spy содержит только сохраненные данные уведомлений, такие как тексты и вложения.</string>
+    <string name="faq_q6">Могут ли другие видеть мои сообщения?</string>
+    <string name="faq_a6">Speye не передает и никогда не будет передавать ваши личные данные. Однако если кто-то скопирует вашу резервную копию .spy, он сможет импортировать ее на свой телефон для просмотра вашей истории уведомлений.</string>
+
+    <string name="faq_misc">РАЗНОЕ</string>
+    <string name="faq_q7">Как включить режим отладки?</string>
+    <string name="faq_a7">На странице настроек нажмите на логотип Speye 5 раз.</string>
+    <string name="faq_q8">Как я могу сообщить об ошибке?</string>
+    <string name="faq_a8">В параметрах отладки включите опцию Включить логирование, а затем выполните желаемое действие (импорт/экспорт, вход в облако и т. д.). Теперь в логах активности должны быть видны любые ошибки. Скопируйте их и поделитесь со мной через пункт связи на странице настроек.</string>
+    <string name="faq_q9">Как я могу протестировать уведомления?</string>
+    <string name="faq_a9">В параметрах отладки включите опцию Показать кнопку теста и вернитесь на страницу истории. Теперь вы сможете использовать кнопку теста для отправки себе различных типов тестовых уведомлений.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</string>
+    <string name="privacy_data_collection">СБОР ДАННЫХ</string>
+    <string name="privacy_local_storage">Локальное хранилище</string>
+    <string name="privacy_local_storage_text">Speye разработан с учетом требований конфиденциальности. Все данные уведомлений, включая текст, историю и вложения изображений, хранятся локально на вашем устройстве в частной базе данных. Мы не храним и не передаем никакие конфиденциальные данные самостоятельно.</string>
+    <string name="privacy_third_party">Сторонние сервисы</string>
+    <string name="privacy_third_party_text">Хотя само приложение Speye не хранит и не передает конфиденциальные данные, версия для Google Play интегрирует сторонние сервисы, такие как AdMob и Google Play Services. Эти службы могут собирать определенную информацию, такую как идентификаторы устройств и статистику использования, которая может использоваться для персонализации рекламы и аналитики. Мы рекомендуем ознакомиться с Политикой конфиденциальности Google для получения более подробной информации.</string>
+    <string name="privacy_cloud">Облачное резервное копирование</string>
+    <string name="privacy_cloud_text">Если вы решите включить резервное копирование в Google Drive, Speye загрузит ваши данные в личную папку в вашей учетной записи Google Drive. Эти данные недоступны для разработчиков или любых других третьих лиц и остаются под вашим контролем.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Предоставьте следующие разрешения, чтобы начать использовать Speye</string>
+    <string name="perm_post_notif">Отправка уведомлений</string>
+    <string name="perm_post_notif_desc">Используется для системных оповещений и тестовых функций.</string>
+    <string name="perm_notif_access">Доступ к уведомлениям</string>
+    <string name="perm_notif_access_desc">Необходимо для перехвата и сохранения вашей истории уведомлений.</string>
+    <string name="perm_background">Фоновый режим без ограничений</string>
+    <string name="perm_background_desc">Гарантирует стабильную работу синхронизации.</string>
+    <string name="optional">ОПЦИОНАЛЬНО</string>
+    <string name="grant">РАЗРЕШИТЬ</string>
+    <string name="granted">РАЗРЕШЕНО</string>
+    <string name="start_app">Начать!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">Облачная синхронизация</string>
+    <string name="sync_success_title">Синхронизация завершена</string>
+    <string name="sync_success_msg">Ваша история сохранена в Google Drive.</string>
+    <string name="sync_failed_title">Синхронизация не удалась</string>
+    <string name="sync_failed_msg">Не удалось создать резервную копию в Google Drive. Повтор позже.</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">Формат вложений изображений</string>
+    <string name="image_quality_sub">Формат для сохранения изображений уведомлений</string>
+    <string name="format_png">PNG (Без потерь)</string>
+    <string name="format_jpeg_high">JPEG (Высокое качество ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (Сбалансированное ~80%)</string>
+    <string name="format_webp">WEBP (Компактный ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">Автоудаление истории</string>
+    <string name="retention_sub">Автоматически удалять старые уведомления</string>
+    <string name="retention_forever">Хранить всегда</string>
+    <string name="retention_30_days">Старше 30 дней</string>
+    <string name="retention_60_days">Старше 60 дней</string>
+    <string name="retention_90_days">Старше 90 дней</string>
+    <string name="retention_180_days">Старше 180 дней</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Специальные возможности</string>
+    <string name="accessibility_sub">Размер текста, высокая контрастность и экран</string>
+    <string name="accessibility_section_display">ЭКРАН И ТЕКСТ</string>
+    <string name="accessibility_section_vision">ЗРЕНИЕ И ДВИЖЕНИЕ</string>
+    <string name="text_size_title">Размер текста</string>
+    <string name="text_size_sub">Настройка масштаба шрифта во всем приложении</string>
+    <string name="text_size_default">По умолчанию (100%)</string>
+    <string name="text_size_large">Крупный (115%)</string>
+    <string name="text_size_xlarge">Очень крупный (130%)</string>
+    <string name="accessibility_preview_app">Пример приложения</string>
+    <string name="accessibility_preview_title">Пример уведомления</string>
+    <string name="accessibility_preview_desc">Этот предпросмотр показывает, как текст и контраст уведомлений будут выглядеть в Speye.</string>
+    <string name="high_contrast_title">Высокая контрастность</string>
+    <string name="high_contrast_sub">Повысить контрастность для удобства чтения</string>
+    <string name="reduce_motion_title">Уменьшение движения</string>
+    <string name="reduce_motion_sub">Минимизировать анимации и переходы интерфейса</string>
+</resources>

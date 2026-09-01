@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Cadangan Google Drive</string>
+    <string name="drive_backup_sub">Sinkronkan dengan akun cloud Anda</string>
+    <string name="drive_title">CADANGAN GOOGLE DRIVE</string>
+    <string name="backup_now">CADANGKAN SEKARANG</string>
+    <string name="connected_account">AKUN TERHUBUNG</string>
+    <string name="not_signed_in">Belum masuk</string>
+    <string name="drive_sync_active">Sinkronisasi Drive aktif</string>
+    <string name="sign_in_to_enable">Masuk untuk mengaktifkan cadangan cloud</string>
+    <string name="fetching_storage">Mengambil info penyimpanan…</string>
+    <string name="sign_in_google">MASUK DENGAN GOOGLE</string>
+    <string name="sign_out">KELUAR</string>
+    <string name="sync_settings">PENGATURAN SINKRONISASI</string>
+    <string name="auto_backup">Cadangan Otomatis</string>
+    <string name="auto_backup_sub">Sinkronkan data di latar belakang</string>
+    <string name="backup_frequency">Frekuensi Cadangan</string>
+    <string name="freq_daily">Harian</string>
+    <string name="freq_weekly">Mingguan</string>
+    <string name="freq_monthly">Bulanan</string>
+    <string name="freq_manual">Manual</string>
+    <string name="last_backup">Cadangan Terakhir</string>
+    <string name="never">Tidak pernah</string>
+    <string name="danger_zone">ZONA BAHAYA</string>
+    <string name="delete_cloud_saves">Hapus Cadangan Cloud</string>
+    <string name="delete_cloud_saves_sub">Hapus semua data Speye dari Drive</string>
+    <string name="delete_cloud_confirm">Hapus Data Cloud?</string>
+    <string name="delete_cloud_desc">Ini akan menghapus secara permanen semua cadangan dan lampiran Speye dari akun Google Drive Anda. Tindakan ini tidak dapat diurungkan.</string>
+    <string name="delete_all">HAPUS SEMUA</string>
+    <string name="uploading">MENGUNGGAH...</string>
+    <string name="merging">MENGGABUNGKAN...</string>
+    <string name="restore">PULIHKAN</string>
+    <string name="storage_info">%1$.1f GB bebas dari %2$.1f GB</string>
+
+    <!-- Billing -->
+    <string name="pro_active">VERSI PRO AKTIF</string>
+    <string name="remove_ads">HAPUS IKLAN (SEKALI BAYAR)</string>
+    <string name="restore_purchases">Pulihkan Pembelian</string>
+    <string name="restore_purchases_sub">Pulihkan status Pro yang telah dibeli sebelumnya</string>
+    <string name="purchases_restored">Pembelian Pro berhasil dipulihkan!</string>
+    <string name="no_purchases_found">Tidak ada pembelian aktif yang ditemukan untuk akun Google ini.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Kesalahan Jaringan: Periksa koneksi internet Anda.</string>
+    <string name="err_config">Kesalahan Konfigurasi: Periksa SHA-1 dan Nama Paket.</string>
+    <string name="err_12500">Gagal masuk (12500): Pastikan Google Play Services sudah diperbarui.</string>
+    <string name="err_cancelled">Masuk dibatalkan oleh pengguna.</string>
+</resources>

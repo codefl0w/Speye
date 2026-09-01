@@ -1,0 +1,169 @@
+<resources>
+    <string name="app_name">Speye</string>
+
+    <!-- Navigation -->
+    <string name="nav_history">History</string>
+    <string name="nav_apps">Apps</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Notification List -->
+    <string name="test">TEST</string>
+    <string name="test_cycle">Cycle Test (New/Edit/Del)</string>
+    <string name="test_long_text">Long Text Test</string>
+    <string name="test_image">Image Attachment Test</string>
+    <string name="no_notifications">No notifications saved yet</string>
+    <string name="no_title">No Title</string>
+    <string name="no_results">No matching notifications found</string>
+    <string name="delete_all">Delete All</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="copy_content">Copy Content</string>
+    <string name="go">Go</string>
+    <string name="delete">Delete</string>
+    <string name="close">CLOSE</string>
+    <string name="save_to_gallery">SAVE TO GALLERY</string>
+    <string name="saved_to_gallery_success">Saved to Gallery</string>
+    <string name="image_not_found">Image file not found</string>
+    <string name="image_load_failed">Failed to load image</string>
+    <string name="gallery_save_failed">Failed to save image</string>
+    <string name="confirm_deletion">Confirm Deletion</string>
+    <string name="confirm_delete_all">Are you sure you want to delete ALL notifications?</string>
+    <string name="confirm_delete_group">Delete all notifications for this app?</string>
+    <string name="confirm_delete_item">Delete this notification?</string>
+    <string name="cancel">CANCEL</string>
+    <string name="notification_count">%d notifications</string>
+    <string name="dismissed">DISMISSED</string>
+    <string name="edited">EDITED (%d)</string>
+    <string name="history">HISTORY</string>
+    <string name="search_placeholder">Search notifications...</string>
+
+    <!-- App List -->
+    <string name="app_list_description">Select apps to track or ignore notifications.</string>
+    <string name="filter_all">All</string>
+    <string name="filter_user">User</string>
+    <string name="filter_system">System</string>
+
+    <!-- Settings -->
+    <string name="debug_menu">DEBUG MENU</string>
+    <string name="disable_debug">Disable Debug Menu</string>
+    <string name="disable_debug_sub">Hide these settings</string>
+    <string name="show_test_button">Show Test Button</string>
+    <string name="show_test_button_sub">Toggle global test menu visibility</string>
+    <string name="enable_accordion">Enable Accordion Animation</string>
+    <string name="enable_accordion_sub">Use sliding animations for history groups</string>
+    <string name="enable_logging">Enable Logging</string>
+    <string name="enable_logging_sub">Track activity and errors</string>
+    <string name="view_logs">View Activity Logs</string>
+    <string name="view_logs_sub">See background logs and share</string>
+    <string name="data_management">DATA MANAGEMENT</string>
+    <string name="export_history">Export Notifications</string>
+    <string name="export_history_sub">Save history to .spy file</string>
+    <string name="import_history">Import Notifications</string>
+    <string name="import_history_sub">Restore history from .spy file</string>
+    <string name="about">ABOUT</string>
+    <string name="faq">FAQ</string>
+    <string name="faq_sub">Frequently asked questions</string>
+    <string name="contact_developer">Contact the Developer</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_sub">How we handle your data</string>
+    <string name="feedback_subject">Speye Feedback</string>
+    <string name="no_email_app">No email app found</string>
+    <string name="debug_mode_enabled">Debug Mode Enabled</string>
+    <string name="export_success">Export successful</string>
+    <string name="export_failed">Export failed</string>
+    <string name="import_success">Import successful</string>
+    <string name="import_failed">Import failed</string>
+    <string name="billing_product_not_found">Billing Error: Product not found</string>
+
+    <!-- FAQ -->
+    <string name="faq_general">GENERAL QUESTIONS</string>
+    <string name="faq_q1">What is Speye?</string>
+    <string name="faq_a1">Speye is a free app to keep track of your notifications and never lose them.</string>
+    <string name="faq_q2">How can I backup my notifications?</string>
+    <string name="faq_a2">You can export your notifications to a .spy file in the Settings page and import them back whenever you want, on any device. Alternatively, you can connect your Google Drive account to make periodic backups of your data and restore it.</string>
+    <string name="faq_q3">Is Speye free?</string>
+    <string name="faq_a3">Speye is completely free and to use and is open source, but contains ads. You can make a 1-time purchase to remove ads forever. Alternatively, you can get the ad-free version from F-Droid, but you\'ll lose the ability to connect to Google Drive.</string>
+
+    <string name="faq_security">SECURITY QUESTIONS</string>
+    <string name="faq_q4">Does Speye store my data?</string>
+    <string name="faq_a4">Speye does not store any remote data by itself and saves your notifications in your local storage. Google AdMob services may use your account data for targeted ads, which is not controlled by Speye itself.</string>
+    <string name="faq_q5">How does cloud sync work?</string>
+    <string name="faq_a5">By default, all data stays on your device. If you enable Google Drive Backup, an encrypted .spy file is stored in your private app data folder. A .spy file only contains saved notification data such as texts and attachments.</string>
+    <string name="faq_q6">Can others view my texts?</string>
+    <string name="faq_a6">Speye doesn\'t and will never share your personal data. However, if someone copies your .spy backup, they can import it on their phone to view your notification history.</string>
+
+    <string name="faq_misc">MISCELLANEOUS QUESTIONS</string>
+    <string name="faq_q7">How can I enable debugging mode?</string>
+    <string name="faq_a7">In the Settings page, click the Speye logo 5 times.</string>
+    <string name="faq_q8">How can I report a bug?</string>
+    <string name="faq_a8">From the debugging options, enable the Enable logging option, then proceed with your desired action (import/export, cloud login etc.). In the activity logs, any error should now be visible. Copy them and share them with me through the contact option on the Settings page.</string>
+    <string name="faq_q9">How can I test the notifications?</string>
+    <string name="faq_a9">From the debugging options, enable the Show Test Button option and return back to the History page. You will now be able to access the test button to send yourself different types of test notifications.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">PRIVACY POLICY</string>
+    <string name="privacy_data_collection">DATA COLLECTION</string>
+    <string name="privacy_local_storage">Local Storage</string>
+    <string name="privacy_local_storage_text">Speye is designed with privacy in mind. All notification data, including text, history, and image attachments, is stored locally on your device in a private database. We do not store or transmit any sensitive data by ourselves.</string>
+    <string name="privacy_third_party">Third-Party Services</string>
+    <string name="privacy_third_party_text">While Speye itself does not store or transmit any sensitive data, the Google Play version of the app integrates third-party services like AdMob and Google Play Services. These services may collect certain information, such as device identifiers and usage statistics, which could be used for ad personalization and analytics. We recommend reviewing Google\'s Privacy Policy for more details.</string>
+    <string name="privacy_cloud">Cloud Backup</string>
+    <string name="privacy_cloud_text">If you choose to enable Google Drive Backup, Speye uploads your data to a private folder in your personal Google Drive account. This data is not accessible by the developers or any other third parties, and stays under your control.</string>
+
+    <!-- Welcome -->
+    <string name="welcome_grant_permissions">Grant the following permissions to start using Speye</string>
+    <string name="perm_post_notif">Post Notifications</string>
+    <string name="perm_post_notif_desc">Used for system alerts and testing features.</string>
+    <string name="perm_notif_access">Notification Access</string>
+    <string name="perm_notif_access_desc">Essential to capture and save your notification history.</string>
+    <string name="perm_background">Unrestricted Background</string>
+    <string name="perm_background_desc">Ensures background sync and capture never stop.</string>
+    <string name="optional">OPTIONAL</string>
+    <string name="grant">GRANT</string>
+    <string name="granted">GRANTED</string>
+    <string name="start_app">Start!</string>
+
+    <!-- Cloud Sync Notifications -->
+    <string name="sync_channel_name">Cloud Sync</string>
+    <string name="sync_success_title">Sync Successful</string>
+    <string name="sync_success_msg">Your history has been backed up to Google Drive.</string>
+    <string name="sync_failed_title">Sync Failed</string>
+    <string name="sync_failed_msg">Could not back up to Google Drive. Will retry later.</string>
+
+    <!-- Settings: Data Management & Image Quality -->
+    <string name="image_quality_title">Image Attachment Format</string>
+    <string name="image_quality_sub">Format used to save notification images</string>
+    <string name="format_png">PNG (Lossless)</string>
+    <string name="format_jpeg_high">JPEG (High Quality ~90%)</string>
+    <string name="format_jpeg_medium">JPEG (Balanced ~80%)</string>
+    <string name="format_webp">WEBP (Compact ~75%)</string>
+
+    <!-- Settings: Auto-Delete Retention -->
+    <string name="retention_title">Auto-Delete History</string>
+    <string name="retention_sub">Automatically remove older notifications</string>
+    <string name="retention_forever">Keep Forever</string>
+    <string name="retention_30_days">Older than 30 days</string>
+    <string name="retention_60_days">Older than 60 days</string>
+    <string name="retention_90_days">Older than 90 days</string>
+    <string name="retention_180_days">Older than 180 days</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Accessibility</string>
+    <string name="accessibility_sub">Text sizing, high contrast, and display</string>
+    <string name="accessibility_section_display">DISPLAY &amp; TEXT</string>
+    <string name="accessibility_section_vision">VISION &amp; MOTION</string>
+    <string name="text_size_title">Text Size</string>
+    <string name="text_size_sub">Adjust font scale across the app</string>
+    <string name="text_size_default">Default (100%)</string>
+    <string name="text_size_large">Large (115%)</string>
+    <string name="text_size_xlarge">Extra Large (130%)</string>
+    <string name="accessibility_preview_app">Sample App</string>
+    <string name="accessibility_preview_title">Sample Notification</string>
+    <string name="accessibility_preview_desc">This preview illustrates how notification text and contrast will look across Speye.</string>
+    <string name="high_contrast_title">High Contrast</string>
+    <string name="high_contrast_sub">Increase contrast for improved readability</string>
+    <string name="reduce_motion_title">Reduce Motion</string>
+    <string name="reduce_motion_sub">Minimize animations and UI transitions</string>
+
+    <!-- Ads -->
+    <string name="ad_unit_id_banner">ca-app-pub-4736595764878736/1017915227</string>
+</resources>

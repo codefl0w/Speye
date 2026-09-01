@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Google Drive बैकअप</string>
+    <string name="drive_backup_sub">अपने क्लाउड खाते से सिंक करें</string>
+    <string name="drive_title">GOOGLE DRIVE बैकअप</string>
+    <string name="backup_now">अब बैकअप लें</string>
+    <string name="connected_account">कनेक्टेड खाता</string>
+    <string name="not_signed_in">साइन इन नहीं है</string>
+    <string name="drive_sync_active">Drive सिंक सक्रिय है</string>
+    <string name="sign_in_to_enable">क्लाउड बैकअप सक्षम करने के लिए साइन इन करें</string>
+    <string name="fetching_storage">स्टोरेज जानकारी प्राप्त की जा रही है…</string>
+    <string name="sign_in_google">GOOGLE से साइन इन करें</string>
+    <string name="sign_out">साइन आउट करें</string>
+    <string name="sync_settings">सिंक सेटिंग्स</string>
+    <string name="auto_backup">स्वचालित बैकअप</string>
+    <string name="auto_backup_sub">पृष्ठभूमि में डेटा सिंक करें</string>
+    <string name="backup_frequency">बैकअप आवृत्ति</string>
+    <string name="freq_daily">दैनिक</string>
+    <string name="freq_weekly">साप्ताहिक</string>
+    <string name="freq_monthly">मासिक</string>
+    <string name="freq_manual">मैन्युअल</string>
+    <string name="last_backup">अंतिम बैकअप</string>
+    <string name="never">कभी नहीं</string>
+    <string name="danger_zone">खतरे का क्षेत्र</string>
+    <string name="delete_cloud_saves">क्लाउड बैकअप हटाएं</string>
+    <string name="delete_cloud_saves_sub">Drive से सभी Speye डेटा मिटाएं</string>
+    <string name="delete_cloud_confirm">क्लाउड डेटा हटाएं?</string>
+    <string name="delete_cloud_desc">यह आपके Google Drive खाते से Speye से जुड़े सभी बैकअप और अनुलग्नकों को स्थायी रूप से हटा देगा। इसे पूर्ववत नहीं किया जा सकता।</string>
+    <string name="delete_all">सभी हटाएं</string>
+    <string name="uploading">अपलोड हो रहा है...</string>
+    <string name="merging">मर्ज हो रहा है...</string>
+    <string name="restore">पुनर्स्थापित करें</string>
+    <string name="storage_info">%1$.1f GB खाली / %2$.1f GB कुल</string>
+
+    <!-- Billing -->
+    <string name="pro_active">PRO संस्करण सक्रिय</string>
+    <string name="remove_ads">विज्ञापन हटाएं (एक बार भुगतान)</string>
+    <string name="restore_purchases">खरीदारी पुनर्स्थापित करें</string>
+    <string name="restore_purchases_sub">पहले से खरीदी गई Pro स्थिति पुनर्स्थापित करें</string>
+    <string name="purchases_restored">Pro खरीदारी सफलतापूर्वक पुनर्स्थापित की गई!</string>
+    <string name="no_purchases_found">इस Google खाते के लिए कोई सक्रिय खरीदारी नहीं मिली।</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">नेटवर्क त्रुटि: कृपया अपना इंटरनेट कनेक्शन जांचें।</string>
+    <string name="err_config">कॉन्फ़िगरेशन त्रुटि: SHA-1 और पैकेज नाम जांचें।</string>
+    <string name="err_12500">साइन-इन विफल (12500): Google Play Services अपडेटेड है या नहीं जांचें।</string>
+    <string name="err_cancelled">उपयोगकर्ता द्वारा साइन-इन रद्द किया गया।</string>
+</resources>

@@ -1,0 +1,48 @@
+<resources>
+    <!-- Google Drive -->
+    <string name="drive_backup">Резервное копирование Google Drive</string>
+    <string name="drive_backup_sub">Синхронизация с облачной учетной записью</string>
+    <string name="drive_title">РЕЗЕРВНОЕ КОПИРОВАНИЕ GOOGLE DRIVE</string>
+    <string name="backup_now">СОЗДАТЬ КОПИЮ</string>
+    <string name="connected_account">ПОДКЛЮЧЕННЫЙ АККАУНТ</string>
+    <string name="not_signed_in">Вход не выполнен</string>
+    <string name="drive_sync_active">Синхронизация с Drive активна</string>
+    <string name="sign_in_to_enable">Войдите, чтобы включить облачное копирование</string>
+    <string name="fetching_storage">Получение данных хранилища…</string>
+    <string name="sign_in_google">ВОЙТИ ЧЕРЕЗ GOOGLE</string>
+    <string name="sign_out">ВЫЙТИ</string>
+    <string name="sync_settings">НАСТРОЙКИ СИНХРОНИЗАЦИИ</string>
+    <string name="auto_backup">Автоматическое копирование</string>
+    <string name="auto_backup_sub">Синхронизировать данные в фоновом режиме</string>
+    <string name="backup_frequency">Частота копирования</string>
+    <string name="freq_daily">Ежедневно</string>
+    <string name="freq_weekly">Еженедельно</string>
+    <string name="freq_monthly">Ежемесячно</string>
+    <string name="freq_manual">Вручную</string>
+    <string name="last_backup">Последняя копия</string>
+    <string name="never">Никогда</string>
+    <string name="danger_zone">ОПАСНАЯ ЗОНА</string>
+    <string name="delete_cloud_saves">Удалить облачные данные</string>
+    <string name="delete_cloud_saves_sub">Очистить все данные Speye из Drive</string>
+    <string name="delete_cloud_confirm">Удалить облачные данные?</string>
+    <string name="delete_cloud_desc">Это навсегда удалит все резервные копии и вложения, связанные с Speye, из вашего аккаунта Google Drive. Это действие невозможно отменить.</string>
+    <string name="delete_all">УДАЛИТЬ ВСЕ</string>
+    <string name="uploading">ЗАГРУЗКА...</string>
+    <string name="merging">СЛИЯНИЕ...</string>
+    <string name="restore">ВОССТАНОВИТЬ</string>
+    <string name="storage_info">%1$.1f ГБ свободно из %2$.1f ГБ</string>
+
+    <!-- Billing -->
+    <string name="pro_active">PRO-ВЕРСИЯ АКТИВНА</string>
+    <string name="remove_ads">УДАЛИТЬ РЕКЛАМУ (РАЗОВО)</string>
+    <string name="restore_purchases">Восстановить покупки</string>
+    <string name="restore_purchases_sub">Восстановить ранее приобретенный Pro-статус</string>
+    <string name="purchases_restored">Покупка Pro успешно восстановлена!</string>
+    <string name="no_purchases_found">Активных покупок для этого аккаунта Google не найдено.</string>
+
+    <!-- Error Messages -->
+    <string name="err_network">Ошибка сети: проверьте соединение.</string>
+    <string name="err_config">Ошибка конфигурации: проверьте SHA-1 и имя пакета.</string>
+    <string name="err_12500">Ошибка входа (12500): проверьте сервисы Google Play.</string>
+    <string name="err_cancelled">Вход отменен пользователем.</string>
+</resources>
