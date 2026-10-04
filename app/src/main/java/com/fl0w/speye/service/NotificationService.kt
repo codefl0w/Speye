@@ -5,7 +5,9 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
+import android.net.Uri
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -67,6 +69,17 @@ class NotificationService : NotificationListenerService() {
             // Portuguese
             "conteúdo oculto"
         )
+
+        fun areTitlesRelated(t1: String?, t2: String?): Boolean {
+            if (t1 == null || t2 == null) return true
+            val s1 = t1.trim().lowercase()
+            val s2 = t2.trim().lowercase()
+            if (s1 == s2) return true
+            if (s1.startsWith(s2) || s2.startsWith(s1)) return true
+            val base1 = s1.replace(Regex("""\s*[\(\[:].*?\d+.*?[\)\]]?$"""), "").trim()
+            val base2 = s2.replace(Regex("""\s*[\(\[:].*?\d+.*?[\)\]]?$"""), "").trim()
+            return base1.isNotEmpty() && base1 == base2
+        }
     }
 
     private var currentImageSetting = com.fl0w.speye.data.settings.ImageFormatSetting.PNG
@@ -120,6 +133,12 @@ class NotificationService : NotificationListenerService() {
         // #6: Fast in-memory check instead of DB query
         if (ignoredPackages.contains(packageName)) return
 
+        // Skip group summary container notifications (child notifications hold actual conversation data)
+        if ((notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) {
+            SpeyeLogger.d("NotificationService", "Ignored group summary: $packageName ($sbnKey)")
+            return
+        }
+
         // --- IMMEDIATE DATA EXTRACTION (Main Thread) ---
         // We must extract strings/images here because Android may clear the extras bundle 
         // once this method returns.
@@ -127,22 +146,21 @@ class NotificationService : NotificationListenerService() {
         // #10: Check visibility flag as primary redaction signal
         val isSecretVisibility = notification.visibility == Notification.VISIBILITY_SECRET
 
+        val messages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            extras.getParcelableArray(Notification.EXTRA_MESSAGES, android.os.Parcelable::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+        }
+        val lastMessage = messages?.lastOrNull() as? Bundle
+
         var rawText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: extras.getCharSequence(Notification.EXTRA_TEXT)
         
         // Handle MessagingStyle
         if (rawText == null || isRedacted(rawText, isSecretVisibility)) {
-            val messages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                extras.getParcelableArray(Notification.EXTRA_MESSAGES, android.os.Parcelable::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                extras.getParcelableArray(Notification.EXTRA_MESSAGES)
-            }
-            if (messages != null && messages.isNotEmpty()) {
-                val lastMessage = messages.last() as? Bundle
-                val msgText = lastMessage?.getCharSequence("text")
-                if (msgText != null) {
-                    rawText = msgText
-                }
+            val msgText = lastMessage?.getCharSequence("text")
+            if (msgText != null) {
+                rawText = msgText
             }
         }
 
@@ -162,8 +180,21 @@ class NotificationService : NotificationListenerService() {
             rawText = notification.tickerText
         }
 
-        // #7: Prefer EXTRA_TITLE_BIG for BigTextStyle/BigPictureStyle notifications
-        val finalTitle = extras.getString(Notification.EXTRA_TITLE_BIG) ?: extras.getString(Notification.EXTRA_TITLE)
+        // Robust title extraction: CharSequence support + MessagingStyle conversation/sender fallback
+        val rawTitle = extras.getCharSequence(Notification.EXTRA_TITLE_BIG)
+            ?: extras.getCharSequence(Notification.EXTRA_TITLE)
+            ?: extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)
+
+        val senderFromMessage = lastMessage?.getCharSequence("sender")?.toString()
+            ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                @Suppress("DEPRECATION")
+                (lastMessage?.getParcelable("sender_person") as? android.app.Person)?.name?.toString()
+            } else null
+
+        val finalTitle = (rawTitle?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            ?: senderFromMessage?.trim()?.takeIf { it.isNotEmpty() }
+            ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString()?.trim()?.takeIf { it.isNotEmpty() })
+
         val finalTimestamp = sbn.postTime
         val finalIntentUri = extractIntentUri(notification.contentIntent)
         
@@ -171,30 +202,8 @@ class NotificationService : NotificationListenerService() {
             HtmlCompat.toHtml(android.text.SpannableString.valueOf(it), HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE) 
         })?.toString()
 
-        // #5 & #11: Comprehensive picture extraction (EXTRA_PICTURE, MessagingStyle URIs, Android 12+ pictureIcon, LargeIcon)
-        @Suppress("DEPRECATION")
-        val rawLargeIcon = extras.get(Notification.EXTRA_LARGE_ICON)
-        val largeIconBitmap = when (rawLargeIcon) {
-            is Bitmap -> scaleBitmapIfNeeded(rawLargeIcon)
-            is Icon -> rawLargeIcon.loadDrawable(this)?.toBitmap()?.let { scaleBitmapIfNeeded(it) }
-            else -> notification.getLargeIcon()?.loadDrawable(this)?.toBitmap()?.let { scaleBitmapIfNeeded(it) }
-        }
-
-        val rawPicture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            extras.getParcelable(Notification.EXTRA_PICTURE, Bitmap::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            extras.getParcelable<Bitmap>(Notification.EXTRA_PICTURE)
-        }
-
-        @Suppress("DEPRECATION")
-        val pictureIcon = (extras.get("android.pictureIcon") as? Icon)?.loadDrawable(this)?.toBitmap()?.let { scaleBitmapIfNeeded(it) }
-        val messagingStylePicture = extractMessagingStylePicture(extras)
-
-        val picture = rawPicture?.let { scaleBitmapIfNeeded(it) } 
-            ?: pictureIcon 
-            ?: messagingStylePicture 
-            ?: largeIconBitmap
+        // #5 & #11: Lazy picture extraction (avoids simultaneous decode of multiple bitmap sources)
+        val picture = extractNotificationPicture(notification, extras)
 
         SpeyeLogger.d("NotificationService", "Intercepted (Immediate): $packageName - $finalTitle (Picture: ${picture != null})")
 
@@ -211,12 +220,13 @@ class NotificationService : NotificationListenerService() {
             
             val imagePath = if (picture != null) saveBitmap(picture, sbnKey) else null
 
-            val existing = database.notificationDao().getNotificationBySbnKey(sbnKey)
-            if (existing != null) {
+            val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
+            if (existing != null && areTitlesRelated(existing.title, finalTitle)) {
+                val hasNewTitle = finalTitle != null && finalTitle != existing.title
                 val hasNewText = existing.text != finalHtmlText
                 val hasNewImage = imagePath != null && imagePath != existing.imagePath
 
-                if (hasNewText || hasNewImage) {
+                if (hasNewTitle || hasNewText || hasNewImage) {
                     if (hasNewText && existing.text != null) {
                         database.notificationDao().insertHistory(
                             NotificationHistoryEntity(
@@ -236,6 +246,7 @@ class NotificationService : NotificationListenerService() {
                     }
                     database.notificationDao().update(
                         existing.copy(
+                            title = finalTitle ?: existing.title,
                             text = finalHtmlText ?: existing.text,
                             timestamp = finalTimestamp,
                             isSystemRemoved = false,
@@ -245,6 +256,9 @@ class NotificationService : NotificationListenerService() {
                     )
                 }
             } else {
+                if (existing != null) {
+                    database.notificationDao().markAsSystemRemovedById(existing.id)
+                }
                 database.notificationDao().insert(
                     NotificationEntity(
                         sbnKey = sbnKey,
@@ -282,16 +296,54 @@ class NotificationService : NotificationListenerService() {
         return REDACTION_SET.contains(s)
     }
 
-    // #5: Scale down large bitmaps to prevent ANR on main/binder thread
+    // Lazy picture extraction: stops at first available image source to minimize RAM allocation
+    private fun extractNotificationPicture(notification: Notification, extras: Bundle): Bitmap? {
+        // Priority 1: Direct EXTRA_PICTURE (BigPictureStyle)
+        val rawPicture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            extras.getParcelable(Notification.EXTRA_PICTURE, Bitmap::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            extras.getParcelable<Bitmap>(Notification.EXTRA_PICTURE)
+        }
+        if (rawPicture != null) {
+            return scaleBitmapIfNeeded(rawPicture)
+        }
+
+        // Priority 2: android.pictureIcon (Android 12+ BigPictureStyle)
+        @Suppress("DEPRECATION")
+        val pictureIcon = (extras.get("android.pictureIcon") as? Icon)?.loadDrawable(this)?.toBitmap()
+        if (pictureIcon != null) {
+            return scaleBitmapIfNeeded(pictureIcon)
+        }
+
+        // Priority 3: MessagingStyle message attachments (WhatsApp, Telegram, etc.)
+        val messagingPicture = extractMessagingStylePicture(extras)
+        if (messagingPicture != null) {
+            return messagingPicture
+        }
+
+        // Priority 4: Large Icon fallback
+        @Suppress("DEPRECATION")
+        val rawLargeIcon = extras.get(Notification.EXTRA_LARGE_ICON)
+        return when (rawLargeIcon) {
+            is Bitmap -> scaleBitmapIfNeeded(rawLargeIcon)
+            is Icon -> rawLargeIcon.loadDrawable(this)?.toBitmap()?.let { scaleBitmapIfNeeded(it) }
+            else -> notification.getLargeIcon()?.loadDrawable(this)?.toBitmap()?.let { scaleBitmapIfNeeded(it) }
+        }
+    }
+
+    // #5: Scale down large bitmaps to prevent ANR and memory pressure
     private fun scaleBitmapIfNeeded(bitmap: Bitmap): Bitmap {
         val w = bitmap.width
         val h = bitmap.height
         if (w <= MAX_BITMAP_DIMENSION && h <= MAX_BITMAP_DIMENSION) return bitmap
         val scale = MAX_BITMAP_DIMENSION.toFloat() / maxOf(w, h)
-        return Bitmap.createScaledBitmap(bitmap, (w * scale).toInt(), (h * scale).toInt(), true)
+        val targetW = (w * scale).toInt().coerceAtLeast(1)
+        val targetH = (h * scale).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(bitmap, targetW, targetH, true)
     }
 
-    // Inspect MessagingStyle message bundles for attached image URIs (WhatsApp, Telegram, Signal, Messages)
+    // Inspect MessagingStyle message bundles for attached image URIs
     private fun extractMessagingStylePicture(extras: Bundle): Bitmap? {
         val messages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             extras.getParcelableArray(Notification.EXTRA_MESSAGES, android.os.Parcelable::class.java)
@@ -304,24 +356,54 @@ class NotificationService : NotificationListenerService() {
             val type = msg.getString("type")
             if (type != null && type.startsWith("image/")) {
                 val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    msg.getParcelable("uri", android.net.Uri::class.java)
+                    msg.getParcelable("uri", Uri::class.java)
                 } else {
                     @Suppress("DEPRECATION")
-                    msg.getParcelable<android.net.Uri>("uri")
+                    msg.getParcelable<Uri>("uri")
                 }
                 if (uri != null) {
-                    try {
-                        contentResolver.openInputStream(uri)?.use { stream ->
-                            val bitmap = android.graphics.BitmapFactory.decodeStream(stream)
-                            if (bitmap != null) return scaleBitmapIfNeeded(bitmap)
-                        }
-                    } catch (e: Exception) {
-                        SpeyeLogger.e("NotificationService", "Failed to load image from message URI: $uri", e)
-                    }
+                    val sampled = decodeSampledBitmapFromUri(uri, MAX_BITMAP_DIMENSION, MAX_BITMAP_DIMENSION)
+                    if (sampled != null) return sampled
                 }
             }
         }
         return null
+    }
+
+    // Decode message attachments safely with inSampleSize and RGB_565 to prevent OOM
+    private fun decodeSampledBitmapFromUri(uri: Uri, reqWidth: Int, reqHeight: Int): Bitmap? {
+        return try {
+            val boundsOptions = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, boundsOptions)
+            }
+            if (boundsOptions.outWidth <= 0 || boundsOptions.outHeight <= 0) return null
+
+            var inSampleSize = 1
+            val height = boundsOptions.outHeight
+            val width = boundsOptions.outWidth
+            if (height > reqHeight || width > reqWidth) {
+                val halfHeight = height / 2
+                val halfWidth = width / 2
+                while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                    inSampleSize *= 2
+                }
+            }
+
+            val decodeOptions = BitmapFactory.Options().apply {
+                this.inSampleSize = inSampleSize
+                inPreferredConfig = Bitmap.Config.RGB_565
+            }
+            contentResolver.openInputStream(uri)?.use { stream ->
+                val decoded = BitmapFactory.decodeStream(stream, null, decodeOptions)
+                decoded?.let { scaleBitmapIfNeeded(it) }
+            }
+        } catch (e: Exception) {
+            SpeyeLogger.e("NotificationService", "Failed to decode sampled image from URI: $uri", e)
+            null
+        }
     }
 
     private fun saveBitmap(bitmap: Bitmap, key: String): String? {
@@ -353,6 +435,7 @@ class NotificationService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
+        if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
         val sbnKey = sbn.key
         SpeyeLogger.d("NotificationService", "System removed: $sbnKey")
         serviceScope.launch {

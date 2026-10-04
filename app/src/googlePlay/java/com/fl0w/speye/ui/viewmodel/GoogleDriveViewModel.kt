@@ -19,6 +19,7 @@ class GoogleDriveViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _account = DriveAuthManager.account
     val account: StateFlow<GoogleSignInAccount?> = _account
+    val restoredEmail: StateFlow<String?> = DriveAuthManager.restoredEmail
 
     private val _isBackingUp = MutableStateFlow(false)
     val isBackingUp: StateFlow<Boolean> = _isBackingUp
@@ -34,6 +35,13 @@ class GoogleDriveViewModel(application: Application) : AndroidViewModel(applicat
     val lastBackupTime = cloudManager.lastBackupTime.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     init {
+        viewModelScope.launch {
+            DriveAuthManager.restoredEmail.collect { email ->
+                if (email != null && _storageInfo.value == null) {
+                    refreshStorageInfo()
+                }
+            }
+        }
         refreshStorageInfo()
         updateSyncSchedule()
     }
@@ -52,7 +60,7 @@ class GoogleDriveViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun handleSignInResult(account: GoogleSignInAccount?) {
-        DriveAuthManager.handleSignInResult(account)
+        DriveAuthManager.handleSignInResult(account, getApplication())
         if (account != null) refreshStorageInfo()
     }
 

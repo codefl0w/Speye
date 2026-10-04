@@ -45,4 +45,27 @@ class AppSettingsAndRetentionTest {
             assertTrue(scale <= 1.5f)
         }
     }
+
+    @Test
+    fun areTitlesRelated_samePersonWithCount_returnsTrue() {
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice", "Alice"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice", "Alice (2)"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice (2)", "Alice (3)"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice", "Alice: 2 messages"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice [2]", "Alice [3]"))
+    }
+
+    @Test
+    fun areTitlesRelated_differentSenders_returnsFalse() {
+        assertFalse(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice", "Bob"))
+        assertFalse(com.fl0w.speye.service.NotificationService.areTitlesRelated("Person A", "Person B"))
+        assertFalse(com.fl0w.speye.service.NotificationService.areTitlesRelated("John Smith", "Jane Doe"))
+    }
+
+    @Test
+    fun areTitlesRelated_nullHandling_returnsTrue() {
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated(null, "Alice"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice", null))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated(null, null))
+    }
 }

@@ -41,6 +41,9 @@ import java.util.Locale
 @Composable
 fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = viewModel()) {
     val account by viewModel.account.collectAsState()
+    val restoredEmail by viewModel.restoredEmail.collectAsState()
+    val currentEmail = account?.email ?: restoredEmail
+    val isConnected = currentEmail != null
     val isBackingUp by viewModel.isBackingUp.collectAsState()
     val isRestoring by viewModel.isRestoring.collectAsState()
     val storageInfo by viewModel.storageInfo.collectAsState()
@@ -133,8 +136,8 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isBusy || account == null) Color.Gray else SpeyeTheme.colors.primary)
-                    .clickable(enabled = !isBusy && account != null) { viewModel.backupNow() }
+                    .background(if (isBusy || !isConnected) Color.Gray else SpeyeTheme.colors.primary)
+                    .clickable(enabled = !isBusy && isConnected) { viewModel.backupNow() }
                     .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -159,8 +162,8 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isBusy || account == null) Color.Gray else SpeyeTheme.colors.secondary)
-                    .clickable(enabled = !isBusy && account != null) { viewModel.restoreFromCloud() }
+                    .background(if (isBusy || !isConnected) Color.Gray else SpeyeTheme.colors.secondary)
+                    .clickable(enabled = !isBusy && isConnected) { viewModel.restoreFromCloud() }
                     .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -201,7 +204,7 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = account?.email ?: stringResource(R.string.not_signed_in),
+                        text = currentEmail ?: stringResource(R.string.not_signed_in),
                         color = SpeyeTheme.colors.textPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -211,7 +214,7 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                         val free = (limit - usage) / (1024 * 1024 * 1024f)
                         val total = limit / (1024 * 1024 * 1024f)
                         stringResource(R.string.storage_info, free, total)
-                    } ?: if (account != null) stringResource(R.string.fetching_storage) else stringResource(R.string.sign_in_to_enable)
+                    } ?: if (isConnected) stringResource(R.string.fetching_storage) else stringResource(R.string.sign_in_to_enable)
 
                     Text(
                         text = storageText,
@@ -219,7 +222,7 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                         fontSize = 12.sp
                     )
 
-                    if (account != null && storageInfo != null) {
+                    if (isConnected && storageInfo != null) {
                         val (limit, usage) = storageInfo!!
                         val progress = if (limit > 0) usage.toFloat() / limit else 0f
                         Spacer(modifier = Modifier.height(8.dp))
@@ -236,7 +239,7 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { 
-                        if (account == null) {
+                        if (!isConnected) {
                             SpeyeLogger.d("GoogleDriveScreen", "Requesting sign in...")
                             signInLauncher.launch(DriveAuthManager.getSignInIntent(context))
                         } else {
@@ -247,7 +250,7 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    if (account == null) stringResource(R.string.sign_in_google) else stringResource(R.string.sign_out),
+                    if (!isConnected) stringResource(R.string.sign_in_google) else stringResource(R.string.sign_out),
                     color = SpeyeTheme.colors.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Black

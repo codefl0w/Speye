@@ -45,8 +45,14 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE sbnKey = :key LIMIT 1")
     suspend fun getNotificationBySbnKey(key: String): NotificationEntity?
 
-    @Query("UPDATE notifications SET isSystemRemoved = 1 WHERE sbnKey = :key")
+    @Query("SELECT * FROM notifications WHERE sbnKey = :key AND isSystemRemoved = 0 ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getActiveNotificationBySbnKey(key: String): NotificationEntity?
+
+    @Query("UPDATE notifications SET isSystemRemoved = 1 WHERE sbnKey = :key AND isSystemRemoved = 0")
     suspend fun markAsSystemRemoved(key: String)
+
+    @Query("UPDATE notifications SET isSystemRemoved = 1 WHERE id = :id")
+    suspend fun markAsSystemRemovedById(id: Long)
 
     @Query("SELECT imagePath FROM notifications WHERE id = :id AND imagePath IS NOT NULL")
     suspend fun getImagePathById(id: Long): String?

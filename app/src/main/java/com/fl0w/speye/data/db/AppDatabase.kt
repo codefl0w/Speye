@@ -8,7 +8,7 @@ import com.fl0w.speye.data.model.IgnoredAppEntity
 import com.fl0w.speye.data.model.NotificationEntity
 import com.fl0w.speye.data.model.NotificationHistoryEntity
 
-@Database(entities = [NotificationEntity::class, NotificationHistoryEntity::class, IgnoredAppEntity::class], version = 6, exportSchema = false)
+@Database(entities = [NotificationEntity::class, NotificationHistoryEntity::class, IgnoredAppEntity::class], version = 6, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun notificationDao(): NotificationDao
     abstract fun ignoredAppDao(): IgnoredAppDao
@@ -24,7 +24,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "speye_database"
                 )
-                .fallbackToDestructiveMigration(true)
                 .fallbackToDestructiveMigrationOnDowngrade(true)
                 .build()
                 INSTANCE = instance
