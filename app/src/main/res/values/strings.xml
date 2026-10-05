@@ -23,17 +23,24 @@
     <string name="save_to_gallery">SAVE TO GALLERY</string>
     <string name="saved_to_gallery_success">Saved to Gallery</string>
     <string name="image_not_found">Image file not found</string>
+    <string name="image_not_found_on_device">Image not found on device.</string>
     <string name="image_load_failed">Failed to load image</string>
     <string name="gallery_save_failed">Failed to save image</string>
     <string name="confirm_deletion">Confirm Deletion</string>
     <string name="confirm_delete_all">Are you sure you want to delete ALL notifications?</string>
     <string name="confirm_delete_group">Delete all notifications for this app?</string>
     <string name="confirm_delete_item">Delete this notification?</string>
+    <string name="confirm_delete_history_item">Delete this edit record?</string>
     <string name="cancel">CANCEL</string>
     <string name="notification_count">%d notifications</string>
     <string name="dismissed">DISMISSED</string>
     <string name="edited">EDITED (%d)</string>
     <string name="history">HISTORY</string>
+    <string name="content_copied">Copied to clipboard</string>
+    <string name="copy_history">Copy edit</string>
+    <string name="delete_history_item">Delete edit</string>
+    <string name="show_more_history">Show more (+%d)</string>
+    <string name="show_more_messages">Show more messages (+%d)</string>
     <string name="search_placeholder">Search notifications...</string>
 
     <!-- App List -->

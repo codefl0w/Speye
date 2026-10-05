@@ -4,8 +4,6 @@
         <!-- Include database and preferences in cloud backup -->
         <include domain="database" path="." />
         <include domain="sharedpref" path="." />
-        <!-- Exclude cached notification images to stay within 25MB cloud quota -->
-        <exclude domain="file" path="." />
     </cloud-backup>
     <device-transfer>
         <!-- Full migration for direct device-to-device transfer -->

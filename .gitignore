@@ -17,3 +17,6 @@ local.properties
 app/googlePlay/release/
 .artifacts/
 .kotlin/
+
+# Internal stuff
+/docs

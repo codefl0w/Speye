@@ -23,6 +23,7 @@
     <string name="save_to_gallery">गैलरी में सहेजें</string>
     <string name="saved_to_gallery_success">गैलरी में सहेजा गया</string>
     <string name="image_not_found">छवि फ़ाइल नहीं मिली</string>
+    <string name="image_not_found_on_device">डिवाइस पर छवि नहीं मिली।</string>
     <string name="image_load_failed">छवि लोड करने में विफल</string>
     <string name="gallery_save_failed">छवि सहेजने में विफल</string>
     <string name="confirm_deletion">हटाने की पुष्टि करें</string>

@@ -14,10 +14,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -40,11 +43,13 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.content.Intent
+import java.io.File
 import coil.compose.AsyncImage
 import com.fl0w.speye.R
 import com.fl0w.speye.SpeyeTheme
 import com.fl0w.speye.ui.SpeyeIcons
 import com.fl0w.speye.data.model.NotificationEntity
+import com.fl0w.speye.data.model.NotificationHistoryEntity
 import com.fl0w.speye.data.model.NotificationWithHistory
 import com.fl0w.speye.ui.viewmodel.NotificationViewModel
 import com.fl0w.speye.utils.HtmlUtils
@@ -72,6 +77,12 @@ fun NotificationListScreen(
     var showTestMenu by remember { mutableStateOf(false) }
     var viewerImagePath by remember { mutableStateOf<String?>(null) }
     var isSearchMode by remember { mutableStateOf(false) }
+    val groupLimits = rememberSaveable(
+        saver = Saver(
+            save = { it.toMap() },
+            restore = { mutableStateMapOf<String, Int>().apply { putAll(it) } }
+        )
+    ) { mutableStateMapOf<String, Int>() }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Custom Top Bar
@@ -319,6 +330,10 @@ fun NotificationListScreen(
                             }
                         }
 
+                        val currentLimit = groupLimits.getOrDefault(packageName, 100)
+                        val visibleNotifications = notifications.take(currentLimit)
+                        val remainingNotifications = notifications.size - visibleNotifications.size
+
                         // Hybrid Rendering: Use AnimatedVisibility if enabled in Debug Menu and reduceMotion is false,
                         // otherwise use raw items() for maximum performance and motion reduction.
                         if (isAccordionEnabled && !reduceMotion) {
@@ -329,21 +344,39 @@ fun NotificationListScreen(
                                     exit = shrinkVertically() + fadeOut()
                                 ) {
                                     Column {
-                                        notifications.forEach { item ->
-                                            NotificationItemWrapper(
-                                                item = item,
-                                                context = context,
-                                                onImageClick = { path -> viewerImagePath = path },
-                                                onDeleteClick = { deleteTarget = DeleteTarget.Item(item.notification.id) },
-                                                onIgnoreApp = { viewModel.ignoreApp(item.notification.packageName) }
-                                            )
+                                        visibleNotifications.forEach { item ->
+                                            key(item.notification.id) {
+                                                NotificationItemWrapper(
+                                                    item = item,
+                                                    context = context,
+                                                    onImageClick = { path -> viewerImagePath = path },
+                                                    onDeleteClick = { deleteTarget = DeleteTarget.Item(item.notification.id) },
+                                                    onDeleteHistoryClick = { historyId -> deleteTarget = DeleteTarget.HistoryItem(historyId) },
+                                                    onIgnoreApp = { viewModel.ignoreApp(item.notification.packageName) }
+                                                )
+                                            }
+                                        }
+                                        if (remainingNotifications > 0) {
+                                            TextButton(
+                                                onClick = { groupLimits[packageName] = currentLimit + 100 },
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.show_more_messages, minOf(100, remainingNotifications)),
+                                                    color = SpeyeTheme.colors.primary,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 12.sp
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         } else if (isExpanded) {
                             items(
-                                items = notifications,
+                                items = visibleNotifications,
                                 key = { it.notification.id }
                             ) { item ->
                                 Box(modifier = if (reduceMotion) Modifier else Modifier.animateItem()) {
@@ -352,8 +385,26 @@ fun NotificationListScreen(
                                         context = context,
                                         onImageClick = { path -> viewerImagePath = path },
                                         onDeleteClick = { deleteTarget = DeleteTarget.Item(item.notification.id) },
+                                        onDeleteHistoryClick = { historyId -> deleteTarget = DeleteTarget.HistoryItem(historyId) },
                                         onIgnoreApp = { viewModel.ignoreApp(item.notification.packageName) }
                                     )
+                                }
+                            }
+                            if (remainingNotifications > 0) {
+                                item(key = "more_$packageName") {
+                                    TextButton(
+                                        onClick = { groupLimits[packageName] = currentLimit + 100 },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.show_more_messages, minOf(100, remainingNotifications)),
+                                            color = SpeyeTheme.colors.primary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -374,6 +425,7 @@ fun NotificationListScreen(
                     is DeleteTarget.All -> viewModel.deleteAll()
                     is DeleteTarget.Group -> viewModel.deleteGroup(target.packageName)
                     is DeleteTarget.Item -> viewModel.deleteNotification(target.id)
+                    is DeleteTarget.HistoryItem -> viewModel.deleteHistoryItem(target.historyId)
                 }
                 deleteTarget = null
             }
@@ -395,17 +447,18 @@ fun NotificationItemWrapper(
     context: Context,
     onImageClick: (String) -> Unit,
     onDeleteClick: () -> Unit,
+    onDeleteHistoryClick: (Long) -> Unit,
     onIgnoreApp: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    @Suppress("DEPRECATION")
-    val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
 
     Box {
         NotificationItem(
             item = item,
+            context = context,
             onLongPress = { showMenu = true },
-            onImageClick = onImageClick
+            onImageClick = onImageClick,
+            onDeleteHistoryItem = onDeleteHistoryClick
         )
 
         MaterialTheme(
@@ -428,8 +481,10 @@ fun NotificationItemWrapper(
                     text = { Text(stringResource(R.string.copy_content), color = SpeyeTheme.colors.textPrimary) },
                     onClick = {
                         val rawText = item.notification.text ?: ""
-                        val plainText = HtmlCompat.fromHtml(rawText, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().trim()
-                        clipboardManager.setText(AnnotatedString(plainText))
+                        HtmlUtils.copyRichText(context, item.notification.appName ?: "Speye", rawText)
+                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                            android.widget.Toast.makeText(context, R.string.content_copied, android.widget.Toast.LENGTH_SHORT).show()
+                        }
                         showMenu = false
                     },
                     leadingIcon = { Icon(Icons.Default.ContentCopy, null, tint = SpeyeTheme.colors.primary) }
@@ -469,6 +524,9 @@ fun ImageViewerDialog(
     onDismiss: () -> Unit,
     onExport: () -> Unit
 ) {
+    val fileExists = remember(imagePath) {
+        File(imagePath).let { it.exists() && it.isFile }
+    }
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
@@ -481,14 +539,49 @@ fun ImageViewerDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                AsyncImage(
-                    model = imagePath,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(16.dp)
-                )
+                if (fileExists) {
+                    AsyncImage(
+                        model = imagePath,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(16.dp)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.Gray.copy(alpha = 0.2f))
+                                .padding(16.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.BrokenImage,
+                                contentDescription = null,
+                                tint = Color.Gray,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.image_not_found_on_device),
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
                 
                 Row(
                     modifier = Modifier
@@ -501,17 +594,19 @@ fun ImageViewerDialog(
                         Text(stringResource(R.string.close), color = Color.White, fontWeight = FontWeight.Bold)
                     }
                     
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(SpeyeTheme.colors.primary)
-                            .clickable { onExport() }
-                            .padding(horizontal = 20.dp, vertical = 10.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Download, null, tint = Color.Black, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.save_to_gallery), color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                    if (fileExists) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(SpeyeTheme.colors.primary)
+                                .clickable { onExport() }
+                                .padding(horizontal = 20.dp, vertical = 10.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Download, null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.save_to_gallery), color = Color.Black, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                            }
                         }
                     }
                 }
@@ -546,6 +641,7 @@ fun CustomDeleteDialog(
                         is DeleteTarget.All -> stringResource(R.string.confirm_delete_all)
                         is DeleteTarget.Group -> stringResource(R.string.confirm_delete_group)
                         is DeleteTarget.Item -> stringResource(R.string.confirm_delete_item)
+                        is DeleteTarget.HistoryItem -> stringResource(R.string.confirm_delete_history_item)
                     },
                     color = SpeyeTheme.colors.textSecondary,
                     fontSize = 14.sp
@@ -588,6 +684,7 @@ sealed class DeleteTarget {
     object All : DeleteTarget()
     data class Group(val packageName: String) : DeleteTarget()
     data class Item(val id: Long) : DeleteTarget()
+    data class HistoryItem(val historyId: Long) : DeleteTarget()
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -692,12 +789,14 @@ fun launchNotificationIntent(context: Context, notification: NotificationEntity)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NotificationItem(
-    item: NotificationWithHistory, 
+    item: NotificationWithHistory,
+    context: Context,
     onLongPress: () -> Unit,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onDeleteHistoryItem: (Long) -> Unit
 ) {
     val notification = item.notification
-    var isHistoryExpanded by remember { mutableStateOf(false) }
+    var isHistoryExpanded by rememberSaveable(notification.id) { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -768,87 +867,206 @@ fun NotificationItem(
             HtmlUtils.fromHtmlToAnnotatedString(contentText)
         }
 
-        Text(
-            text = annotatedText,
-            fontSize = 14.sp,
-            color = if (item.history.isNotEmpty()) SpeyeTheme.colors.secondary else SpeyeTheme.colors.textSecondary
-        )
+        SelectionContainer {
+            Text(
+                text = annotatedText,
+                fontSize = 14.sp,
+                color = if (item.history.isNotEmpty()) SpeyeTheme.colors.secondary else SpeyeTheme.colors.textSecondary
+            )
+        }
 
         notification.imagePath?.let { path ->
             Spacer(modifier = Modifier.height(12.dp))
-            AsyncImage(
-                model = path,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SpeyeTheme.colors.surface)
-                    .clickable { onImageClick(path) }
-            )
+            val imageExists = remember(path) {
+                File(path).let { it.exists() && it.isFile }
+            }
+            if (imageExists) {
+                AsyncImage(
+                    model = path,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SpeyeTheme.colors.surface)
+                        .clickable { onImageClick(path) }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Gray.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.BrokenImage,
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.image_not_found_on_device),
+                            color = Color.Gray,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
         }
+
+        var historyPageLimit by rememberSaveable(notification.id) { mutableStateOf(100) }
+        val totalHistory = remember(item.history) { item.history.reversed() }
+        val visibleHistory = remember(totalHistory, historyPageLimit) { totalHistory.take(historyPageLimit) }
+        val remainingCount = totalHistory.size - visibleHistory.size
 
         val reduceMotion = SpeyeTheme.reduceMotion
         if (reduceMotion) {
             if (isHistoryExpanded) {
-                Column(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .background(SpeyeTheme.colors.surface, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                ) {
-                    Text(stringResource(R.string.history), fontSize = 10.sp, fontWeight = FontWeight.Black, color = SpeyeTheme.colors.primary)
-                    item.history.reversed().forEach { historyItem ->
-                        val historyContent = historyItem.oldText ?: ""
-                        val renderedHistory = remember(historyContent) {
-                            HtmlUtils.fromHtmlToAnnotatedString(historyContent)
-                        }
-                        Column(modifier = Modifier.padding(vertical = 6.dp)) {
-                            Text(
-                                text = renderedHistory,
-                                fontSize = 13.sp,
-                                color = SpeyeTheme.colors.textSecondary,
-                                fontStyle = FontStyle.Italic
-                            )
-                            Text(
-                                text = DateUtils.getRelativeTimeSpanString(historyItem.timestamp).toString(),
-                                fontSize = 9.sp,
-                                color = Color.DarkGray
-                            )
-                        }
-                    }
-                }
+                HistoryContent(
+                    visibleHistory = visibleHistory,
+                    remainingCount = remainingCount,
+                    context = context,
+                    onShowMore = { historyPageLimit += 100 },
+                    onDeleteHistoryItem = onDeleteHistoryItem
+                )
             }
         } else {
             AnimatedVisibility(visible = isHistoryExpanded) {
-                Column(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .background(SpeyeTheme.colors.surface, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                ) {
-                    Text(stringResource(R.string.history), fontSize = 10.sp, fontWeight = FontWeight.Black, color = SpeyeTheme.colors.primary)
-                    item.history.reversed().forEach { historyItem ->
-                        val historyContent = historyItem.oldText ?: ""
-                        val renderedHistory = remember(historyContent) {
-                            HtmlUtils.fromHtmlToAnnotatedString(historyContent)
-                        }
-                        Column(modifier = Modifier.padding(vertical = 6.dp)) {
-                            Text(
-                                text = renderedHistory,
-                                fontSize = 13.sp,
-                                color = SpeyeTheme.colors.textSecondary,
-                                fontStyle = FontStyle.Italic
-                            )
-                            Text(
-                                text = DateUtils.getRelativeTimeSpanString(historyItem.timestamp).toString(),
-                                fontSize = 9.sp,
-                                color = Color.DarkGray
-                            )
-                        }
-                    }
-                }
+                HistoryContent(
+                    visibleHistory = visibleHistory,
+                    remainingCount = remainingCount,
+                    context = context,
+                    onShowMore = { historyPageLimit += 100 },
+                    onDeleteHistoryItem = onDeleteHistoryItem
+                )
             }
         }
     }
 }
+
+@Composable
+private fun HistoryContent(
+    visibleHistory: List<NotificationHistoryEntity>,
+    remainingCount: Int,
+    context: Context,
+    onShowMore: () -> Unit,
+    onDeleteHistoryItem: (Long) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .background(SpeyeTheme.colors.surface, RoundedCornerShape(8.dp))
+            .padding(12.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.history),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            color = SpeyeTheme.colors.primary
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        visibleHistory.forEach { historyItem ->
+            HistoryEntryRow(
+                historyItem = historyItem,
+                context = context,
+                onDelete = { onDeleteHistoryItem(historyItem.id) }
+            )
+        }
+        if (remainingCount > 0) {
+            TextButton(
+                onClick = onShowMore,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.show_more_history, minOf(100, remainingCount)),
+                    color = SpeyeTheme.colors.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HistoryEntryRow(
+    historyItem: NotificationHistoryEntity,
+    context: Context,
+    onDelete: () -> Unit
+) {
+    val historyContent = historyItem.oldText ?: ""
+    val renderedHistory = remember(historyItem.id, historyContent) {
+        HtmlUtils.fromHtmlToAnnotatedString(historyContent)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .background(SpeyeTheme.colors.divider.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = DateUtils.getRelativeTimeSpanString(historyItem.timestamp).toString().uppercase(),
+                fontSize = 9.sp,
+                color = SpeyeTheme.colors.textSecondary,
+                fontWeight = FontWeight.Bold
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = {
+                        HtmlUtils.copyRichText(context, context.getString(R.string.history), historyContent)
+                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                            android.widget.Toast.makeText(context, R.string.content_copied, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ContentCopy,
+                        contentDescription = stringResource(R.string.copy_history),
+                        modifier = Modifier.size(14.dp),
+                        tint = SpeyeTheme.colors.primary
+                    )
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.DeleteOutline,
+                        contentDescription = stringResource(R.string.delete_history_item),
+                        modifier = Modifier.size(15.dp),
+                        tint = SpeyeTheme.colors.error
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        SelectionContainer {
+            Text(
+                text = renderedHistory,
+                fontSize = 13.sp,
+                color = SpeyeTheme.colors.textPrimary
+            )
+        }
+    }
+}
+

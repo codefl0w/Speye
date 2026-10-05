@@ -23,6 +23,7 @@
     <string name="save_to_gallery">SIMPAN KE GALERI</string>
     <string name="saved_to_gallery_success">Disimpan ke galeri</string>
     <string name="image_not_found">File gambar tidak ditemukan</string>
+    <string name="image_not_found_on_device">Gambar tidak ditemukan di perangkat.</string>
     <string name="image_load_failed">Gagal memuat gambar</string>
     <string name="gallery_save_failed">Gagal menyimpan gambar</string>
     <string name="confirm_deletion">Konfirmasi Penghapusan</string>

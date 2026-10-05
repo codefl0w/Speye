@@ -23,6 +23,7 @@
     <string name="save_to_gallery">IN GALERIE SPEICHERN</string>
     <string name="saved_to_gallery_success">In Galerie gespeichert</string>
     <string name="image_not_found">Bilddatei nicht gefunden</string>
+    <string name="image_not_found_on_device">Bild auf dem Gerät nicht gefunden.</string>
     <string name="image_load_failed">Bild konnte nicht geladen werden</string>
     <string name="gallery_save_failed">Speichern des Bildes fehlgeschlagen</string>
     <string name="confirm_deletion">Löschen bestätigen</string>

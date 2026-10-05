@@ -14,8 +14,8 @@ android {
         applicationId = "com.fl0w.speye"
         minSdk = 24
         targetSdk = 37
-        versionCode = 220826
-        versionName = "1.4.0"
+        versionCode = 1108261004
+        versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,6 +34,10 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 
     packaging {
@@ -61,6 +65,10 @@ android {
         getByName("androidTest").assets.directories.add("$projectDir/schemas")
         getByName("test").assets.directories.add("$projectDir/schemas")
     }
+}
+
+tasks.matching { it.name.contains("Foss", ignoreCase = true) && it.name.contains("GoogleServices", ignoreCase = true) }.configureEach {
+    enabled = false
 }
 
 ksp {

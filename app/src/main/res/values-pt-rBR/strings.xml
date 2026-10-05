@@ -23,6 +23,7 @@
     <string name="save_to_gallery">SALVAR NA GALERIA</string>
     <string name="saved_to_gallery_success">Salvo na galeria</string>
     <string name="image_not_found">Arquivo de imagem não encontrado</string>
+    <string name="image_not_found_on_device">Imagem não encontrada no dispositivo.</string>
     <string name="image_load_failed">Falha ao carregar imagem</string>
     <string name="gallery_save_failed">Falha ao salvar imagem</string>
     <string name="confirm_deletion">Confirmar exclusão</string>

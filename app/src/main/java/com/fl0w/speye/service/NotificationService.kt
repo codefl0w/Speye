@@ -17,6 +17,7 @@ import androidx.core.text.HtmlCompat
 import com.fl0w.speye.data.db.AppDatabase
 import com.fl0w.speye.data.model.NotificationEntity
 import com.fl0w.speye.data.model.NotificationHistoryEntity
+import com.fl0w.speye.utils.ImageUtils
 import com.fl0w.speye.utils.SpeyeLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,10 +76,23 @@ class NotificationService : NotificationListenerService() {
             val s1 = t1.trim().lowercase()
             val s2 = t2.trim().lowercase()
             if (s1 == s2) return true
-            if (s1.startsWith(s2) || s2.startsWith(s1)) return true
-            val base1 = s1.replace(Regex("""\s*[\(\[:].*?\d+.*?[\)\]]?$"""), "").trim()
-            val base2 = s2.replace(Regex("""\s*[\(\[:].*?\d+.*?[\)\]]?$"""), "").trim()
-            return base1.isNotEmpty() && base1 == base2
+
+            // Strip standard email subject prefixes (re:, fwd:, fw:)
+            val prefixRegex = Regex("""^(?:re|fwd|fw)\s*:\s*""", RegexOption.IGNORE_CASE)
+            val clean1 = s1.replace(prefixRegex, "").trim()
+            val clean2 = s2.replace(prefixRegex, "").trim()
+            if (clean1 == clean2) return true
+
+            // Strip trailing message count or counters: "Alice (2)", "Alice [3]", "Alice: 2 messages"
+            val suffixRegex = Regex("""\s*[\(\[].*?$|\s*:\s*\d+\s*(?:new\s*)?messages?.*$""")
+            val base1 = clean1.replace(suffixRegex, "").trim()
+            val base2 = clean2.replace(suffixRegex, "").trim()
+            if (base1.isNotEmpty() && base1 == base2) return true
+
+            if (clean1.isNotEmpty() && clean2.isNotEmpty()) {
+                if (clean1.startsWith("$clean2 ") || clean2.startsWith("$clean1 ")) return true
+            }
+            return false
         }
     }
 
@@ -218,10 +232,11 @@ class NotificationService : NotificationListenerService() {
                 }
             }
             
-            val imagePath = if (picture != null) saveBitmap(picture, sbnKey) else null
+            val imagePath = if (picture != null) ImageUtils.saveBitmap(this@NotificationService, picture, currentImageSetting) else null
 
+            val isOurApp = packageName == applicationContext.packageName
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
-            if (existing != null && areTitlesRelated(existing.title, finalTitle)) {
+            if (existing != null && (isOurApp || areTitlesRelated(existing.title, finalTitle))) {
                 val hasNewTitle = finalTitle != null && finalTitle != existing.title
                 val hasNewText = existing.text != finalHtmlText
                 val hasNewImage = imagePath != null && imagePath != existing.imagePath
@@ -235,14 +250,6 @@ class NotificationService : NotificationListenerService() {
                                 timestamp = System.currentTimeMillis()
                             )
                         )
-                    }
-                    // Delete old image file if replaced by a new image
-                    if (hasNewImage && existing.imagePath != null) {
-                        try {
-                            File(existing.imagePath).delete()
-                        } catch (e: Exception) {
-                            SpeyeLogger.e("NotificationService", "Failed to delete old image", e)
-                        }
                     }
                     database.notificationDao().update(
                         existing.copy(
@@ -333,15 +340,7 @@ class NotificationService : NotificationListenerService() {
     }
 
     // #5: Scale down large bitmaps to prevent ANR and memory pressure
-    private fun scaleBitmapIfNeeded(bitmap: Bitmap): Bitmap {
-        val w = bitmap.width
-        val h = bitmap.height
-        if (w <= MAX_BITMAP_DIMENSION && h <= MAX_BITMAP_DIMENSION) return bitmap
-        val scale = MAX_BITMAP_DIMENSION.toFloat() / maxOf(w, h)
-        val targetW = (w * scale).toInt().coerceAtLeast(1)
-        val targetH = (h * scale).toInt().coerceAtLeast(1)
-        return Bitmap.createScaledBitmap(bitmap, targetW, targetH, true)
-    }
+    private fun scaleBitmapIfNeeded(bitmap: Bitmap): Bitmap = ImageUtils.scaleBitmapIfNeeded(bitmap)
 
     // Inspect MessagingStyle message bundles for attached image URIs
     private fun extractMessagingStylePicture(extras: Bundle): Bitmap? {
@@ -362,7 +361,7 @@ class NotificationService : NotificationListenerService() {
                     msg.getParcelable<Uri>("uri")
                 }
                 if (uri != null) {
-                    val sampled = decodeSampledBitmapFromUri(uri, MAX_BITMAP_DIMENSION, MAX_BITMAP_DIMENSION)
+                    val sampled = decodeSampledBitmapFromUri(uri, ImageUtils.MAX_BITMAP_DIMENSION, ImageUtils.MAX_BITMAP_DIMENSION)
                     if (sampled != null) return sampled
                 }
             }
@@ -402,34 +401,6 @@ class NotificationService : NotificationListenerService() {
             }
         } catch (e: Exception) {
             SpeyeLogger.e("NotificationService", "Failed to decode sampled image from URI: $uri", e)
-            null
-        }
-    }
-
-    private fun saveBitmap(bitmap: Bitmap, key: String): String? {
-        return try {
-            val formatSetting = currentImageSetting
-            val fileName = "img_${key.hashCode()}.${formatSetting.extension}"
-            val file = File(filesDir, fileName)
-            FileOutputStream(file).use { out ->
-                val (compressFormat, quality) = when (formatSetting) {
-                    com.fl0w.speye.data.settings.ImageFormatSetting.PNG -> Bitmap.CompressFormat.PNG to 100
-                    com.fl0w.speye.data.settings.ImageFormatSetting.JPEG_HIGH -> Bitmap.CompressFormat.JPEG to 90
-                    com.fl0w.speye.data.settings.ImageFormatSetting.JPEG_BALANCED -> Bitmap.CompressFormat.JPEG to 80
-                    com.fl0w.speye.data.settings.ImageFormatSetting.WEBP -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            Bitmap.CompressFormat.WEBP_LOSSY to 75
-                        } else {
-                            @Suppress("DEPRECATION")
-                            Bitmap.CompressFormat.WEBP to 75
-                        }
-                    }
-                }
-                bitmap.compress(compressFormat, quality, out)
-            }
-            file.absolutePath
-        } catch (e: Exception) {
-            SpeyeLogger.e("NotificationService", "Error saving bitmap", e)
             null
         }
     }

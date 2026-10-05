@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.fl0w.speye.utils.SpeyeLogger
 import java.io.File
 
 class NotificationViewModel(application: Application) : AndroidViewModel(application) {
@@ -67,21 +68,12 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
 
     fun deleteNotification(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            dao.getImagePathById(id)?.let { path ->
-                val file = File(path)
-                if (file.exists()) file.delete()
-            }
             dao.deleteById(id)
         }
     }
 
     fun deleteGroup(packageName: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val paths = dao.getImagePathsByPackageName(packageName)
-            paths.forEach { path ->
-                val file = File(path)
-                if (file.exists()) file.delete()
-            }
             dao.deleteByPackageName(packageName)
         }
     }
@@ -96,12 +88,15 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
 
     fun deleteAll() {
         viewModelScope.launch(Dispatchers.IO) {
-            val paths = dao.getAllImagePaths()
-            paths.forEach { path ->
-                val file = File(path)
-                if (file.exists()) file.delete()
-            }
             dao.deleteAll()
+            com.fl0w.speye.utils.RetentionCleaner.sweepOrphanImages(getApplication(), gracePeriodMs = 0L)
+        }
+    }
+
+    fun deleteHistoryItem(historyId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dao.deleteHistoryById(historyId)
         }
     }
 }
+

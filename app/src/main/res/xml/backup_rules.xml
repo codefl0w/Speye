@@ -2,6 +2,4 @@
 <full-backup-content>
     <include domain="database" path="." />
     <include domain="sharedpref" path="." />
-    <!-- Exclude cached notification images to avoid cloud quota limit on older devices -->
-    <exclude domain="file" path="." />
 </full-backup-content>

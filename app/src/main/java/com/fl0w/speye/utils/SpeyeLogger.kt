@@ -22,17 +22,30 @@ object SpeyeLogger {
     }
 
     fun d(tag: String, message: String) {
-        Log.d(tag, message)
+        try {
+            Log.d(tag, message)
+        } catch (_: RuntimeException) {
+            // JVM test environment where android.util.Log is not mocked
+        }
         if (isLoggingEnabled) {
             appendLog("D", tag, message)
         }
     }
 
     fun e(tag: String, message: String, throwable: Throwable? = null) {
-        Log.e(tag, message, throwable)
+        var stackTrace: String? = null
+        try {
+            Log.e(tag, message, throwable)
+            if (throwable != null) {
+                stackTrace = Log.getStackTraceString(throwable)
+            }
+        } catch (_: RuntimeException) {
+            // JVM test environment where android.util.Log is not mocked
+            stackTrace = throwable?.stackTraceToString()
+        }
         if (isLoggingEnabled) {
-            val fullMessage = if (throwable != null) {
-                "$message\n${Log.getStackTraceString(throwable)}"
+            val fullMessage = if (stackTrace != null) {
+                "$message\n$stackTrace"
             } else {
                 message
             }

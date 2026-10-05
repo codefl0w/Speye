@@ -48,36 +48,10 @@ object BackupManager {
                 SpeyeLogger.d(TAG, "Starting import from $uri")
                 val db = AppDatabase.getDatabase(context)
                 val tempDir = File(context.cacheDir, "import_temp")
-                if (tempDir.exists()) tempDir.deleteRecursively()
-                tempDir.mkdirs()
-
                 val inputStream = context.contentResolver.openInputStream(uri)
                     ?: throw IOException("Could not open input stream for URI: $uri")
 
-                ZipInputStream(inputStream).use { zis ->
-                    var entry = zis.nextEntry
-                    val canonicalTempDirPath = tempDir.canonicalPath
-                    while (entry != null) {
-                        val file = File(tempDir, entry.name)
-                        if (!file.canonicalPath.startsWith(canonicalTempDirPath)) {
-                            throw SecurityException("Zip entry outside target directory: ${entry.name}")
-                        }
-                        if (entry.isDirectory) {
-                            file.mkdirs()
-                        } else {
-                            file.parentFile?.mkdirs()
-                            file.outputStream().use { zis.copyTo(it) }
-                        }
-                        zis.closeEntry()
-                        entry = zis.nextEntry
-                    }
-                }
-
-                val dataFile = File(tempDir, "data.json")
-                if (!dataFile.exists()) throw Exception("Invalid .spy file: data.json missing")
-
-                val jsonData = dataFile.readText()
-                val backupData = json.decodeFromString<BackupData>(jsonData)
+                val backupData = extractBackupZip(inputStream, tempDir)
 
                 SpeyeLogger.d(TAG, "Importing ${backupData.notifications.size} notifications and ${backupData.ignoredApps.size} ignored apps")
 
@@ -88,16 +62,24 @@ object BackupManager {
                 var importedCount = 0
                 for (sNotif in backupData.notifications) {
                     val sk = sNotif.sbnKey
-                    val existing = if (sk != null) db.notificationDao().getNotificationBySbnKey(sk) else null
+                    val existing = (sk?.let { db.notificationDao().getNotificationBySbnKeyAndTimestamp(it, sNotif.timestamp) })
+                        ?: db.notificationDao().findDuplicate(
+                            packageName = sNotif.packageName,
+                            timestamp = sNotif.timestamp,
+                            title = sNotif.title,
+                            text = sNotif.text
+                        )
                     
                     var finalImagePath: String? = null
                     val sPath = sNotif.imagePath
                     if (!sPath.isNullOrBlank()) {
                         val fileName = File(sPath).name
                         val srcFile = File(tempDir, "attachments/$fileName")
+                        val destFile = File(context.filesDir, fileName)
                         if (srcFile.exists() && srcFile.isFile) {
-                            val destFile = File(context.filesDir, fileName)
                             srcFile.copyTo(destFile, overwrite = true)
+                            finalImagePath = destFile.absolutePath
+                        } else {
                             finalImagePath = destFile.absolutePath
                         }
                     }
@@ -126,6 +108,8 @@ object BackupManager {
                             )
                         }
                         importedCount++
+                    } else if (finalImagePath != null && existing.imagePath != finalImagePath) {
+                        db.notificationDao().update(existing.copy(imagePath = finalImagePath))
                     }
                 }
                 SpeyeLogger.d(TAG, "Import successful: $importedCount new notifications added")
@@ -153,6 +137,74 @@ object BackupManager {
         }
     }
 
+    fun writeBackupZip(
+        backupData: BackupData,
+        attachmentFiles: List<File>,
+        outputStream: OutputStream
+    ) {
+        val jsonData = json.encodeToString(backupData)
+
+        ZipOutputStream(BufferedOutputStream(outputStream)).use { zos ->
+            zos.putNextEntry(ZipEntry("data.json"))
+            zos.write(jsonData.toByteArray(Charsets.UTF_8))
+            zos.closeEntry()
+
+            var attachmentsCount = 0
+            val packedImages = HashSet<String>()
+            for (file in attachmentFiles) {
+                val fileName = file.name
+                if (file.exists() && file.isFile && file.length() > 0 && packedImages.add(fileName)) {
+                    try {
+                        file.inputStream().use { input ->
+                            zos.putNextEntry(ZipEntry("attachments/$fileName"))
+                            input.copyTo(zos)
+                            zos.closeEntry()
+                            attachmentsCount++
+                        }
+                    } catch (e: Exception) {
+                        SpeyeLogger.e(TAG, "Failed to pack attachment $fileName", e)
+                    }
+                }
+            }
+            SpeyeLogger.d(TAG, "Packed $attachmentsCount attachments")
+            zos.finish()
+            zos.flush()
+        }
+    }
+
+    fun extractBackupZip(
+        inputStream: InputStream,
+        targetDir: File
+    ): BackupData {
+        if (targetDir.exists()) targetDir.deleteRecursively()
+        targetDir.mkdirs()
+
+        ZipInputStream(inputStream).use { zis ->
+            var entry = zis.nextEntry
+            val canonicalTargetDirPath = targetDir.canonicalPath
+            while (entry != null) {
+                val file = File(targetDir, entry.name)
+                if (!file.canonicalPath.startsWith(canonicalTargetDirPath)) {
+                    throw SecurityException("Zip entry outside target directory: ${entry.name}")
+                }
+                if (entry.isDirectory) {
+                    file.mkdirs()
+                } else {
+                    file.parentFile?.mkdirs()
+                    file.outputStream().use { zis.copyTo(it) }
+                }
+                zis.closeEntry()
+                entry = zis.nextEntry
+            }
+        }
+
+        val dataFile = File(targetDir, "data.json")
+        if (!dataFile.exists()) throw IOException("Invalid .spy file: data.json missing")
+
+        val jsonData = dataFile.readText()
+        return json.decodeFromString<BackupData>(jsonData)
+    }
+
     private suspend fun performExportToStream(context: Context, outputStream: OutputStream) {
         val db = AppDatabase.getDatabase(context)
         val notifications = db.notificationDao().getAllNotificationsWithHistoryList()
@@ -176,37 +228,12 @@ object BackupManager {
         }
 
         val backupData = BackupData(serializableNotifications, ignoredApps)
-        val jsonData = json.encodeToString(backupData)
-
-        ZipOutputStream(BufferedOutputStream(outputStream)).use { zos ->
-            zos.putNextEntry(ZipEntry("data.json"))
-            zos.write(jsonData.toByteArray(Charsets.UTF_8))
-            zos.closeEntry()
-
-            var attachmentsCount = 0
-            val packedImages = HashSet<String>()
-            for (item in notifications) {
-                val path = item.notification.imagePath
-                if (!path.isNullOrBlank()) {
-                    val file = File(path)
-                    val fileName = file.name
-                    if (file.exists() && file.isFile && file.length() > 0 && packedImages.add(fileName)) {
-                        try {
-                            file.inputStream().use { input ->
-                                zos.putNextEntry(ZipEntry("attachments/$fileName"))
-                                input.copyTo(zos)
-                                zos.closeEntry()
-                                attachmentsCount++
-                            }
-                        } catch (e: Exception) {
-                            SpeyeLogger.e(TAG, "Failed to pack attachment $fileName", e)
-                        }
-                    }
-                }
+        val attachmentFiles = notifications.mapNotNull { item ->
+            item.notification.imagePath?.let { path ->
+                val f = File(path)
+                if (f.exists() && f.isFile && f.length() > 0) f else null
             }
-            SpeyeLogger.d(TAG, "Packed $attachmentsCount attachments")
-            zos.finish()
-            zos.flush()
         }
+        writeBackupZip(backupData, attachmentFiles, outputStream)
     }
 }

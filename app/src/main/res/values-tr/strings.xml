@@ -23,17 +23,24 @@
     <string name="save_to_gallery">GALERİYE KAYDET</string>
     <string name="saved_to_gallery_success">Galeriye kaydedildi</string>
     <string name="image_not_found">Görsel dosyası bulunamadı</string>
+    <string name="image_not_found_on_device">Görsel cihazda bulunamadı.</string>
     <string name="image_load_failed">Görsel yüklenemedi</string>
     <string name="gallery_save_failed">Görsel kaydedilemedi</string>
     <string name="confirm_deletion">Silmeyi Onayla</string>
     <string name="confirm_delete_all">TÜM bildirimleri silmek istediğinizden emin misiniz?</string>
     <string name="confirm_delete_group">Bu uygulama için tüm bildirimler silinsin mi?</string>
     <string name="confirm_delete_item">Bu bildirim silinsin mi?</string>
+    <string name="confirm_delete_history_item">Bu düzenleme kaydı silinsin mi?</string>
     <string name="cancel">İPTAL</string>
     <string name="notification_count">%d bildirim</string>
     <string name="dismissed">SİLİNDİ</string>
     <string name="edited">DÜZENLENDİ (%d)</string>
     <string name="history">GEÇMİŞ</string>
+    <string name="content_copied">Panoya kopyalandı</string>
+    <string name="copy_history">Düzenlemeyi kopyala</string>
+    <string name="delete_history_item">Düzenlemeyi sil</string>
+    <string name="show_more_history">Daha fazla göster (+%d)</string>
+    <string name="show_more_messages">Daha fazla mesaj göster (+%d)</string>
     <string name="search_placeholder">Bildirimlerde ara…</string>
 
     <!-- App List -->

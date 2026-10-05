@@ -45,6 +45,24 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE sbnKey = :key LIMIT 1")
     suspend fun getNotificationBySbnKey(key: String): NotificationEntity?
 
+    @Query("SELECT * FROM notifications WHERE sbnKey = :key AND timestamp = :timestamp LIMIT 1")
+    suspend fun getNotificationBySbnKeyAndTimestamp(key: String, timestamp: Long): NotificationEntity?
+
+    @Query("""
+        SELECT * FROM notifications 
+        WHERE packageName = :packageName 
+          AND timestamp = :timestamp 
+          AND ((title IS NULL AND :title IS NULL) OR title = :title) 
+          AND ((text IS NULL AND :text IS NULL) OR text = :text) 
+        LIMIT 1
+    """)
+    suspend fun findDuplicate(
+        packageName: String,
+        timestamp: Long,
+        title: String?,
+        text: String?
+    ): NotificationEntity?
+
     @Query("SELECT * FROM notifications WHERE sbnKey = :key AND isSystemRemoved = 0 ORDER BY timestamp DESC LIMIT 1")
     suspend fun getActiveNotificationBySbnKey(key: String): NotificationEntity?
 
@@ -66,6 +84,9 @@ interface NotificationDao {
     @Query("SELECT imagePath FROM notifications WHERE timestamp < :cutoffTimestamp AND imagePath IS NOT NULL")
     suspend fun getImagePathsOlderThan(cutoffTimestamp: Long): List<String>
 
+    @Query("SELECT COUNT(*) FROM notifications WHERE imagePath = :imagePath")
+    suspend fun countNotificationsUsingImage(imagePath: String): Int
+
     @Query("DELETE FROM notifications WHERE timestamp < :cutoffTimestamp")
     suspend fun deleteOlderThan(cutoffTimestamp: Long): Int
 
@@ -77,4 +98,11 @@ interface NotificationDao {
 
     @Query("DELETE FROM notifications WHERE packageName = :packageName")
     suspend fun deleteByPackageName(packageName: String)
+
+    @Query("DELETE FROM notification_history WHERE id = :historyId")
+    suspend fun deleteHistoryById(historyId: Long): Int
+
+    @Query("SELECT COUNT(*) FROM notification_history WHERE notificationId = :notificationId")
+    suspend fun getHistoryCount(notificationId: Long): Int
 }
+

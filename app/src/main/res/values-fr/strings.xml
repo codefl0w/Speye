@@ -23,6 +23,7 @@
     <string name="save_to_gallery">ENREGISTRER DANS LA GALERIE</string>
     <string name="saved_to_gallery_success">Enregistré dans la galerie</string>
     <string name="image_not_found">Fichier image introuvable</string>
+    <string name="image_not_found_on_device">Image introuvable sur l\'appareil.</string>
     <string name="image_load_failed">Échec du chargement de l\'image</string>
     <string name="gallery_save_failed">Échec de l\'enregistrement de l\'image</string>
     <string name="confirm_deletion">Confirmer la suppression</string>
