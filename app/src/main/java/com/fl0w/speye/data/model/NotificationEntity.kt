@@ -22,5 +22,8 @@ data class NotificationEntity(
     val appName: String? = null,
     val isSystemRemoved: Boolean = false,
     val imagePath: String? = null,
-    val contentIntentUri: String? = null
+    val contentIntentUri: String? = null,
+    val progress: Int? = null,
+    val progressMax: Int? = null,
+    val isIndeterminate: Boolean? = null
 )

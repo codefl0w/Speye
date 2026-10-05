@@ -19,7 +19,10 @@ data class SerializableNotification(
     val isSystemRemoved: Boolean,
     val imagePath: String?,
     val history: List<SerializableHistory>,
-    val contentIntentUri: String? = null
+    val contentIntentUri: String? = null,
+    val progress: Int? = null,
+    val progressMax: Int? = null,
+    val isIndeterminate: Boolean? = null
 )
 
 @Serializable

@@ -94,6 +94,10 @@ class NotificationService : NotificationListenerService() {
             }
             return false
         }
+
+        private const val PROGRESS_THROTTLE_MS = 250L
+        private val lastProgressUpdateTimestamps = java.util.concurrent.ConcurrentHashMap<String, Long>()
+        private val lastProgressValues = java.util.concurrent.ConcurrentHashMap<String, Int>()
     }
 
     private var currentImageSetting = com.fl0w.speye.data.settings.ImageFormatSetting.PNG
@@ -216,10 +220,27 @@ class NotificationService : NotificationListenerService() {
             HtmlCompat.toHtml(android.text.SpannableString.valueOf(it), HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE) 
         })?.toString()
 
+        val rawProgressMax = if (extras.containsKey(Notification.EXTRA_PROGRESS_MAX)) {
+            extras.getInt(Notification.EXTRA_PROGRESS_MAX)
+        } else null
+
+        val rawProgress = if (extras.containsKey(Notification.EXTRA_PROGRESS)) {
+            extras.getInt(Notification.EXTRA_PROGRESS)
+        } else null
+
+        val rawIsIndeterminate = if (extras.containsKey(Notification.EXTRA_PROGRESS_INDETERMINATE)) {
+            extras.getBoolean(Notification.EXTRA_PROGRESS_INDETERMINATE)
+        } else null
+
+        val hasActiveProgressBar = (rawProgressMax != null && rawProgressMax > 0) || (rawIsIndeterminate == true)
+        val finalProgress = if (hasActiveProgressBar) rawProgress else null
+        val finalProgressMax = if (hasActiveProgressBar) rawProgressMax else null
+        val finalIsIndeterminate = if (hasActiveProgressBar) rawIsIndeterminate else null
+
         // #5 & #11: Lazy picture extraction (avoids simultaneous decode of multiple bitmap sources)
         val picture = extractNotificationPicture(notification, extras)
 
-        SpeyeLogger.d("NotificationService", "Intercepted (Immediate): $packageName - $finalTitle (Picture: ${picture != null})")
+        SpeyeLogger.d("NotificationService", "Intercepted (Immediate): $packageName - $finalTitle (Picture: ${picture != null}, Progress: $finalProgress/$finalProgressMax, Indet: $finalIsIndeterminate)")
 
         // --- BACKGROUND PERSISTENCE ---
         serviceScope.launch {
@@ -236,13 +257,37 @@ class NotificationService : NotificationListenerService() {
 
             val isOurApp = packageName == applicationContext.packageName
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
-            if (existing != null && (isOurApp || areTitlesRelated(existing.title, finalTitle))) {
+
+            val isExistingProgress = (existing?.progressMax != null && existing.progressMax > 0) || existing?.isIndeterminate == true
+            val isProgressUpdate = hasActiveProgressBar || isExistingProgress
+
+            if (isProgressUpdate && hasActiveProgressBar && existing != null) {
+                val now = System.currentTimeMillis()
+                val lastUpdate = lastProgressUpdateTimestamps[sbnKey] ?: 0L
+                val lastVal = lastProgressValues[sbnKey]
+
+                val isTerminalMilestone = finalProgress != null && finalProgressMax != null && finalProgressMax > 0 &&
+                        (finalProgress == 0 || finalProgress >= finalProgressMax)
+                val hasSignificantProgressDelta = finalProgress != null && finalProgressMax != null && finalProgressMax > 0 &&
+                        lastVal != null && (Math.abs(finalProgress - lastVal).toFloat() / finalProgressMax.toFloat()) >= 0.05f
+
+                val shouldThrottle = !isTerminalMilestone && !hasSignificantProgressDelta && (now - lastUpdate < PROGRESS_THROTTLE_MS)
+                if (shouldThrottle) {
+                    return@launch
+                }
+            }
+
+            if (existing != null && (isOurApp || isProgressUpdate || areTitlesRelated(existing.title, finalTitle))) {
                 val hasNewTitle = finalTitle != null && finalTitle != existing.title
                 val hasNewText = existing.text != finalHtmlText
                 val hasNewImage = imagePath != null && imagePath != existing.imagePath
+                val hasNewProgress = finalProgress != existing.progress ||
+                        finalProgressMax != existing.progressMax ||
+                        finalIsIndeterminate != existing.isIndeterminate
 
-                if (hasNewTitle || hasNewText || hasNewImage) {
-                    if (hasNewText && existing.text != null) {
+                if (hasNewTitle || hasNewText || hasNewImage || hasNewProgress) {
+                    // Progress updates update row in-place without flooding history table
+                    if (!isProgressUpdate && hasNewText && existing.text != null) {
                         database.notificationDao().insertHistory(
                             NotificationHistoryEntity(
                                 notificationId = existing.id,
@@ -258,9 +303,16 @@ class NotificationService : NotificationListenerService() {
                             timestamp = finalTimestamp,
                             isSystemRemoved = false,
                             imagePath = imagePath ?: existing.imagePath,
-                            contentIntentUri = finalIntentUri ?: existing.contentIntentUri
+                            contentIntentUri = finalIntentUri ?: existing.contentIntentUri,
+                            progress = finalProgress,
+                            progressMax = finalProgressMax,
+                            isIndeterminate = finalIsIndeterminate
                         )
                     )
+                    if (isProgressUpdate) {
+                        lastProgressUpdateTimestamps[sbnKey] = System.currentTimeMillis()
+                        finalProgress?.let { lastProgressValues[sbnKey] = it }
+                    }
                 }
             } else {
                 if (existing != null) {
@@ -275,9 +327,16 @@ class NotificationService : NotificationListenerService() {
                         text = finalHtmlText,
                         timestamp = finalTimestamp,
                         imagePath = imagePath,
-                        contentIntentUri = finalIntentUri
+                        contentIntentUri = finalIntentUri,
+                        progress = finalProgress,
+                        progressMax = finalProgressMax,
+                        isIndeterminate = finalIsIndeterminate
                     )
                 )
+                if (isProgressUpdate) {
+                    lastProgressUpdateTimestamps[sbnKey] = System.currentTimeMillis()
+                    finalProgress?.let { lastProgressValues[sbnKey] = it }
+                }
             }
         }
     }
@@ -408,6 +467,8 @@ class NotificationService : NotificationListenerService() {
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
         val sbnKey = sbn.key
+        lastProgressUpdateTimestamps.remove(sbnKey)
+        lastProgressValues.remove(sbnKey)
         SpeyeLogger.d("NotificationService", "System removed: $sbnKey")
         serviceScope.launch {
             database.notificationDao().markAsSystemRemoved(sbnKey)

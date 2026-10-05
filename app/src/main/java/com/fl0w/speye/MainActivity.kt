@@ -207,7 +207,8 @@ class MainActivity : ComponentActivity() {
                                             viewModel = viewModel,
                                             onTestStandard = { sendStandardTest() },
                                             onTestLongText = { sendLongTextTest() },
-                                            onTestImage = { sendImageTest() }
+                                            onTestImage = { sendImageTest() },
+                                            onTestProgress = { sendProgressTest() }
                                         )
                                     }
                                     composable("apps") {
@@ -369,6 +370,29 @@ class MainActivity : ComponentActivity() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
         notificationManager.notify((1000..9000).random(), notification)
+    }
+
+    fun sendProgressTest() {
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val channelId = "test_channel"
+        createChannel(notificationManager, channelId)
+        val testId = 8888
+
+        lifecycleScope.launch {
+            for (i in 0..100 step 20) {
+                val notification = NotificationCompat.Builder(this@MainActivity, channelId)
+                    .setSmallIcon(android.R.drawable.stat_sys_download)
+                    .setContentTitle("Download Progress Test")
+                    .setContentText("Downloading test asset ($i%)...")
+                    .setProgress(100, i, false)
+                    .setOngoing(i < 100)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .build()
+                notificationManager.notify(testId, notification)
+                if (i < 100) kotlinx.coroutines.delay(400)
+            }
+        }
     }
 
     private fun createChannel(manager: NotificationManager, id: String) {

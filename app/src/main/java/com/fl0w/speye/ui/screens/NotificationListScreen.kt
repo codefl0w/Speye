@@ -4,6 +4,9 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.text.format.DateUtils
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -62,7 +65,8 @@ fun NotificationListScreen(
     viewModel: NotificationViewModel, 
     onTestStandard: () -> Unit,
     onTestLongText: () -> Unit,
-    onTestImage: () -> Unit
+    onTestImage: () -> Unit,
+    onTestProgress: () -> Unit = {}
 ) {
     val groupedNotifications by viewModel.groupedNotifications.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
@@ -170,6 +174,10 @@ fun NotificationListScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.test_image), color = SpeyeTheme.colors.textPrimary) },
                                     onClick = { onTestImage(); showTestMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.test_progress), color = SpeyeTheme.colors.textPrimary) },
+                                    onClick = { onTestProgress(); showTestMenu = false }
                                 )
                             }
                         }
@@ -886,6 +894,16 @@ fun NotificationItem(
             )
         }
 
+        val hasProgressBar = (notification.progressMax != null && notification.progressMax > 0) || notification.isIndeterminate == true
+        if (hasProgressBar) {
+            Spacer(modifier = Modifier.height(10.dp))
+            SpeyeProgressBar(
+                progress = notification.progress,
+                progressMax = notification.progressMax,
+                isIndeterminate = notification.isIndeterminate
+            )
+        }
+
         notification.imagePath?.let { path ->
             Spacer(modifier = Modifier.height(12.dp))
             val imageExists = remember(path) {
@@ -1080,4 +1098,78 @@ fun HistoryEntryRow(
         }
     }
 }
+
+@Composable
+fun SpeyeProgressBar(
+    progress: Int?,
+    progressMax: Int?,
+    isIndeterminate: Boolean?,
+    modifier: Modifier = Modifier
+) {
+    val isIndet = isIndeterminate == true || (progressMax == null || progressMax <= 0)
+    val currentProgress = (progress ?: 0).coerceAtLeast(0)
+    val maxProgress = (progressMax ?: 100).coerceAtLeast(1)
+    val fraction = if (!isIndet) {
+        (currentProgress.toFloat() / maxProgress.toFloat()).coerceIn(0f, 1f)
+    } else 0f
+
+    val reduceMotion = SpeyeTheme.reduceMotion
+    val animatedFraction by animateFloatAsState(
+        targetValue = fraction,
+        animationSpec = if (reduceMotion) snap() else tween(durationMillis = 250),
+        label = "progressBar"
+    )
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(SpeyeTheme.colors.surface)
+            .border(1.dp, SpeyeTheme.colors.divider, RoundedCornerShape(8.dp))
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (isIndet) stringResource(R.string.in_progress) else "${(fraction * 100).toInt()}%",
+                color = SpeyeTheme.colors.secondary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp
+            )
+            if (!isIndet) {
+                Text(
+                    text = "$currentProgress / $maxProgress",
+                    color = SpeyeTheme.colors.textSecondary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        if (isIndet) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = SpeyeTheme.colors.secondary,
+                trackColor = SpeyeTheme.colors.divider
+            )
+        } else {
+            LinearProgressIndicator(
+                progress = { animatedFraction },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = SpeyeTheme.colors.secondary,
+                trackColor = SpeyeTheme.colors.divider
+            )
+        }
+    }
+}
+
 

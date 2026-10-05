@@ -11,6 +11,8 @@
     <string name="test_cycle">Test de ciclo (Nuevo/Editar/Borrar)</string>
     <string name="test_long_text">Test de texto largo</string>
     <string name="test_image">Test de imagen adjunta</string>
+    <string name="test_progress">Test de barra de progreso</string>
+    <string name="test_indeterminate_progress">Test de progreso indeterminado</string>
     <string name="no_notifications">Aún no hay notificaciones guardadas</string>
     <string name="no_title">Sin título</string>
     <string name="no_results">No se encontraron notificaciones coincidentes</string>
@@ -24,6 +26,7 @@
     <string name="saved_to_gallery_success">Guardado en la galería</string>
     <string name="image_not_found">Archivo de imagen no encontrado</string>
     <string name="image_not_found_on_device">Imagen no encontrada en el dispositivo.</string>
+    <string name="in_progress">En curso…</string>
     <string name="image_load_failed">Error al cargar la imagen</string>
     <string name="gallery_save_failed">Error al guardar la imagen</string>
     <string name="confirm_deletion">Confirmar eliminación</string>

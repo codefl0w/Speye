@@ -11,6 +11,8 @@
     <string name="test_cycle">Zyklus-Test (Neu/Bearbeiten/Löschen)</string>
     <string name="test_long_text">Langer Text Test</string>
     <string name="test_image">Bildanhang Test</string>
+    <string name="test_progress">Fortschrittsbalken-Test</string>
+    <string name="test_indeterminate_progress">Unbestimmter Fortschritt-Test</string>
     <string name="no_notifications">Noch keine Benachrichtigungen gespeichert</string>
     <string name="no_title">Kein Titel</string>
     <string name="no_results">Keine passenden Benachrichtigungen gefunden</string>
@@ -24,6 +26,7 @@
     <string name="saved_to_gallery_success">In Galerie gespeichert</string>
     <string name="image_not_found">Bilddatei nicht gefunden</string>
     <string name="image_not_found_on_device">Bild auf dem Gerät nicht gefunden.</string>
+    <string name="in_progress">Wird ausgeführt…</string>
     <string name="image_load_failed">Bild konnte nicht geladen werden</string>
     <string name="gallery_save_failed">Speichern des Bildes fehlgeschlagen</string>
     <string name="confirm_deletion">Löschen bestätigen</string>

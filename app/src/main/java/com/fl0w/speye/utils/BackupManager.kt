@@ -95,7 +95,10 @@ object BackupManager {
                                 appName = sNotif.appName,
                                 isSystemRemoved = sNotif.isSystemRemoved,
                                 imagePath = finalImagePath,
-                                contentIntentUri = sNotif.contentIntentUri
+                                contentIntentUri = sNotif.contentIntentUri,
+                                progress = sNotif.progress,
+                                progressMax = sNotif.progressMax,
+                                isIndeterminate = sNotif.isIndeterminate
                             )
                         )
                         for (h in sNotif.history) {
@@ -223,7 +226,10 @@ object BackupManager {
                 isSystemRemoved = item.notification.isSystemRemoved,
                 imagePath = item.notification.imagePath?.let { File(it).name },
                 history = item.history.map { SerializableHistory(it.oldText, it.timestamp) },
-                contentIntentUri = item.notification.contentIntentUri
+                contentIntentUri = item.notification.contentIntentUri,
+                progress = item.notification.progress,
+                progressMax = item.notification.progressMax,
+                isIndeterminate = item.notification.isIndeterminate
             )
         }
 
