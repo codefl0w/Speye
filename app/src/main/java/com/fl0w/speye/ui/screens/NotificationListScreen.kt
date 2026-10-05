@@ -78,9 +78,20 @@ fun NotificationListScreen(
     var viewerImagePath by remember { mutableStateOf<String?>(null) }
     var isSearchMode by remember { mutableStateOf(false) }
     val groupLimits = rememberSaveable(
-        saver = Saver(
-            save = { it.toMap() },
-            restore = { mutableStateMapOf<String, Int>().apply { putAll(it) } }
+        saver = androidx.compose.runtime.saveable.listSaver(
+            save = { it.entries.map { e -> "${e.key}=${e.value}" } },
+            restore = { list ->
+                mutableStateMapOf<String, Int>().apply {
+                    list.forEach { item ->
+                        val idx = item.indexOf('=')
+                        if (idx != -1) {
+                            val pkg = item.substring(0, idx)
+                            val limit = item.substring(idx + 1).toIntOrNull() ?: 100
+                            put(pkg, limit)
+                        }
+                    }
+                }
+            }
         )
     ) { mutableStateMapOf<String, Int>() }
 
