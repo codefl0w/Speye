@@ -66,7 +66,8 @@ fun NotificationListScreen(
     onTestStandard: () -> Unit,
     onTestLongText: () -> Unit,
     onTestImage: () -> Unit,
-    onTestProgress: () -> Unit = {}
+    onTestProgress: () -> Unit = {},
+    onTestIndeterminateProgress: () -> Unit = {}
 ) {
     val groupedNotifications by viewModel.groupedNotifications.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
@@ -178,6 +179,10 @@ fun NotificationListScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.test_progress), color = SpeyeTheme.colors.textPrimary) },
                                     onClick = { onTestProgress(); showTestMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.test_indeterminate_progress), color = SpeyeTheme.colors.textPrimary) },
+                                    onClick = { onTestIndeterminateProgress(); showTestMenu = false }
                                 )
                             }
                         }
@@ -1135,7 +1140,7 @@ fun SpeyeProgressBar(
         ) {
             Text(
                 text = if (isIndet) stringResource(R.string.in_progress) else "${(fraction * 100).toInt()}%",
-                color = SpeyeTheme.colors.secondary,
+                color = SpeyeTheme.colors.primary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp
             )
@@ -1155,7 +1160,7 @@ fun SpeyeProgressBar(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = SpeyeTheme.colors.secondary,
+                color = SpeyeTheme.colors.primary,
                 trackColor = SpeyeTheme.colors.divider
             )
         } else {
@@ -1165,7 +1170,7 @@ fun SpeyeProgressBar(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = SpeyeTheme.colors.secondary,
+                color = SpeyeTheme.colors.primary,
                 trackColor = SpeyeTheme.colors.divider
             )
         }

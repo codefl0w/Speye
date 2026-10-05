@@ -208,7 +208,8 @@ class MainActivity : ComponentActivity() {
                                             onTestStandard = { sendStandardTest() },
                                             onTestLongText = { sendLongTextTest() },
                                             onTestImage = { sendImageTest() },
-                                            onTestProgress = { sendProgressTest() }
+                                            onTestProgress = { sendProgressTest() },
+                                            onTestIndeterminateProgress = { sendIndeterminateProgressTest() }
                                         )
                                     }
                                     composable("apps") {
@@ -393,6 +394,23 @@ class MainActivity : ComponentActivity() {
                 if (i < 100) kotlinx.coroutines.delay(400)
             }
         }
+    }
+
+    fun sendIndeterminateProgressTest() {
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val channelId = "test_channel"
+        createChannel(notificationManager, channelId)
+        val testId = 8889
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.stat_sys_download)
+            .setContentTitle("Processing Asset")
+            .setContentText("Optimizing local database...")
+            .setProgress(0, 0, true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .build()
+        notificationManager.notify(testId, notification)
     }
 
     private fun createChannel(manager: NotificationManager, id: String) {

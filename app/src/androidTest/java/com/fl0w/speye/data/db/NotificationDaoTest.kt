@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -159,6 +161,108 @@ class NotificationDaoTest {
 
         // Verify zero history entries spammed
         assertEquals(0, dao.getHistoryCount(rowId))
+    }
+
+    @Test
+    fun concurrentProgressBars_differentContextsFromSameApp_remainInSeparateRows() = runBlocking {
+        // App A download: id 101
+        val keyA = "0|com.whatsapp|101|null|1000"
+        val rowIdA = dao.insert(
+            NotificationEntity(
+                sbnKey = keyA,
+                packageName = "com.whatsapp",
+                timestamp = 1000L,
+                title = "Downloading File A.pdf",
+                text = "10%",
+                progress = 10,
+                progressMax = 100,
+                isIndeterminate = false
+            )
+        )
+
+        // App B download: id 102 (different context / notification ID from same app)
+        val keyB = "0|com.whatsapp|102|null|1000"
+        val rowIdB = dao.insert(
+            NotificationEntity(
+                sbnKey = keyB,
+                packageName = "com.whatsapp",
+                timestamp = 1050L,
+                title = "Downloading File B.apk",
+                text = "5%",
+                progress = 5,
+                progressMax = 100,
+                isIndeterminate = false
+            )
+        )
+
+        assertEquals("Must have 2 separate rows for 2 distinct active downloads", 2, dao.getNotificationCount())
+        assertNotEquals(rowIdA, rowIdB)
+
+        // Progress updates to App A
+        val existingA = dao.getActiveNotificationBySbnKey(keyA)!!
+        dao.update(existingA.copy(progress = 80, text = "80%"))
+
+        // Progress updates to App B
+        val existingB = dao.getActiveNotificationBySbnKey(keyB)!!
+        dao.update(existingB.copy(progress = 40, text = "40%"))
+
+        // Validate both rows remain independent and separate
+        assertEquals(2, dao.getNotificationCount())
+        val entityA = dao.getNotificationById(rowIdA)!!
+        val entityB = dao.getNotificationById(rowIdB)!!
+
+        assertEquals("File A.pdf", entityA.title?.replace("Downloading ", ""))
+        assertEquals(80, entityA.progress)
+
+        assertEquals("File B.apk", entityB.title?.replace("Downloading ", ""))
+        assertEquals(40, entityB.progress)
+    }
+
+    @Test
+    fun sequentialProgressBars_sameSlotDifferentContexts_preserveBothRows() = runBlocking {
+        val sbnKey = "0|com.whatsapp|101|null|1000"
+
+        // Download A finishes
+        val rowIdA = dao.insert(
+            NotificationEntity(
+                sbnKey = sbnKey,
+                packageName = "com.whatsapp",
+                timestamp = 1000L,
+                title = "Downloading File A.pdf",
+                text = "100%",
+                progress = 100,
+                progressMax = 100,
+                isIndeterminate = false
+            )
+        )
+
+        // When download A is dismissed, or replaced by different context: mark row A removed
+        dao.markAsSystemRemovedById(rowIdA)
+
+        // Download B starts on same slot
+        val rowIdB = dao.insert(
+            NotificationEntity(
+                sbnKey = sbnKey,
+                packageName = "com.whatsapp",
+                timestamp = 2000L,
+                title = "Downloading File B.apk",
+                text = "0%",
+                progress = 0,
+                progressMax = 100,
+                isIndeterminate = false
+            )
+        )
+
+        assertNotEquals(rowIdA, rowIdB)
+        assertEquals("Both download rows must be preserved", 2, dao.getNotificationCount())
+
+        val entityA = dao.getNotificationById(rowIdA)!!
+        val entityB = dao.getNotificationById(rowIdB)!!
+
+        assertTrue("Row A is marked system removed", entityA.isSystemRemoved)
+        assertFalse("Row B is active", entityB.isSystemRemoved)
+        assertEquals(100, entityA.progress)
+        assertEquals(0, entityB.progress)
     }
 }
 

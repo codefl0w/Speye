@@ -12,6 +12,7 @@
     <string name="test_long_text">Uzun Metin Testi</string>
     <string name="test_image">Görsel Eki Testi</string>
     <string name="test_progress">İlerleme Çubuğu Testi</string>
+    <string name="test_indeterminate_progress">Belirsiz İlerleme Testi</string>
     <string name="no_notifications">Henüz kaydedilmiş bildirim yok</string>
     <string name="no_title">Başlıksız</string>
     <string name="no_results">Eşleşen bildirim bulunamadı</string>

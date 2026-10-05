@@ -258,10 +258,16 @@ class NotificationService : NotificationListenerService() {
             val isOurApp = packageName == applicationContext.packageName
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
 
+            val titlesMatch = isOurApp || areTitlesRelated(existing?.title, finalTitle)
             val isExistingProgress = (existing?.progressMax != null && existing.progressMax > 0) || existing?.isIndeterminate == true
-            val isProgressUpdate = hasActiveProgressBar || isExistingProgress
+            val isNewProgressCycle = existing != null && existing.progress != null && existing.progressMax != null &&
+                    existing.progress >= existing.progressMax &&
+                    finalProgress != null && finalProgress < existing.progress
 
-            if (isProgressUpdate && hasActiveProgressBar && existing != null) {
+            val isSameProgressContext = existing != null && titlesMatch && !isNewProgressCycle
+            val isProgressUpdate = (hasActiveProgressBar || isExistingProgress) && isSameProgressContext
+
+            if (isProgressUpdate && hasActiveProgressBar) {
                 val now = System.currentTimeMillis()
                 val lastUpdate = lastProgressUpdateTimestamps[sbnKey] ?: 0L
                 val lastVal = lastProgressValues[sbnKey]
@@ -277,7 +283,7 @@ class NotificationService : NotificationListenerService() {
                 }
             }
 
-            if (existing != null && (isOurApp || isProgressUpdate || areTitlesRelated(existing.title, finalTitle))) {
+            if (existing != null && isSameProgressContext) {
                 val hasNewTitle = finalTitle != null && finalTitle != existing.title
                 val hasNewText = existing.text != finalHtmlText
                 val hasNewImage = imagePath != null && imagePath != existing.imagePath
