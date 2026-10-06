@@ -65,6 +65,20 @@ class AppSettingsAndRetentionTest {
     }
 
     @Test
+    fun areTitlesRelated_progressBarTitles_differentiatesContexts() {
+        // Same file progress ticks relate
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Downloading Speye.apk", "Downloading Speye.apk"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Speye.apk (12%)", "Speye.apk (15%)"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Speye.apk [20%]", "Speye.apk [40%]"))
+        assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Download (1/5)", "Download (2/5)"))
+
+        // Different files/apps downloading must NOT relate
+        assertFalse(com.fl0w.speye.service.NotificationService.areTitlesRelated("Downloading App A.apk", "Downloading App B.apk"))
+        assertFalse(com.fl0w.speye.service.NotificationService.areTitlesRelated("App A.apk (10%)", "App B.apk (10%)"))
+        assertFalse(com.fl0w.speye.service.NotificationService.areTitlesRelated("File1.zip", "File2.zip"))
+    }
+
+    @Test
     fun areTitlesRelated_nullHandling_returnsTrue() {
         assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated(null, "Alice"))
         assertTrue(com.fl0w.speye.service.NotificationService.areTitlesRelated("Alice", null))

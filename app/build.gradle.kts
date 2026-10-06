@@ -54,6 +54,7 @@ android {
             dimension = "distribution"
             applicationIdSuffix = ".play"
             versionNameSuffix = "-play"
+            proguardFiles("src/googlePlay/proguard-rules-googleplay.pro")
         }
         create("foss") {
             dimension = "distribution"
@@ -77,10 +78,7 @@ ksp {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.constraintlayout)
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)

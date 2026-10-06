@@ -264,8 +264,8 @@ class NotificationService : NotificationListenerService() {
                     existing.progress >= existing.progressMax &&
                     finalProgress != null && finalProgress < existing.progress
 
-            val isSameProgressContext = existing != null && titlesMatch && !isNewProgressCycle
-            val isProgressUpdate = (hasActiveProgressBar || isExistingProgress) && isSameProgressContext
+            val isSameNotificationContext = existing != null && titlesMatch && !isNewProgressCycle
+            val isProgressUpdate = (hasActiveProgressBar || isExistingProgress) && isSameNotificationContext
 
             if (isProgressUpdate && hasActiveProgressBar) {
                 val now = System.currentTimeMillis()
@@ -283,7 +283,7 @@ class NotificationService : NotificationListenerService() {
                 }
             }
 
-            if (existing != null && isSameProgressContext) {
+            if (existing != null && isSameNotificationContext) {
                 val hasNewTitle = finalTitle != null && finalTitle != existing.title
                 val hasNewText = existing.text != finalHtmlText
                 val hasNewImage = imagePath != null && imagePath != existing.imagePath
@@ -339,7 +339,7 @@ class NotificationService : NotificationListenerService() {
                         isIndeterminate = finalIsIndeterminate
                     )
                 )
-                if (isProgressUpdate) {
+                if (hasActiveProgressBar) {
                     lastProgressUpdateTimestamps[sbnKey] = System.currentTimeMillis()
                     finalProgress?.let { lastProgressValues[sbnKey] = it }
                 }

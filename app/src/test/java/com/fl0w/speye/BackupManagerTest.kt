@@ -168,9 +168,51 @@ class BackupManagerTest {
             assertNull(notif.imagePath)
             assertTrue(notif.history.isEmpty())
             assertNull(notif.contentIntentUri)
+            assertNull(notif.progress)
+            assertNull(notif.progressMax)
+            assertNull(notif.isIndeterminate)
             assertTrue(extracted.ignoredApps.isEmpty())
         } finally {
             tempDir.deleteRecursively()
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun writeBackupZipAndExtract_progressBarData_preservedInRoundTrip() {
+        val notificationWithProgress = SerializableNotification(
+            sbnKey = "0|com.download.mgr|101|null|1000",
+            packageName = "com.download.mgr",
+            title = "Downloading File",
+            text = "45%",
+            timestamp = 1700000050000L,
+            appName = "Download Manager",
+            isSystemRemoved = false,
+            imagePath = null,
+            history = emptyList(),
+            contentIntentUri = null,
+            progress = 45,
+            progressMax = 100,
+            isIndeterminate = false
+        )
+
+        val backupData = BackupData(
+            notifications = listOf(notificationWithProgress),
+            ignoredApps = emptyList()
+        )
+
+        val extractDir = Files.createTempDirectory("backup_progress_extract").toFile()
+        try {
+            val outStream = ByteArrayOutputStream()
+            BackupManager.writeBackupZip(backupData, emptyList(), outStream)
+            val extracted = BackupManager.extractBackupZip(ByteArrayInputStream(outStream.toByteArray()), extractDir)
+
+            assertEquals(1, extracted.notifications.size)
+            val notif = extracted.notifications[0]
+            assertEquals(45, notif.progress)
+            assertEquals(100, notif.progressMax)
+            assertEquals(false, notif.isIndeterminate)
+        } finally {
             extractDir.deleteRecursively()
         }
     }
