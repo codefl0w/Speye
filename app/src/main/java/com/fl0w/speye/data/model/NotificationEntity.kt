@@ -1,9 +1,11 @@
 package com.fl0w.speye.data.model
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+@Immutable
 @Entity(
     tableName = "notifications",
     indices = [

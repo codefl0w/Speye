@@ -143,11 +143,7 @@ fun AppFilterTag(
 fun AppItem(app: com.fl0w.speye.ui.viewmodel.AppInfo, onToggle: () -> Unit) {
     val context = LocalContext.current
     val appIcon = remember(app.packageName) {
-        try {
-            context.packageManager.getApplicationIcon(app.packageName).toBitmap().asImageBitmap()
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
-        }
+        com.fl0w.speye.utils.AppIconCache.getIcon(context, app.packageName)
     }
 
     Row(

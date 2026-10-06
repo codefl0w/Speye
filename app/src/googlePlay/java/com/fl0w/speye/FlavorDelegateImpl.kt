@@ -5,7 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Stars
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -22,7 +25,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.compose.ui.res.stringResource
-import androidx.compose.material.icons.filled.Stars
 import com.fl0w.speye.data.settings.BillingSettingsManager
 import com.fl0w.speye.ui.components.SettingsItem
 import com.fl0w.speye.ui.components.SettingsToggleItem

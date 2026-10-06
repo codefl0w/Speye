@@ -19,7 +19,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
@@ -372,7 +385,6 @@ fun NotificationListScreen(
                                             key(item.notification.id) {
                                                 NotificationItemWrapper(
                                                     item = item,
-                                                    context = context,
                                                     onImageClick = { path -> viewerImagePath = path },
                                                     onDeleteClick = { deleteTarget = DeleteTarget.Item(item.notification.id) },
                                                     onDeleteHistoryClick = { historyId -> deleteTarget = DeleteTarget.HistoryItem(historyId) },
@@ -406,7 +418,6 @@ fun NotificationListScreen(
                                 Box(modifier = if (reduceMotion) Modifier else Modifier.animateItem()) {
                                     NotificationItemWrapper(
                                         item = item,
-                                        context = context,
                                         onImageClick = { path -> viewerImagePath = path },
                                         onDeleteClick = { deleteTarget = DeleteTarget.Item(item.notification.id) },
                                         onDeleteHistoryClick = { historyId -> deleteTarget = DeleteTarget.HistoryItem(historyId) },
@@ -468,18 +479,17 @@ fun NotificationListScreen(
 @Composable
 fun NotificationItemWrapper(
     item: NotificationWithHistory,
-    context: Context,
     onImageClick: (String) -> Unit,
     onDeleteClick: () -> Unit,
     onDeleteHistoryClick: (Long) -> Unit,
     onIgnoreApp: () -> Unit
 ) {
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
 
     Box {
         NotificationItem(
             item = item,
-            context = context,
             onLongPress = { showMenu = true },
             onImageClick = onImageClick,
             onDeleteHistoryItem = onDeleteHistoryClick
@@ -723,11 +733,7 @@ fun AppGroupHeader(
 ) {
     val context = LocalContext.current
     val appIcon = remember(packageName) {
-        try {
-            context.packageManager.getApplicationIcon(packageName).toBitmap().asImageBitmap()
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
-        }
+        com.fl0w.speye.utils.AppIconCache.getIcon(context, packageName)
     }
 
     Box(
@@ -814,7 +820,6 @@ fun launchNotificationIntent(context: Context, notification: NotificationEntity)
 @Composable
 fun NotificationItem(
     item: NotificationWithHistory,
-    context: Context,
     onLongPress: () -> Unit,
     onImageClick: (String) -> Unit,
     onDeleteHistoryItem: (Long) -> Unit
@@ -967,7 +972,6 @@ fun NotificationItem(
                 HistoryContent(
                     visibleHistory = visibleHistory,
                     remainingCount = remainingCount,
-                    context = context,
                     onShowMore = { historyPageLimit += 100 },
                     onDeleteHistoryItem = onDeleteHistoryItem
                 )
@@ -977,7 +981,6 @@ fun NotificationItem(
                 HistoryContent(
                     visibleHistory = visibleHistory,
                     remainingCount = remainingCount,
-                    context = context,
                     onShowMore = { historyPageLimit += 100 },
                     onDeleteHistoryItem = onDeleteHistoryItem
                 )
@@ -990,7 +993,6 @@ fun NotificationItem(
 private fun HistoryContent(
     visibleHistory: List<NotificationHistoryEntity>,
     remainingCount: Int,
-    context: Context,
     onShowMore: () -> Unit,
     onDeleteHistoryItem: (Long) -> Unit
 ) {
@@ -1009,11 +1011,12 @@ private fun HistoryContent(
         )
         Spacer(modifier = Modifier.height(6.dp))
         visibleHistory.forEach { historyItem ->
-            HistoryEntryRow(
-                historyItem = historyItem,
-                context = context,
-                onDelete = { onDeleteHistoryItem(historyItem.id) }
-            )
+            key(historyItem.id) {
+                HistoryEntryRow(
+                    historyItem = historyItem,
+                    onDelete = { onDeleteHistoryItem(historyItem.id) }
+                )
+            }
         }
         if (remainingCount > 0) {
             TextButton(
@@ -1036,9 +1039,9 @@ private fun HistoryContent(
 @Composable
 fun HistoryEntryRow(
     historyItem: NotificationHistoryEntity,
-    context: Context,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
     val historyContent = historyItem.oldText ?: ""
     val renderedHistory = remember(historyItem.id, historyContent) {
         HtmlUtils.fromHtmlToAnnotatedString(historyContent)

@@ -32,6 +32,7 @@ class SpeyeApplication : Application(), ImageLoaderFactory {
         if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
             // App entered background or memory is constrained: release in-memory bitmap cache
             coil.Coil.imageLoader(this).memoryCache?.clear()
+            com.fl0w.speye.utils.AppIconCache.clear()
         }
     }
 }
