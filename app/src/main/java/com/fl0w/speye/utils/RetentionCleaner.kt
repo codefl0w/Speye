@@ -30,8 +30,9 @@ object RetentionCleaner {
             0
         }
 
-        // Always sweep unreferenced orphan images older than grace period
+        // Always sweep unreferenced orphan images and audio files older than grace period
         sweepOrphanImages(context)
+        sweepOrphanAudio(context)
 
         return pruned
     }
@@ -56,6 +57,31 @@ object RetentionCleaner {
             deleted
         } catch (e: Exception) {
             SpeyeLogger.e(TAG, "Error during orphan image sweep", e)
+            0
+        }
+    }
+
+    suspend fun sweepOrphanAudio(context: Context, gracePeriodMs: Long = ORPHAN_GRACE_PERIOD_MS): Int {
+        return try {
+            val voiceDir = File(context.filesDir, "voice")
+            if (!voiceDir.exists()) return 0
+            val audioFiles = voiceDir.listFiles { file ->
+                file.isFile && file.name.startsWith("aud_")
+            } ?: return 0
+
+            val dao = AppDatabase.getDatabase(context).notificationDao()
+            val deleted = sweepOrphanFiles(
+                files = audioFiles.toList(),
+                now = System.currentTimeMillis(),
+                gracePeriodMs = gracePeriodMs,
+                isReferenced = { path -> dao.countNotificationsUsingAudio(path) > 0 }
+            )
+            if (deleted > 0) {
+                SpeyeLogger.d(TAG, "Swept $deleted orphaned voice files")
+            }
+            deleted
+        } catch (e: Exception) {
+            SpeyeLogger.e(TAG, "Error during orphan audio sweep", e)
             0
         }
     }

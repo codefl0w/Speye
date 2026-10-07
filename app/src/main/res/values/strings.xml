@@ -13,6 +13,12 @@
     <string name="test_image">Image Attachment Test</string>
     <string name="test_progress">Progress Bar Test</string>
     <string name="test_indeterminate_progress">Indeterminate Progress Test</string>
+    <string name="test_voice_message">Voice Message Test</string>
+    <string name="save_to_device">Save to device</string>
+    <string name="voice_message_saved">Voice message saved to %s</string>
+    <string name="voice_message_save_failed">Failed to save voice message</string>
+    <string name="voice_message">Voice message</string>
+    <string name="audio_file_not_found">Audio file not found on device</string>
     <string name="no_notifications">No notifications saved yet</string>
     <string name="no_title">No Title</string>
     <string name="no_results">No matching notifications found</string>

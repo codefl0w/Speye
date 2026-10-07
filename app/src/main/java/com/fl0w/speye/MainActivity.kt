@@ -1,5 +1,6 @@
 package com.fl0w.speye
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
@@ -121,6 +122,13 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        if (intent?.getBooleanExtra("test_media", false) == true) {
+            sendMediaTest()
+        }
+        if (intent?.getBooleanExtra("test_voice", false) == true) {
+            sendVoiceMessageTest()
+        }
+
         setContent {
             var hasNotificationAccess by remember { mutableStateOf(isNotificationServiceEnabled()) }
             var hasPostNotification by remember {
@@ -209,7 +217,9 @@ class MainActivity : ComponentActivity() {
                                             onTestLongText = { sendLongTextTest() },
                                             onTestImage = { sendImageTest() },
                                             onTestProgress = { sendProgressTest() },
-                                            onTestIndeterminateProgress = { sendIndeterminateProgressTest() }
+                                            onTestIndeterminateProgress = { sendIndeterminateProgressTest() },
+                                            onTestMedia = { sendMediaTest() },
+                                            onTestVoiceMessage = { sendVoiceMessageTest() }
                                         )
                                     }
                                     composable("apps") {
@@ -221,7 +231,9 @@ class MainActivity : ComponentActivity() {
                                             onNavigateToLogs = { navController.navigate("debug_logs") },
                                             onNavigateToGoogleDrive = { navController.navigate("google_drive") },
                                             onNavigateToFaq = { navController.navigate("faq") },
-                                            onNavigateToPrivacyPolicy = { navController.navigate("privacy_policy") }
+                                            onNavigateToPrivacyPolicy = { navController.navigate("privacy_policy") },
+                                            onTestMedia = { sendMediaTest() },
+                                            onTestVoiceMessage = { sendVoiceMessageTest() }
                                         )
                                     }
                                     composable("accessibility") {
@@ -275,6 +287,17 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra("test_media", false)) {
+            sendMediaTest()
+        }
+        if (intent.getBooleanExtra("test_voice", false)) {
+            sendVoiceMessageTest()
         }
     }
 
@@ -411,6 +434,20 @@ class MainActivity : ComponentActivity() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
         notificationManager.notify(testId, notification)
+    }
+
+    fun sendMediaTest() {
+        com.fl0w.speye.utils.TestMediaManager.playOrToggle(this)
+    }
+
+    fun sendVoiceMessageTest() {
+        com.fl0w.speye.utils.TestVoiceManager.sendTestVoiceMessage(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        com.fl0w.speye.utils.TestMediaManager.stop(this)
+        com.fl0w.speye.utils.VoicePlayerManager.stopAndRelease(this)
     }
 
     private fun createChannel(manager: NotificationManager, id: String) {

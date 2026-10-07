@@ -27,5 +27,15 @@ data class NotificationEntity(
     val contentIntentUri: String? = null,
     val progress: Int? = null,
     val progressMax: Int? = null,
-    val isIndeterminate: Boolean? = null
+    val isIndeterminate: Boolean? = null,
+    val isMedia: Boolean = false,
+    val mediaTitle: String? = null,
+    val mediaArtist: String? = null,
+    val mediaAlbum: String? = null,
+    val mediaDurationMs: Long? = null,
+    val mediaPositionMs: Long? = null,
+    val mediaPlaybackState: Int? = null,
+    val audioPath: String? = null,
+    val isVoiceMessage: Boolean = false,
+    val voiceSender: String? = null
 )

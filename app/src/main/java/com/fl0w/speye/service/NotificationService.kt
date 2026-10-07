@@ -98,6 +98,10 @@ class NotificationService : NotificationListenerService() {
         private const val PROGRESS_THROTTLE_MS = 250L
         private val lastProgressUpdateTimestamps = java.util.concurrent.ConcurrentHashMap<String, Long>()
         private val lastProgressValues = java.util.concurrent.ConcurrentHashMap<String, Int>()
+
+        private const val MEDIA_THROTTLE_MS = 500L
+        private val lastMediaUpdateTimestamps = java.util.concurrent.ConcurrentHashMap<String, Long>()
+        private val lastMediaStates = java.util.concurrent.ConcurrentHashMap<String, Int>()
     }
 
     private var currentImageSetting = com.fl0w.speye.data.settings.ImageFormatSetting.PNG
@@ -237,10 +241,65 @@ class NotificationService : NotificationListenerService() {
         val finalProgressMax = if (hasActiveProgressBar) rawProgressMax else null
         val finalIsIndeterminate = if (hasActiveProgressBar) rawIsIndeterminate else null
 
-        // #5 & #11: Lazy picture extraction (avoids simultaneous decode of multiple bitmap sources)
-        val picture = extractNotificationPicture(notification, extras)
+        // Voice message detection
+        var detectedVoiceUri: Uri? = null
+        var detectedVoiceMime: String? = null
+        var detectedVoiceSender: String? = senderFromMessage
 
-        SpeyeLogger.d("NotificationService", "Intercepted (Immediate): $packageName - $finalTitle (Picture: ${picture != null}, Progress: $finalProgress/$finalProgressMax, Indet: $finalIsIndeterminate)")
+        if (messages != null) {
+            for (msgObj in messages) {
+                val msg = msgObj as? Bundle ?: continue
+                val type = msg.getString("type")
+                if (type?.startsWith("audio/", ignoreCase = true) == true) {
+                    detectedVoiceMime = type
+                    val uriObj = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        msg.getParcelable("uri", Uri::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        msg.getParcelable("uri")
+                    } ?: (msg.get("uri") as? Uri)
+                    if (uriObj != null) {
+                        detectedVoiceUri = uriObj
+                    }
+                    val msgSender = msg.getCharSequence("sender")?.toString()
+                        ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            @Suppress("DEPRECATION")
+                            (msg.getParcelable("sender_person") as? android.app.Person)?.name?.toString()
+                        } else null
+                    if (!msgSender.isNullOrBlank()) {
+                        detectedVoiceSender = msgSender
+                    }
+                }
+            }
+        }
+
+        if (detectedVoiceUri == null) {
+            val audioContentUri = if (extras.containsKey("android.audioContentsURI")) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    extras.getParcelable("android.audioContentsURI", Uri::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    extras.getParcelable("android.audioContentsURI")
+                } ?: (extras.get("android.audioContentsURI") as? Uri)
+                ?: extras.getString("android.audioContentsURI")?.let { Uri.parse(it) }
+            } else null
+            if (audioContentUri != null) {
+                detectedVoiceUri = audioContentUri
+                detectedVoiceMime = "audio/ogg"
+            }
+        }
+
+        val isTestVoice = extras.getBoolean("speye_test_voice_message", false)
+        val testAudioPath = extras.getString("speye_test_audio_path")
+        val isVoiceMessageDetected = detectedVoiceUri != null || isTestVoice || testAudioPath != null
+
+        // Media detection and extraction
+        val mediaSnapshot = com.fl0w.speye.utils.MediaSessionExtractor.extract(this, sbn)
+
+        // #5 & #11: Lazy picture extraction (avoids simultaneous decode of multiple bitmap sources)
+        val picture = mediaSnapshot.coverBitmap ?: extractNotificationPicture(notification, extras)
+
+        SpeyeLogger.d("NotificationService", "Intercepted (Immediate): $packageName - $finalTitle (Picture: ${picture != null}, Media: ${mediaSnapshot.isMedia}, Voice: $isVoiceMessageDetected, Progress: $finalProgress/$finalProgressMax, Indet: $finalIsIndeterminate)")
 
         // --- BACKGROUND PERSISTENCE ---
         serviceScope.launch {
@@ -257,6 +316,138 @@ class NotificationService : NotificationListenerService() {
 
             val isOurApp = packageName == applicationContext.packageName
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
+
+            if (isVoiceMessageDetected) {
+                val audioSaved = if (detectedVoiceUri != null) {
+                    com.fl0w.speye.utils.AudioUtils.saveAudioFromUri(this@NotificationService, detectedVoiceUri, detectedVoiceMime)
+                } else null
+                val effectiveAudioPath = audioSaved?.first ?: testAudioPath ?: existing?.audioPath
+                val extractedDuration = audioSaved?.second?.takeIf { it > 0L }
+                    ?: (effectiveAudioPath?.let { com.fl0w.speye.utils.AudioUtils.extractDuration(it) })?.takeIf { it > 0L }
+                    ?: com.fl0w.speye.utils.AudioUtils.parseDurationFromText(rawText?.toString())
+                    ?: com.fl0w.speye.utils.AudioUtils.parseDurationFromText(finalTitle)
+                    ?: existing?.mediaDurationMs
+                    ?: 0L
+                val effectiveVoiceSender = detectedVoiceSender ?: finalTitle ?: existing?.voiceSender ?: "Voice message"
+
+                val isSameVoiceMessage = existing != null && existing.isVoiceMessage && existing.packageName == packageName
+
+                if (isSameVoiceMessage) {
+                    database.notificationDao().update(
+                        existing.copy(
+                            title = finalTitle ?: existing.title,
+                            text = finalHtmlText ?: existing.text,
+                            timestamp = finalTimestamp,
+                            isSystemRemoved = false,
+                            imagePath = imagePath ?: existing.imagePath,
+                            contentIntentUri = finalIntentUri ?: existing.contentIntentUri,
+                            audioPath = effectiveAudioPath ?: existing.audioPath,
+                            isVoiceMessage = true,
+                            voiceSender = effectiveVoiceSender,
+                            mediaDurationMs = if (extractedDuration > 0L) extractedDuration else existing.mediaDurationMs,
+                            mediaPositionMs = finalProgress?.toLong() ?: existing.mediaPositionMs ?: 0L
+                        )
+                    )
+                    return@launch
+                } else {
+                    if (existing != null) {
+                        database.notificationDao().markAsSystemRemovedById(existing.id)
+                    }
+                    database.notificationDao().insert(
+                        NotificationEntity(
+                            sbnKey = sbnKey,
+                            packageName = packageName,
+                            appName = appName,
+                            title = finalTitle,
+                            text = finalHtmlText,
+                            timestamp = finalTimestamp,
+                            imagePath = imagePath,
+                            contentIntentUri = finalIntentUri,
+                            audioPath = effectiveAudioPath,
+                            isVoiceMessage = true,
+                            voiceSender = effectiveVoiceSender,
+                            mediaDurationMs = extractedDuration,
+                            mediaPositionMs = finalProgress?.toLong() ?: 0L,
+                            mediaPlaybackState = android.media.session.PlaybackState.STATE_PAUSED
+                        )
+                    )
+                    return@launch
+                }
+            }
+
+            if (mediaSnapshot.isMedia) {
+                val effectiveMediaTitle = mediaSnapshot.title ?: finalTitle
+                val effectiveMediaArtist = mediaSnapshot.artist ?: finalHtmlText
+                val isSameTrack = existing != null &&
+                        existing.isMedia &&
+                        existing.packageName == packageName &&
+                        areTitlesRelated(existing.mediaTitle ?: existing.title, effectiveMediaTitle) &&
+                        (existing.mediaArtist == null || effectiveMediaArtist == null || existing.mediaArtist == effectiveMediaArtist)
+
+                if (isSameTrack) {
+                    val now = System.currentTimeMillis()
+                    val lastUpdate = lastMediaUpdateTimestamps[sbnKey] ?: 0L
+                    val lastState = lastMediaStates[sbnKey]
+                    val stateChanged = mediaSnapshot.playbackState != null && mediaSnapshot.playbackState != lastState
+
+                    if (!stateChanged && (now - lastUpdate < MEDIA_THROTTLE_MS)) {
+                        return@launch
+                    }
+
+                    database.notificationDao().update(
+                        existing.copy(
+                            title = effectiveMediaTitle ?: existing.title,
+                            text = effectiveMediaArtist ?: existing.text,
+                            timestamp = finalTimestamp,
+                            isSystemRemoved = false,
+                            imagePath = imagePath ?: existing.imagePath,
+                            contentIntentUri = finalIntentUri ?: existing.contentIntentUri,
+                            isMedia = true,
+                            mediaTitle = mediaSnapshot.title ?: existing.mediaTitle,
+                            mediaArtist = mediaSnapshot.artist ?: existing.mediaArtist,
+                            mediaAlbum = mediaSnapshot.album ?: existing.mediaAlbum,
+                            mediaDurationMs = mediaSnapshot.durationMs ?: existing.mediaDurationMs,
+                            mediaPositionMs = mediaSnapshot.positionMs ?: existing.mediaPositionMs,
+                            mediaPlaybackState = mediaSnapshot.playbackState ?: existing.mediaPlaybackState
+                        )
+                    )
+                    lastMediaUpdateTimestamps[sbnKey] = now
+                    mediaSnapshot.playbackState?.let { lastMediaStates[sbnKey] = it }
+                    return@launch
+                } else {
+                    // New track started on same sbnKey: mark previous track as system removed and paused
+                    if (existing != null) {
+                        database.notificationDao().update(
+                            existing.copy(
+                                isSystemRemoved = true,
+                                mediaPlaybackState = android.media.session.PlaybackState.STATE_PAUSED
+                            )
+                        )
+                    }
+                    database.notificationDao().insert(
+                        NotificationEntity(
+                            sbnKey = sbnKey,
+                            packageName = packageName,
+                            appName = appName,
+                            title = effectiveMediaTitle,
+                            text = effectiveMediaArtist,
+                            timestamp = finalTimestamp,
+                            imagePath = imagePath,
+                            contentIntentUri = finalIntentUri,
+                            isMedia = true,
+                            mediaTitle = mediaSnapshot.title ?: finalTitle,
+                            mediaArtist = mediaSnapshot.artist,
+                            mediaAlbum = mediaSnapshot.album,
+                            mediaDurationMs = mediaSnapshot.durationMs,
+                            mediaPositionMs = mediaSnapshot.positionMs,
+                            mediaPlaybackState = mediaSnapshot.playbackState
+                        )
+                    )
+                    lastMediaUpdateTimestamps[sbnKey] = System.currentTimeMillis()
+                    mediaSnapshot.playbackState?.let { lastMediaStates[sbnKey] = it }
+                    return@launch
+                }
+            }
 
             val titlesMatch = isOurApp || areTitlesRelated(existing?.title, finalTitle)
             val isExistingProgress = (existing?.progressMax != null && existing.progressMax > 0) || existing?.isIndeterminate == true
@@ -475,9 +666,22 @@ class NotificationService : NotificationListenerService() {
         val sbnKey = sbn.key
         lastProgressUpdateTimestamps.remove(sbnKey)
         lastProgressValues.remove(sbnKey)
+        lastMediaUpdateTimestamps.remove(sbnKey)
+        lastMediaStates.remove(sbnKey)
         SpeyeLogger.d("NotificationService", "System removed: $sbnKey")
         serviceScope.launch {
-            database.notificationDao().markAsSystemRemoved(sbnKey)
+            val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
+            if (existing != null && (existing.isMedia || existing.isVoiceMessage)) {
+                // Freeze final state: mark system removed and paused, preserve position/duration/cover/audio
+                database.notificationDao().update(
+                    existing.copy(
+                        isSystemRemoved = true,
+                        mediaPlaybackState = android.media.session.PlaybackState.STATE_PAUSED
+                    )
+                )
+            } else {
+                database.notificationDao().markAsSystemRemoved(sbnKey)
+            }
         }
     }
 }

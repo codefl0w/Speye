@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QuestionAnswer
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Terminal
@@ -64,7 +66,9 @@ fun SettingsScreen(
     onNavigateToLogs: () -> Unit,
     onNavigateToGoogleDrive: () -> Unit,
     onNavigateToFaq: () -> Unit,
-    onNavigateToPrivacyPolicy: () -> Unit
+    onNavigateToPrivacyPolicy: () -> Unit,
+    onTestMedia: () -> Unit = {},
+    onTestVoiceMessage: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -232,6 +236,18 @@ fun SettingsScreen(
                     title = stringResource(R.string.view_logs),
                     subtitle = stringResource(R.string.view_logs_sub),
                     onClick = onNavigateToLogs
+                )
+                SettingsItem(
+                    icon = Icons.Default.PlayArrow,
+                    title = "Test Media Playback",
+                    subtitle = "Play test ringtone with interactive media notification",
+                    onClick = onTestMedia
+                )
+                SettingsItem(
+                    icon = Icons.Default.Mic,
+                    title = "Test Voice Message",
+                    subtitle = "Simulate incoming voice message notification with audio",
+                    onClick = onTestVoiceMessage
                 )
             }
         }

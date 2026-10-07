@@ -104,5 +104,14 @@ interface NotificationDao {
 
     @Query("SELECT COUNT(*) FROM notification_history WHERE notificationId = :notificationId")
     suspend fun getHistoryCount(notificationId: Long): Int
+
+    @Query("UPDATE notifications SET mediaPositionMs = :positionMs WHERE id = :id")
+    suspend fun updateMediaPosition(id: Long, positionMs: Long)
+
+    @Query("SELECT COUNT(*) FROM notifications WHERE audioPath = :audioPath")
+    suspend fun countNotificationsUsingAudio(audioPath: String): Int
+
+    @Query("SELECT audioPath FROM notifications WHERE audioPath IS NOT NULL")
+    suspend fun getAllAudioPaths(): List<String>
 }
 

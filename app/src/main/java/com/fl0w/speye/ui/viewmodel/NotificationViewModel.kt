@@ -68,12 +68,16 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
 
     fun deleteNotification(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
+            val notif = dao.getNotificationById(id)
+            notif?.audioPath?.let { File(it).delete() }
             dao.deleteById(id)
         }
     }
 
     fun deleteGroup(packageName: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            val notifs = dao.getNotificationsByPackageName(packageName)
+            notifs.forEach { it.audioPath?.let { p -> File(p).delete() } }
             dao.deleteByPackageName(packageName)
         }
     }
@@ -90,6 +94,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch(Dispatchers.IO) {
             dao.deleteAll()
             com.fl0w.speye.utils.RetentionCleaner.sweepOrphanImages(getApplication(), gracePeriodMs = 0L)
+            com.fl0w.speye.utils.RetentionCleaner.sweepOrphanAudio(getApplication(), gracePeriodMs = 0L)
         }
     }
 

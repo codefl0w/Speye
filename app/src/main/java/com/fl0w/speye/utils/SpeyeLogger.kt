@@ -32,6 +32,18 @@ object SpeyeLogger {
         }
     }
 
+    fun w(tag: String, message: String, throwable: Throwable? = null) {
+        try {
+            Log.w(tag, message, throwable)
+        } catch (_: RuntimeException) {
+            // JVM test environment where android.util.Log is not mocked
+        }
+        if (isLoggingEnabled) {
+            val fullMessage = if (throwable != null) "$message\n${throwable.stackTraceToString()}" else message
+            appendLog("W", tag, fullMessage)
+        }
+    }
+
     fun e(tag: String, message: String, throwable: Throwable? = null) {
         var stackTrace: String? = null
         try {

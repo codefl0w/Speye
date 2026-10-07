@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -18,6 +19,7 @@ import java.security.MessageDigest
 
 object ImageUtils {
     const val MAX_BITMAP_DIMENSION = 1024
+    const val EXPORT_IMAGE_DIRECTORY_PATH = "/sdcard/Speye/saved/image"
 
     fun scaleBitmapIfNeeded(bitmap: Bitmap, maxDimension: Int = MAX_BITMAP_DIMENSION): Bitmap {
         val w = bitmap.width
@@ -119,53 +121,46 @@ object ImageUtils {
         }
     }
 
-    fun exportToGallery(context: Context, filePath: String) {
-        val file = File(filePath)
-        if (!file.exists()) {
+    fun exportToGallery(context: Context, filePath: String): File? {
+        val srcFile = File(filePath)
+        if (!srcFile.exists() || !srcFile.isFile) {
             Toast.makeText(context, context.getString(com.fl0w.speye.R.string.image_not_found), Toast.LENGTH_SHORT).show()
-            return
+            return null
         }
 
-        val bitmap = BitmapFactory.decodeFile(filePath) ?: run {
-            Toast.makeText(context, context.getString(com.fl0w.speye.R.string.image_load_failed), Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val fileName = "Speye_${System.currentTimeMillis()}.png"
-        val contentResolver = context.contentResolver
-
-        val imageUri: Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Speye")
-            }
-            contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-        } else {
-            @Suppress("DEPRECATION")
-            val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val speyeDir = File(directory, "Speye")
-            if (!speyeDir.exists()) speyeDir.mkdirs()
-            val destFile = File(speyeDir, fileName)
-            Uri.fromFile(destFile)
-        }
-
-        try {
-            if (imageUri != null) {
-                val outputStream: OutputStream? = contentResolver.openOutputStream(imageUri)
-                if (outputStream != null) {
-                    outputStream.use {
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+        return try {
+            var exportDir = File(EXPORT_IMAGE_DIRECTORY_PATH)
+            if (!exportDir.exists() && !exportDir.mkdirs()) {
+                exportDir = File(Environment.getExternalStorageDirectory(), "Speye/saved/image")
+                if (!exportDir.exists() && !exportDir.mkdirs()) {
+                    exportDir = File(context.getExternalFilesDir(null), "Speye/saved/image")
+                    if (!exportDir.exists()) {
+                        exportDir.mkdirs()
                     }
-                    Toast.makeText(context, context.getString(com.fl0w.speye.R.string.saved_to_gallery_success), Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed), Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed), Toast.LENGTH_SHORT).show()
             }
+
+            val destFile = File(exportDir, srcFile.name)
+            srcFile.copyTo(destFile, overwrite = true)
+            SpeyeLogger.d("ImageUtils", "Exported photo to ${destFile.absolutePath}")
+
+            try {
+                MediaScannerConnection.scanFile(
+                    context.applicationContext,
+                    arrayOf(destFile.absolutePath),
+                    null,
+                    null
+                )
+            } catch (e: Exception) {
+                SpeyeLogger.w("ImageUtils", "MediaScanner failed for ${destFile.absolutePath}: ${e.message}")
+            }
+
+            Toast.makeText(context, context.getString(com.fl0w.speye.R.string.saved_to_gallery_success), Toast.LENGTH_SHORT).show()
+            destFile
         } catch (e: Exception) {
+            SpeyeLogger.e("ImageUtils", "Error exporting image: $filePath", e)
             Toast.makeText(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed), Toast.LENGTH_SHORT).show()
+            null
         }
     }
 

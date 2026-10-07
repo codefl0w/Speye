@@ -80,7 +80,9 @@ fun NotificationListScreen(
     onTestLongText: () -> Unit,
     onTestImage: () -> Unit,
     onTestProgress: () -> Unit = {},
-    onTestIndeterminateProgress: () -> Unit = {}
+    onTestIndeterminateProgress: () -> Unit = {},
+    onTestMedia: () -> Unit = {},
+    onTestVoiceMessage: () -> Unit = {}
 ) {
     val groupedNotifications by viewModel.groupedNotifications.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
@@ -196,6 +198,14 @@ fun NotificationListScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.test_indeterminate_progress), color = SpeyeTheme.colors.textPrimary) },
                                     onClick = { onTestIndeterminateProgress(); showTestMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Test Media (Song)", color = SpeyeTheme.colors.primary) },
+                                    onClick = { onTestMedia(); showTestMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.test_voice_message), color = SpeyeTheme.colors.primary) },
+                                    onClick = { onTestVoiceMessage(); showTestMenu = false }
                                 )
                             }
                         }
@@ -506,11 +516,59 @@ fun NotificationItemWrapper(
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.go), color = SpeyeTheme.colors.primary) },
                     onClick = {
-                        launchNotificationIntent(context, item.notification)
+                        if (!item.notification.isVoiceMessage && item.notification.isMedia) {
+                            val handled = com.fl0w.speye.utils.MediaActionHelper.continuePlayback(
+                                context,
+                                item.notification.packageName,
+                                item.notification.mediaPositionMs
+                            )
+                            if (!handled) {
+                                launchNotificationIntent(context, item.notification)
+                            }
+                        } else {
+                            launchNotificationIntent(context, item.notification)
+                        }
                         showMenu = false
                     },
                     leadingIcon = { Icon(Icons.AutoMirrored.Filled.OpenInNew, null, tint = SpeyeTheme.colors.primary) }
                 )
+                if (item.notification.isVoiceMessage || item.notification.audioPath != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.save_to_device), color = SpeyeTheme.colors.primary) },
+                        onClick = {
+                            val audioPath = item.notification.audioPath
+                            if (audioPath != null) {
+                                val savedFile = com.fl0w.speye.utils.AudioUtils.exportVoiceMessage(context, audioPath)
+                                if (savedFile != null) {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        context.getString(R.string.voice_message_saved, savedFile.absolutePath),
+                                        android.widget.Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        context.getString(R.string.voice_message_save_failed),
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                            showMenu = false
+                        },
+                        leadingIcon = { Icon(Icons.Default.Download, null, tint = SpeyeTheme.colors.primary) }
+                    )
+                } else if (item.notification.imagePath != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.save_to_device), color = SpeyeTheme.colors.primary) },
+                        onClick = {
+                            item.notification.imagePath?.let { imgPath ->
+                                ImageUtils.exportToGallery(context, imgPath)
+                            }
+                            showMenu = false
+                        },
+                        leadingIcon = { Icon(Icons.Default.Download, null, tint = SpeyeTheme.colors.primary) }
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.copy_content), color = SpeyeTheme.colors.textPrimary) },
                     onClick = {
@@ -862,100 +920,115 @@ fun NotificationItem(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = notification.title ?: stringResource(R.string.no_title),
-                color = SpeyeTheme.colors.textPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp,
-                modifier = Modifier.weight(1f)
-            )
-            if (item.history.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(SpeyeTheme.colors.secondary.copy(alpha = 0.1f))
-                        .clickable { isHistoryExpanded = !isHistoryExpanded }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.edited, item.history.size), color = SpeyeTheme.colors.secondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        Icon(
-                            if (isHistoryExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = SpeyeTheme.colors.secondary
-                        )
+        if (!notification.isVoiceMessage) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = notification.title ?: stringResource(R.string.no_title),
+                    color = SpeyeTheme.colors.textPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                if (item.history.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(SpeyeTheme.colors.secondary.copy(alpha = 0.1f))
+                            .clickable { isHistoryExpanded = !isHistoryExpanded }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.edited, item.history.size), color = SpeyeTheme.colors.secondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                if (isHistoryExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = SpeyeTheme.colors.secondary
+                            )
+                        }
                     }
                 }
             }
         }
-        val contentText = notification.text ?: ""
-        val annotatedText = remember(contentText) {
-            HtmlUtils.fromHtmlToAnnotatedString(contentText)
-        }
-
-        SelectionContainer {
-            Text(
-                text = annotatedText,
-                fontSize = 14.sp,
-                color = if (item.history.isNotEmpty()) SpeyeTheme.colors.secondary else SpeyeTheme.colors.textSecondary
-            )
-        }
-
-        val hasProgressBar = (notification.progressMax != null && notification.progressMax > 0) || notification.isIndeterminate == true
-        if (hasProgressBar) {
+        if (notification.isVoiceMessage) {
             Spacer(modifier = Modifier.height(10.dp))
-            SpeyeProgressBar(
-                progress = notification.progress,
-                progressMax = notification.progressMax,
-                isIndeterminate = notification.isIndeterminate
+            com.fl0w.speye.ui.components.SpeyeVoiceMessageCard(
+                notification = notification
             )
-        }
-
-        notification.imagePath?.let { path ->
-            Spacer(modifier = Modifier.height(12.dp))
-            val imageExists = remember(path) {
-                File(path).let { it.exists() && it.isFile }
+        } else if (notification.isMedia) {
+            Spacer(modifier = Modifier.height(10.dp))
+            com.fl0w.speye.ui.components.SpeyeMediaCard(
+                notification = notification,
+                onCoverClick = onImageClick
+            )
+        } else {
+            val contentText = notification.text ?: ""
+            val annotatedText = remember(contentText) {
+                HtmlUtils.fromHtmlToAnnotatedString(contentText)
             }
-            if (imageExists) {
-                AsyncImage(
-                    model = path,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(SpeyeTheme.colors.surface)
-                        .clickable { onImageClick(path) }
+
+            SelectionContainer {
+                Text(
+                    text = annotatedText,
+                    fontSize = 14.sp,
+                    color = if (item.history.isNotEmpty()) SpeyeTheme.colors.secondary else SpeyeTheme.colors.textSecondary
                 )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.Gray.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+            }
+
+            val hasProgressBar = (notification.progressMax != null && notification.progressMax > 0) || notification.isIndeterminate == true
+            if (hasProgressBar) {
+                Spacer(modifier = Modifier.height(10.dp))
+                SpeyeProgressBar(
+                    progress = notification.progress,
+                    progressMax = notification.progressMax,
+                    isIndeterminate = notification.isIndeterminate
+                )
+            }
+
+            notification.imagePath?.let { path ->
+                Spacer(modifier = Modifier.height(12.dp))
+                val imageExists = remember(path) {
+                    File(path).let { it.exists() && it.isFile }
+                }
+                if (imageExists) {
+                    AsyncImage(
+                        model = path,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(SpeyeTheme.colors.surface)
+                            .clickable { onImageClick(path) }
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.Gray.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.BrokenImage,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(36.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.image_not_found_on_device),
-                            color = Color.Gray,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.BrokenImage,
+                                contentDescription = null,
+                                tint = Color.Gray,
+                                modifier = Modifier.size(36.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.image_not_found_on_device),
+                                color = Color.Gray,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
