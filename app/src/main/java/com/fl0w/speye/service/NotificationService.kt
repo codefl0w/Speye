@@ -18,6 +18,7 @@ import com.fl0w.speye.data.db.AppDatabase
 import com.fl0w.speye.data.model.NotificationEntity
 import com.fl0w.speye.data.model.NotificationHistoryEntity
 import com.fl0w.speye.utils.ImageUtils
+import com.fl0w.speye.utils.MediaActionHelper
 import com.fl0w.speye.utils.SpeyeLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -155,8 +156,12 @@ class NotificationService : NotificationListenerService() {
         // #6: Fast in-memory check instead of DB query
         if (ignoredPackages.contains(packageName)) return
 
-        // Skip group summary container notifications (child notifications hold actual conversation data)
-        if ((notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) {
+        val isMedia = isMediaNotification(notification)
+
+        // Skip group summary container notifications (child notifications hold actual conversation data).
+        // Media notifications often carry FLAG_GROUP_SUMMARY to anchor playback controls in system drawer,
+        // so exempt them from being dropped.
+        if ((notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0 && !isMedia) {
             SpeyeLogger.d("NotificationService", "Ignored group summary: $packageName ($sbnKey)")
             return
         }
@@ -246,25 +251,25 @@ class NotificationService : NotificationListenerService() {
         var detectedVoiceMime: String? = null
         var detectedVoiceSender: String? = senderFromMessage
 
-        if (messages != null) {
-            for (msgObj in messages) {
-                val msg = msgObj as? Bundle ?: continue
-                val type = msg.getString("type")
+        if (messages != null && messages.isNotEmpty()) {
+            val lastMsg = messages.lastOrNull() as? Bundle
+            if (lastMsg != null) {
+                val type = lastMsg.getString("type")
                 if (type?.startsWith("audio/", ignoreCase = true) == true) {
                     detectedVoiceMime = type
                     val uriObj = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        msg.getParcelable("uri", Uri::class.java)
+                        lastMsg.getParcelable("uri", Uri::class.java)
                     } else {
                         @Suppress("DEPRECATION")
-                        msg.getParcelable("uri")
-                    } ?: (msg.get("uri") as? Uri)
+                        lastMsg.getParcelable("uri")
+                    } ?: (lastMsg.get("uri") as? Uri)
                     if (uriObj != null) {
                         detectedVoiceUri = uriObj
                     }
-                    val msgSender = msg.getCharSequence("sender")?.toString()
+                    val msgSender = lastMsg.getCharSequence("sender")?.toString()
                         ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                             @Suppress("DEPRECATION")
-                            (msg.getParcelable("sender_person") as? android.app.Person)?.name?.toString()
+                            (lastMsg.getParcelable("sender_person") as? android.app.Person)?.name?.toString()
                         } else null
                     if (!msgSender.isNullOrBlank()) {
                         detectedVoiceSender = msgSender
@@ -293,6 +298,42 @@ class NotificationService : NotificationListenerService() {
         val testAudioPath = extras.getString("speye_test_audio_path")
         val isVoiceMessageDetected = detectedVoiceUri != null || isTestVoice || testAudioPath != null
 
+        // Image / animated sticker detection from MessagingStyle attachments or BigPicture URI
+        var detectedImageUri: Uri? = null
+        var detectedImageMime: String? = null
+
+        val lastImageMsg = messages?.lastOrNull() as? Bundle
+        if (lastImageMsg != null) {
+            val type = lastImageMsg.getString("type")
+            if (type != null && type.startsWith("image/", ignoreCase = true)) {
+                val uriObj = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    lastImageMsg.getParcelable("uri", Uri::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    lastImageMsg.getParcelable("uri")
+                } ?: (lastImageMsg.get("uri") as? Uri)
+                if (uriObj != null) {
+                    detectedImageUri = uriObj
+                    detectedImageMime = type
+                }
+            }
+        }
+
+        if (detectedImageUri == null) {
+            val picIconUri = if (extras.containsKey("android.pictureIconURI")) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    extras.getParcelable("android.pictureIconURI", Uri::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    extras.getParcelable("android.pictureIconURI")
+                } ?: (extras.get("android.pictureIconURI") as? Uri)
+                ?: extras.getString("android.pictureIconURI")?.let { Uri.parse(it) }
+            } else null
+            if (picIconUri != null) {
+                detectedImageUri = picIconUri
+            }
+        }
+
         // Media detection and extraction
         val mediaSnapshot = com.fl0w.speye.utils.MediaSessionExtractor.extract(this, sbn)
 
@@ -312,7 +353,12 @@ class NotificationService : NotificationListenerService() {
                 }
             }
             
-            val imagePath = if (picture != null) ImageUtils.saveBitmap(this@NotificationService, picture, currentImageSetting) else null
+            val imagePath = if (detectedImageUri != null) {
+                ImageUtils.saveRawImageFromUri(this@NotificationService, detectedImageUri, detectedImageMime)
+                    ?: if (picture != null) ImageUtils.saveBitmap(this@NotificationService, picture, currentImageSetting) else null
+            } else if (picture != null) {
+                ImageUtils.saveBitmap(this@NotificationService, picture, currentImageSetting)
+            } else null
 
             val isOurApp = packageName == applicationContext.packageName
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
@@ -330,7 +376,10 @@ class NotificationService : NotificationListenerService() {
                     ?: 0L
                 val effectiveVoiceSender = detectedVoiceSender ?: finalTitle ?: existing?.voiceSender ?: "Voice message"
 
-                val isSameVoiceMessage = existing != null && existing.isVoiceMessage && existing.packageName == packageName
+                val isSameVoiceMessage = existing != null &&
+                    existing.isVoiceMessage &&
+                    existing.packageName == packageName &&
+                    (effectiveAudioPath == null || existing.audioPath == null || effectiveAudioPath == existing.audioPath)
 
                 if (isSameVoiceMessage) {
                     database.notificationDao().update(
@@ -606,20 +655,18 @@ class NotificationService : NotificationListenerService() {
             @Suppress("DEPRECATION")
             extras.getParcelableArray(Notification.EXTRA_MESSAGES)
         } ?: return null
-        for (i in messages.indices.reversed()) {
-            val msg = messages[i] as? Bundle ?: continue
-            val type = msg.getString("type")
-            if (type != null && type.startsWith("image/")) {
-                val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    msg.getParcelable("uri", Uri::class.java)
-                } else {
-                    @Suppress("DEPRECATION")
-                    msg.getParcelable<Uri>("uri")
-                }
-                if (uri != null) {
-                    val sampled = decodeSampledBitmapFromUri(uri, ImageUtils.MAX_BITMAP_DIMENSION, ImageUtils.MAX_BITMAP_DIMENSION)
-                    if (sampled != null) return sampled
-                }
+        val lastMsg = messages.lastOrNull() as? Bundle ?: return null
+        val type = lastMsg.getString("type")
+        if (type != null && type.startsWith("image/", ignoreCase = true)) {
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                lastMsg.getParcelable("uri", Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                lastMsg.getParcelable<Uri>("uri")
+            }
+            if (uri != null) {
+                val sampled = decodeSampledBitmapFromUri(uri, ImageUtils.MAX_BITMAP_DIMENSION, ImageUtils.MAX_BITMAP_DIMENSION)
+                if (sampled != null) return sampled
             }
         }
         return null
@@ -661,8 +708,15 @@ class NotificationService : NotificationListenerService() {
         }
     }
 
+    private fun isMediaNotification(notification: Notification): Boolean {
+        val extras = notification.extras ?: Bundle()
+        return extras.containsKey(Notification.EXTRA_MEDIA_SESSION) ||
+                extras.getString(Notification.EXTRA_TEMPLATE)?.contains("MediaStyle", ignoreCase = true) == true ||
+                notification.category == Notification.CATEGORY_TRANSPORT
+    }
+
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
+        if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0 && !isMediaNotification(sbn.notification)) return
         val sbnKey = sbn.key
         lastProgressUpdateTimestamps.remove(sbnKey)
         lastProgressValues.remove(sbnKey)
@@ -672,10 +726,36 @@ class NotificationService : NotificationListenerService() {
         serviceScope.launch {
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)
             if (existing != null && (existing.isMedia || existing.isVoiceMessage)) {
+                val finalPosition: Long? = if (existing.isMedia) {
+                    val controller = MediaActionHelper.getActiveController(applicationContext, sbn.packageName)
+                    val ps = controller?.playbackState
+                    if (ps != null) {
+                        var p: Long = ps.position
+                        if (ps.state == android.media.session.PlaybackState.STATE_PLAYING && ps.lastPositionUpdateTime > 0L) {
+                            val d: Long = android.os.SystemClock.elapsedRealtime() - ps.lastPositionUpdateTime
+                            if (d > 0L) {
+                                p += (d * ps.playbackSpeed).toLong()
+                            }
+                        }
+                        if (p >= 0L) p else existing.mediaPositionMs
+                    } else {
+                        val base = existing.mediaPositionMs ?: 0L
+                        if (existing.timestamp > 0L) {
+                            val delta = System.currentTimeMillis() - existing.timestamp
+                            base + delta.coerceAtLeast(0L)
+                        } else {
+                            base
+                        }
+                    }
+                } else {
+                    existing.mediaPositionMs
+                }
+
                 // Freeze final state: mark system removed and paused, preserve position/duration/cover/audio
                 database.notificationDao().update(
                     existing.copy(
                         isSystemRemoved = true,
+                        mediaPositionMs = finalPosition,
                         mediaPlaybackState = android.media.session.PlaybackState.STATE_PAUSED
                     )
                 )

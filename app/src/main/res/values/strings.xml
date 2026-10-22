@@ -180,6 +180,80 @@
     <string name="reduce_motion_title">Reduce Motion</string>
     <string name="reduce_motion_sub">Minimize animations and UI transitions</string>
 
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">Unknown Track</string>
+    <string name="unknown_artist">Unknown Artist</string>
+    <string name="test_media">Test Media (Song)</string>
+    <string name="test_media_playback">Test Media Playback</string>
+    <string name="test_media_playback_sub">Emit test media notification with controls</string>
+    <string name="test_voice_playback_sub">Emit test voice note notification</string>
+    <string name="simulate_pro_user">Simulate Pro User</string>
+    <string name="simulate_pro_user_sub">Toggle Pro version state for testing UI &amp; ads</string>
+
     <!-- Ads -->
-    <string name="ad_unit_id_banner">ca-app-pub-4736595764878736/1017915227</string>
+    <string name="ad_unit_id_banner" translatable="false">ca-app-pub-4736595764878736/1017915227</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">Wi-Fi Only Backup</string>
+    <string name="wifi_only_backup_sub">Only perform cloud sync when connected to unmetered Wi-Fi</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">Support the Developer</string>
+    <string name="support_developer_sub">Buy me a coffee on buymeacoffee.com/fl0w</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">About Speye</string>
+    <string name="about_speye_sub">App version, device architecture, and project information</string>
+    <string name="about_app_desc">Speye is a privacy-first notification logger and history manager for Android. Catch and preserve every notification, edit history, media cards, and voice messages directly on your device.</string>
+    <string name="device_and_build">DEVICE &amp; BUILD</string>
+    <string name="build_flavor">Build Flavor</string>
+    <string name="device_architecture">Device Architecture</string>
+    <string name="device_model">Device Model</string>
+    <string name="android_version">Android Version</string>
+    <string name="project_info">PROJECT &amp; CREATOR</string>
+    <string name="creator">Creator</string>
+    <string name="source_code">Source Code</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">PERMISSIONS &amp; TRANSPARENCY</string>
+    <string name="not_granted">NOT GRANTED</string>
+    <string name="whitelisted">EXEMPTED</string>
+    <string name="not_whitelisted">NOT EXEMPTED</string>
+    <string name="why_label">Why</string>
+    <string name="how_label">How</string>
+    <string name="where_label">Where</string>
+    <string name="handling_label">Handling</string>
+    <string name="perm_network_title">Internet &amp; Network Access</string>
+    <string name="offline_zero_perms">100% OFFLINE</string>
+    <string name="cloud_ads_only">DRIVE &amp; ADS ONLY</string>
+    <string name="perm_notif_access_why">Captures incoming, edited, and dismissed notifications, messaging attachments, and media playback.</string>
+    <string name="perm_notif_access_how">Bound directly by the Android OS Notification Listener Framework.</string>
+    <string name="perm_notif_access_where">NotificationService background service.</string>
+    <string name="perm_notif_access_handling">Saved entirely in your private on-device SQLite database. Never sent to remote servers.</string>
+    <string name="perm_post_notif_why">Used to deliver cloud sync completion alerts and test notifications from Debug Menu.</string>
+    <string name="perm_post_notif_how">Standard Android 13+ runtime notification prompt.</string>
+    <string name="perm_post_notif_where">System notification drawer.</string>
+    <string name="perm_post_notif_handling">Local system notifications only. No analytics or tracking.</string>
+    <string name="perm_battery_why">Ensures Android Doze does not kill the notification listener during extended standby.</string>
+    <string name="perm_battery_how">Requests system Power Manager exemption.</string>
+    <string name="perm_battery_where">System battery policy.</string>
+    <string name="perm_battery_handling">Passive exemption. Speye executes zero wake locks or aggressive CPU loops.</string>
+    <string name="perm_network_foss_why">FOSS flavor has 0 network permissions declared in its Android Manifest.</string>
+    <string name="perm_network_foss_how">Pure offline architecture. Android OS prevents any socket creation.</string>
+    <string name="perm_network_foss_where">Fully isolated device storage.</string>
+    <string name="perm_network_foss_handling">Completely offline by design.</string>
+    <string name="perm_network_play_why">Used exclusively for user-configured Google Drive cloud backups and Google AdMob.</string>
+    <string name="perm_network_play_how">Standard Android INTERNET &amp; ACCESS_NETWORK_STATE permissions.</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / Google Drive API client.</string>
+    <string name="perm_network_play_handling">Notification logs are only uploaded to your private Google Drive AppData folder when enabled.</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">Set Backup Password (Optional)</string>
+    <string name="password_optional_desc">Optionally encrypt your exported notifications with AES-256-GCM. Leave blank for unencrypted export.</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="export_with_password">Export</string>
+    <string name="decrypt_and_import">Decrypt &amp; Import</string>
+    <string name="encrypted_backup_title">Encrypted Backup</string>
+    <string name="encrypted_backup_desc">This backup file is encrypted with a password. Enter the password to decrypt and restore:</string>
+    <string name="invalid_password">Incorrect password or corrupted backup file</string>
 </resources>

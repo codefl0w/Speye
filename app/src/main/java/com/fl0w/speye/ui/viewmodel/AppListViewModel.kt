@@ -34,6 +34,9 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
     private val _currentFilter = MutableStateFlow(AppFilter.USER)
     val currentFilter: StateFlow<AppFilter> = _currentFilter
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
     init {
         loadInstalledApps()
     }
@@ -41,8 +44,9 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
     val apps: StateFlow<List<AppInfo>> = combine(
         _installedApps,
         dao.getAllIgnoredApps(),
-        _currentFilter
-    ) { installed, ignored, filter ->
+        _currentFilter,
+        _searchQuery
+    ) { installed, ignored, filter, query ->
         val ignoredSet = ignored.map { it.packageName }.toSet()
         installed.filter { info ->
             val isSystemApp = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0
@@ -58,6 +62,9 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                 isIgnored = ignoredSet.contains(info.packageName),
                 isSystem = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0
             )
+        }.filter { app ->
+            if (query.isBlank()) true
+            else app.appName.contains(query, ignoreCase = true) || app.packageName.contains(query, ignoreCase = true)
         }.sortedBy { it.appName }
     }.flowOn(Dispatchers.Default)
     .stateIn(
@@ -75,11 +82,23 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                 pm.getInstalledApplications(0)
             }
             _installedApps.value = installed
+
+            // Pre-warm icon cache on background thread for smooth scrolling
+            val context = getApplication<Application>()
+            installed.forEach { info ->
+                try {
+                    com.fl0w.speye.utils.AppIconCache.getIcon(context, info.packageName)
+                } catch (_: Exception) {}
+            }
         }
     }
 
     fun setFilter(filter: AppFilter) {
         _currentFilter.value = filter
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun toggleIgnore(packageName: String, currentIgnored: Boolean) {

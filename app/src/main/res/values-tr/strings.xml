@@ -179,4 +179,78 @@
     <string name="high_contrast_sub">Daha iyi okunabilirlik için kontrastı artırın</string>
     <string name="reduce_motion_title">Hareketi Azalt</string>
     <string name="reduce_motion_sub">Animasyonları ve geçişleri en aza indirin</string>
+
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">Bilinmeyen Parça</string>
+    <string name="unknown_artist">Bilinmeyen Sanatçı</string>
+    <string name="test_media">Test Medyası (Şarkı)</string>
+    <string name="test_media_playback">Medya Oynatma Testi</string>
+    <string name="test_media_playback_sub">Denetimlerle birlikte test medyası bildirimi gönder</string>
+    <string name="test_voice_playback_sub">Sesli mesaj bildirimi simüle et</string>
+    <string name="simulate_pro_user">Pro Kullanıcıyı Simüle Et</string>
+    <string name="simulate_pro_user_sub">Arayüz ve reklamları test etmek için Pro durumunu değiştir</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">Yalnızca Kablosuz Yedekleme</string>
+    <string name="wifi_only_backup_sub">Bulut senkronizasyonunu yalnızca tarife kısıtlamasız Wi-Fi ağına bağlıyken yap</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">Geliştiriciyi Destekle</string>
+    <string name="support_developer_sub">buymeacoffee.com/fl0w üzerinden kahve ısmarla</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">Speye Hakkında</string>
+    <string name="about_speye_sub">Uygulama sürümü, cihaz mimarisi ve proje bilgileri</string>
+    <string name="about_app_desc">Speye, Android için gizlilik odaklı bir bildirim kaydedici ve geçmiş yöneticisidir. Gelen her bildirimi, düzenleme geçmişini, medya kartlarını ve sesli mesajları doğrudan cihazınızda yakalayıp korur.</string>
+    <string name="device_and_build">CİHAZ VE DERLEME</string>
+    <string name="build_flavor">Derleme Türü (Flavor)</string>
+    <string name="device_architecture">Cihaz Mimarisi</string>
+    <string name="device_model">Cihaz Modeli</string>
+    <string name="android_version">Android Sürümü</string>
+    <string name="project_info">PROJE VE GELİŞTİRİCİ</string>
+    <string name="creator">Geliştirici</string>
+    <string name="source_code">Kaynak Kodu</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">İZİNLER VE ŞEFFAFLIK</string>
+    <string name="not_granted">VERİLMEDİ</string>
+    <string name="whitelisted">MUAF</string>
+    <string name="not_whitelisted">MUAF DEĞİL</string>
+    <string name="why_label">Neden</string>
+    <string name="how_label">Nasıl</string>
+    <string name="where_label">Nerede</string>
+    <string name="handling_label">İşleme</string>
+    <string name="perm_network_title">İnternet ve Ağ Erişimi</string>
+    <string name="offline_zero_perms">%100 ÇEVRİMDIŞI</string>
+    <string name="cloud_ads_only">YALNIZCA DRIVE VE REKLAM</string>
+    <string name="perm_notif_access_why">Gelen, düzenlenen ve kapatılan bildirimleri, mesajlaşma eklerini ve medya oynatma durumunu yakalar.</string>
+    <string name="perm_notif_access_how">Doğrudan Android İşletim Sistemi Bildirim Dinleyici Çerçevesi tarafından bağlanır.</string>
+    <string name="perm_notif_access_where">NotificationService arka plan servisi.</string>
+    <string name="perm_notif_access_handling">Tamamen cihazınızdaki özel SQLite veritabanına kaydedilir. Asla uzak sunuculara iletilmez.</string>
+    <string name="perm_post_notif_why">Bulut senkronizasyonu tamamlama uyarıları ve Hata Ayıklama Menüsü test bildirimleri için kullanılır.</string>
+    <string name="perm_post_notif_how">Standart Android 13+ çalışma zamanı bildirim izni istemi.</string>
+    <string name="perm_post_notif_where">Sistem bildirim çekmecesi.</string>
+    <string name="perm_post_notif_handling">Yalnızca yerel sistem bildirimleri. Analitik veya takip içermez.</string>
+    <string name="perm_battery_why">Android Doze modunun uzun süreli beklemede bildirim dinleyicisini sonlandırmamasını sağlar.</string>
+    <string name="perm_battery_how">Sistem Güç Yöneticisi muafiyeti talep eder.</string>
+    <string name="perm_battery_where">Sistem pil politikası.</string>
+    <string name="perm_battery_handling">Pasif muafiyet. Speye sıfır uyanık kalma kilidi veya agresif CPU döngüsü çalıştırır.</string>
+    <string name="perm_network_foss_why">FOSS sürümünün Android Manifest dosyasında 0 ağ izni tanımlıdır.</string>
+    <string name="perm_network_foss_how">Tamamen çevrimdışı mimari. Android işletim sistemi soket oluşturulmasını engeller.</string>
+    <string name="perm_network_foss_where">Tamamen yalıtılmış cihaz depolaması.</string>
+    <string name="perm_network_foss_handling">Tasarım gereği tamamen çevrimdışıdır.</string>
+    <string name="perm_network_play_why">Yalnızca kullanıcı tarafından yapılandırılan Google Drive bulut yedeklemeleri ve Google AdMob için kullanılır.</string>
+    <string name="perm_network_play_how">Standart Android INTERNET ve ACCESS_NETWORK_STATE izinleri.</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / Google Drive API istemcisi.</string>
+    <string name="perm_network_play_handling">Bildirim kayıtları yalnızca etkinleştirildiğinde özel Google Drive AppData klasörünüze yüklenir.</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">Yedekleme Parolası Ayarla (İsteğe Bağlı)</string>
+    <string name="password_optional_desc">Dışa aktarılan bildirimlerinizi isteğe bağlı olarak AES-256-GCM ile şifreleyin. Şifresiz aktarım için boş bırakın.</string>
+    <string name="enter_password">Parola Girin</string>
+    <string name="export_with_password">Dışa Aktar</string>
+    <string name="decrypt_and_import">Şifreyi Çöz ve İçe Aktar</string>
+    <string name="encrypted_backup_title">Şifreli Yedekleme</string>
+    <string name="encrypted_backup_desc">Bu yedekleme dosyası bir parola ile şifrelenmiştir. Şifreyi çözmek ve geri yüklemek için parolayı girin:</string>
+    <string name="invalid_password">Hatalı parola veya bozuk yedekleme dosyası</string>
 </resources>

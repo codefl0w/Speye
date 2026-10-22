@@ -13,6 +13,12 @@
     <string name="test_image">छवि संलग्नक परीक्षण</string>
     <string name="test_progress">प्रगति बार परीक्षण</string>
     <string name="test_indeterminate_progress">अनिश्चित प्रगति परीक्षण</string>
+    <string name="test_voice_message">वॉइस संदेश परीक्षण</string>
+    <string name="save_to_device">डिवाइस में सहेजें</string>
+    <string name="voice_message_saved">वॉइस संदेश %s पर सहेजा गया</string>
+    <string name="voice_message_save_failed">वॉइस संदेश सहेजने में विफल</string>
+    <string name="voice_message">वॉइस संदेश</string>
+    <string name="audio_file_not_found">डिवाइस पर ऑडियो फ़ाइल नहीं मिली</string>
     <string name="no_notifications">अभी तक कोई सूचनाएं सहेजी नहीं गई हैं</string>
     <string name="no_title">बिना शीर्षक</string>
     <string name="no_results">कोई मेल खाने वाली सूचना नहीं मिली</string>
@@ -33,11 +39,17 @@
     <string name="confirm_delete_all">क्या आप वाकई सभी सूचनाएं हटाना चाहते हैं?</string>
     <string name="confirm_delete_group">इस ऐप के लिए सभी सूचनाएं हटाएं?</string>
     <string name="confirm_delete_item">यह सूचना हटाएं?</string>
+    <string name="confirm_delete_history_item">क्या यह संपादन रिकॉर्ड हटाएं?</string>
     <string name="cancel">रद्द करें</string>
     <string name="notification_count">%d सूचनाएं</string>
     <string name="dismissed">खारिज की गई</string>
     <string name="edited">संपादित (%d)</string>
     <string name="history">इतिहास</string>
+    <string name="content_copied">क्लिपबोर्ड पर कॉपी किया गया</string>
+    <string name="copy_history">संपादन कॉपी करें</string>
+    <string name="delete_history_item">संपादन हटाएं</string>
+    <string name="show_more_history">और दिखाएं (+%d)</string>
+    <string name="show_more_messages">और संदेश दिखाएं (+%d)</string>
     <string name="search_placeholder">सूचनाएं खोजें…</string>
 
     <!-- App List -->
@@ -167,4 +179,78 @@
     <string name="high_contrast_sub">पठनीयता में सुधार के लिए कंट्रास्ट बढ़ाएं</string>
     <string name="reduce_motion_title">गति कम करें</string>
     <string name="reduce_motion_sub">एनिमेशन और ट्रांज़िशन न्यूनतम करें</string>
+
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">अज्ञात ट्रैक</string>
+    <string name="unknown_artist">अज्ञात कलाकार</string>
+    <string name="test_media">परीक्षण मीडिया (गीत)</string>
+    <string name="test_media_playback">मीडिया प्लेबैक परीक्षण</string>
+    <string name="test_media_playback_sub">नियंत्रणों के साथ परीक्षण मीडिया अधिसूचना भेजें</string>
+    <string name="test_voice_playback_sub">ऑडियो के साथ वॉइस संदेश अधिसूचना का अनुकरण करें</string>
+    <string name="simulate_pro_user">प्रो उपयोगकर्ता का अनुकरण करें</string>
+    <string name="simulate_pro_user_sub">यूआई और विज्ञापनों के परीक्षण के लिए प्रो स्थिति टॉगल करें</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">केवल वाई-फ़ाई पर बैकअप</string>
+    <string name="wifi_only_backup_sub">केवल अनलिमिटेड वाई-फ़ाई से कनेक्ट होने पर ही क्लाउड सिंक करें</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">डेवलपर का समर्थन करें</string>
+    <string name="support_developer_sub">buymeacoffee.com/fl0w पर मुझे एक कॉफ़ी पिलाएं</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">Speye के बारे में</string>
+    <string name="about_speye_sub">ऐप संस्करण, डिवाइस आर्किटेक्चर और प्रोजेक्ट जानकारी</string>
+    <string name="about_app_desc">Speye Android के लिए एक गोपनीयता-केंद्रित अधिसूचना लॉगर और इतिहास प्रबंधक है। हर अधिसूचना, संपादन इतिहास, मीडिया कार्ड और वॉइस संदेश को सीधे अपने डिवाइस पर सुरक्षित रखें।</string>
+    <string name="device_and_build">डिवाइस और बिल्ड</string>
+    <string name="build_flavor">बिल्ड फ़्लेवर</string>
+    <string name="device_architecture">डिवाइस आर्किटेक्चर</string>
+    <string name="device_model">डिवाइस मॉडल</string>
+    <string name="android_version">Android संस्करण</string>
+    <string name="project_info">प्रोजेक्ट और निर्माता</string>
+    <string name="creator">निर्माता</string>
+    <string name="source_code">सोर्स कोड</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">अनुमतियाँ और पारदर्शिता</string>
+    <string name="not_granted">अनुमति नहीं मिली</string>
+    <string name="whitelisted">छूट प्राप्त</string>
+    <string name="not_whitelisted">छूट नहीं मिली</string>
+    <string name="why_label">कारण</string>
+    <string name="how_label">प्रक्रिया</string>
+    <string name="where_label">स्थान</string>
+    <string name="handling_label">प्रबंधन</string>
+    <string name="perm_network_title">इंटरनेट और नेटवर्क एक्सेस</string>
+    <string name="offline_zero_perms">100% ऑफ़लाइन</string>
+    <string name="cloud_ads_only">केवल ड्राइव और विज्ञापन</string>
+    <string name="perm_notif_access_why">आने वाली, संपादित और हटाई गई सूचनाओं, संदेश अनुलग्नकों और मीडिया प्लेबैक को रिकॉर्ड करता है।</string>
+    <string name="perm_notif_access_how">Android OS नोटिफिकेशन लिसनर फ्रेमवर्क द्वारा सीधे जुड़ा हुआ है।</string>
+    <string name="perm_notif_access_where">NotificationService बैकग्राउंड सर्विस।</string>
+    <string name="perm_notif_access_handling">पूरी तरह से आपके डिवाइस पर निजी SQLite डेटाबेस में सुरक्षित। कभी भी रिमोट सर्वर पर नहीं भेजा जाता।</string>
+    <string name="perm_post_notif_why">क्लाउड सिंक पूर्णता अलर्ट और डिबग मेनू टेस्ट नोटिफिकेशन भेजने के लिए उपयोग किया जाता है।</string>
+    <string name="perm_post_notif_how">मानक Android 13+ रनटाइम अधिसूचना अनुमति अनुरोध।</string>
+    <string name="perm_post_notif_where">सिस्टम अधिसूचना ड्रावर।</string>
+    <string name="perm_post_notif_handling">केवल स्थानीय सिस्टम सूचनाएं। कोई एनालिटिक्स या ट्रैकिंग नहीं।</string>
+    <string name="perm_battery_why">सुनिश्चित करता है कि Android Doze लंबे स्टैंडबाय के दौरान नोटिफिकेशन लिसनर को बंद न करे।</string>
+    <string name="perm_battery_how">सिस्टम पावर मैनेजर से छूट का अनुरोध करता है।</string>
+    <string name="perm_battery_where">सिस्टम बैटरी नीति।</string>
+    <string name="perm_battery_handling">निष्क्रिय छूट। Speye कोई वेक-लॉक या आक्रामक सीपीयू लूप नहीं चलाता है।</string>
+    <string name="perm_network_foss_why">FOSS फ़्लेवर के Android Manifest में 0 नेटवर्क अनुमतियाँ हैं।</string>
+    <string name="perm_network_foss_how">शुद्ध ऑफ़लाइन आर्किटेक्चर। Android OS किसी भी सॉकेट निर्माण को रोकता है।</string>
+    <string name="perm_network_foss_where">पूरी तरह से पृथक डिवाइस स्टोरेज।</string>
+    <string name="perm_network_foss_handling">डिज़ाइन द्वारा पूरी तरह ऑफ़लाइन।</string>
+    <string name="perm_network_play_why">केवल उपयोगकर्ता द्वारा कॉन्फ़िगर किए गए Google Drive क्लाउड बैकअप और Google AdMob के लिए उपयोग किया जाता है।</string>
+    <string name="perm_network_play_how">मानक Android INTERNET और ACCESS_NETWORK_STATE अनुमतियाँ।</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / Google Drive API क्लाइंट।</string>
+    <string name="perm_network_play_handling">अधिसूचना लॉग केवल सक्षम होने पर आपके निजी Google Drive AppData फ़ोल्डर में अपलोड होते हैं।</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">बैकअप पासवर्ड सेट करें (वैकल्पिक)</string>
+    <string name="password_optional_desc">निर्यात की गई सूचनाओं को वैकल्पिक रूप से AES-256-GCM से एन्क्रिप्ट करें। अनएन्क्रिप्टेड निर्यात के लिए खाली छोड़ें।</string>
+    <string name="enter_password">पासवर्ड दर्ज करें</string>
+    <string name="export_with_password">निर्यात करें</string>
+    <string name="decrypt_and_import">डिक्रिप्ट और आयात करें</string>
+    <string name="encrypted_backup_title">एन्क्रिप्टेड बैकअप</string>
+    <string name="encrypted_backup_desc">यह बैकअप फ़ाइल पासवर्ड से सुरक्षित है। डिक्रिप्ट और पुनर्स्थापित करने के लिए पासवर्ड दर्ज करें:</string>
+    <string name="invalid_password">गलत पासवर्ड या दूषित बैकअप फ़ाइल</string>
 </resources>

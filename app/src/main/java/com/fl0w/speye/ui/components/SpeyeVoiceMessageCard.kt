@@ -64,6 +64,7 @@ fun SpeyeVoiceMessageCard(
 
     val animatedProgress by animateFloatAsState(
         targetValue = progressFraction,
+        animationSpec = if (SpeyeTheme.reduceMotion) androidx.compose.animation.core.snap() else androidx.compose.animation.core.tween(300),
         label = "voice_progress"
     )
 
@@ -111,9 +112,9 @@ fun SpeyeVoiceMessageCard(
             // Current time
             Text(
                 text = formatDuration(currentPositionMs),
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 color = SpeyeTheme.colors.textSecondary,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -175,9 +176,9 @@ fun SpeyeVoiceMessageCard(
             // Total time
             Text(
                 text = formatDuration(totalDurationMs),
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 color = SpeyeTheme.colors.textSecondary,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.width(10.dp))

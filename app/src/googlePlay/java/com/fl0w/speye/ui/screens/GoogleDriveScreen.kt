@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Timelapse
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,6 +55,7 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
     val isRestoring by viewModel.isRestoring.collectAsState()
     val storageInfo by viewModel.storageInfo.collectAsState()
     val isAutoBackupEnabled by viewModel.isAutoBackupEnabled.collectAsState()
+    val isWifiOnlyBackup by viewModel.isWifiOnlyBackup.collectAsState()
     val selectedFrequency by viewModel.backupFrequency.collectAsState()
     val lastBackupTime by viewModel.lastBackupTime.collectAsState()
     
@@ -272,6 +274,14 @@ fun GoogleDriveScreen(onBack: () -> Unit, viewModel: GoogleDriveViewModel = view
                 subtitle = stringResource(R.string.auto_backup_sub),
                 checked = isAutoBackupEnabled,
                 onCheckedChange = { viewModel.setAutoBackupEnabled(it) }
+            )
+            
+            SettingsToggleItem(
+                icon = Icons.Default.Wifi,
+                title = stringResource(R.string.wifi_only_backup),
+                subtitle = stringResource(R.string.wifi_only_backup_sub),
+                checked = isWifiOnlyBackup,
+                onCheckedChange = { viewModel.setWifiOnlyBackup(it) }
             )
             
             Box {

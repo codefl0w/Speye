@@ -15,10 +15,15 @@ class CloudSettingsManager(private val context: Context) {
         private val AUTO_BACKUP_ENABLED = booleanPreferencesKey("auto_backup_enabled")
         private val BACKUP_FREQUENCY = stringPreferencesKey("backup_frequency")
         private val LAST_BACKUP_TIME = longPreferencesKey("last_backup_time")
+        private val WIFI_ONLY_BACKUP = booleanPreferencesKey("wifi_only_backup")
     }
 
     val isAutoBackupEnabled: Flow<Boolean> = context.cloudDataStore.data.map { preferences ->
         preferences[AUTO_BACKUP_ENABLED] ?: true
+    }
+
+    val isWifiOnlyBackup: Flow<Boolean> = context.cloudDataStore.data.map { preferences ->
+        preferences[WIFI_ONLY_BACKUP] ?: false
     }
 
     val backupFrequency: Flow<String> = context.cloudDataStore.data.map { preferences ->
@@ -38,6 +43,12 @@ class CloudSettingsManager(private val context: Context) {
     suspend fun setBackupFrequency(frequency: String) {
         context.cloudDataStore.edit { preferences ->
             preferences[BACKUP_FREQUENCY] = frequency
+        }
+    }
+
+    suspend fun setWifiOnlyBackup(enabled: Boolean) {
+        context.cloudDataStore.edit { preferences ->
+            preferences[WIFI_ONLY_BACKUP] = enabled
         }
     }
 

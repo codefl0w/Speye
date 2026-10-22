@@ -31,6 +31,7 @@ class GoogleDriveViewModel(application: Application) : AndroidViewModel(applicat
     val isRestoring: StateFlow<Boolean> = _isRestoring
 
     val isAutoBackupEnabled = cloudManager.isAutoBackupEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+    val isWifiOnlyBackup = cloudManager.isWifiOnlyBackup.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val backupFrequency = cloudManager.backupFrequency.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Daily")
     val lastBackupTime = cloudManager.lastBackupTime.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
@@ -75,9 +76,21 @@ class GoogleDriveViewModel(application: Application) : AndroidViewModel(applicat
             cloudManager.setAutoBackupEnabled(enabled)
             if (enabled) {
                 val freq = cloudManager.backupFrequency.first()
-                SpeyeSyncManager.scheduleSync(getApplication(), freq, ExistingPeriodicWorkPolicy.UPDATE)
+                val wifiOnly = cloudManager.isWifiOnlyBackup.first()
+                SpeyeSyncManager.scheduleSync(getApplication(), freq, ExistingPeriodicWorkPolicy.UPDATE, wifiOnly)
             } else {
                 SpeyeSyncManager.cancelSync(getApplication())
+            }
+        }
+    }
+
+    fun setWifiOnlyBackup(enabled: Boolean) {
+        viewModelScope.launch {
+            cloudManager.setWifiOnlyBackup(enabled)
+            val autoEnabled = cloudManager.isAutoBackupEnabled.first()
+            if (autoEnabled) {
+                val freq = cloudManager.backupFrequency.first()
+                SpeyeSyncManager.scheduleSync(getApplication(), freq, ExistingPeriodicWorkPolicy.UPDATE, enabled)
             }
         }
     }
@@ -87,7 +100,8 @@ class GoogleDriveViewModel(application: Application) : AndroidViewModel(applicat
             cloudManager.setBackupFrequency(frequency)
             val enabled = cloudManager.isAutoBackupEnabled.first()
             if (enabled) {
-                SpeyeSyncManager.scheduleSync(getApplication(), frequency, ExistingPeriodicWorkPolicy.UPDATE)
+                val wifiOnly = cloudManager.isWifiOnlyBackup.first()
+                SpeyeSyncManager.scheduleSync(getApplication(), frequency, ExistingPeriodicWorkPolicy.UPDATE, wifiOnly)
             }
         }
     }

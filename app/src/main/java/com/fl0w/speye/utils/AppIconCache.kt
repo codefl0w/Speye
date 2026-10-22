@@ -12,7 +12,7 @@ import androidx.core.graphics.drawable.toBitmap
  * Avoids main-thread PackageManager Binder IPC and repetitive bitmap allocations during LazyColumn scrolling.
  */
 object AppIconCache {
-    private val cache = LruCache<String, ImageBitmap>(128)
+    private val cache = LruCache<String, ImageBitmap>(256)
 
     fun getIcon(context: Context, packageName: String): ImageBitmap? {
         cache.get(packageName)?.let { return it }

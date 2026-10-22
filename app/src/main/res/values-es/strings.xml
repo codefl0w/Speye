@@ -13,6 +13,12 @@
     <string name="test_image">Test de imagen adjunta</string>
     <string name="test_progress">Test de barra de progreso</string>
     <string name="test_indeterminate_progress">Test de progreso indeterminado</string>
+    <string name="test_voice_message">Test de mensaje de voz</string>
+    <string name="save_to_device">Guardar en el dispositivo</string>
+    <string name="voice_message_saved">Mensaje de voz guardado en %s</string>
+    <string name="voice_message_save_failed">Error al guardar el mensaje de voz</string>
+    <string name="voice_message">Mensaje de voz</string>
+    <string name="audio_file_not_found">Archivo de audio no encontrado en el dispositivo</string>
     <string name="no_notifications">Aún no hay notificaciones guardadas</string>
     <string name="no_title">Sin título</string>
     <string name="no_results">No se encontraron notificaciones coincidentes</string>
@@ -33,11 +39,17 @@
     <string name="confirm_delete_all">¿Estás seguro de que quieres borrar TODAS las notificaciones?</string>
     <string name="confirm_delete_group">¿Borrar todas las notificaciones de esta aplicación?</string>
     <string name="confirm_delete_item">¿Borrar esta notificación?</string>
+    <string name="confirm_delete_history_item">¿Borrar este registro de edición?</string>
     <string name="cancel">CANCELAR</string>
     <string name="notification_count">%d notificaciones</string>
     <string name="dismissed">DESCARTADO</string>
     <string name="edited">EDITADO (%d)</string>
     <string name="history">HISTORIAL</string>
+    <string name="content_copied">Copiado al portapapeles</string>
+    <string name="copy_history">Copiar edición</string>
+    <string name="delete_history_item">Borrar edición</string>
+    <string name="show_more_history">Mostrar más (+%d)</string>
+    <string name="show_more_messages">Mostrar más mensajes (+%d)</string>
     <string name="search_placeholder">Buscar notificaciones…</string>
 
     <!-- App List -->
@@ -167,4 +179,78 @@
     <string name="high_contrast_sub">Aumentar el contraste para mejorar la legibilidad</string>
     <string name="reduce_motion_title">Reducir movimiento</string>
     <string name="reduce_motion_sub">Minimizar animaciones y transiciones</string>
+
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">Pista desconocida</string>
+    <string name="unknown_artist">Artista desconocido</string>
+    <string name="test_media">Test de multimedia (Canción)</string>
+    <string name="test_media_playback">Probar reproducción multimedia</string>
+    <string name="test_media_playback_sub">Emitir notificación de prueba con controles de reproducción</string>
+    <string name="test_voice_playback_sub">Simular notificación de mensaje de voz con audio</string>
+    <string name="simulate_pro_user">Simular usuario Pro</string>
+    <string name="simulate_pro_user_sub">Alternar estado Pro para probar la interfaz y los anuncios</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">Copia de seguridad solo por Wi-Fi</string>
+    <string name="wifi_only_backup_sub">Sincronizar en la nube solo al conectarse a una red Wi-Fi sin límite de datos</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">Apoyar al desarrollador</string>
+    <string name="support_developer_sub">Cómprame un café en buymeacoffee.com/fl0w</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">Acerca de Speye</string>
+    <string name="about_speye_sub">Versión de la app, arquitectura del dispositivo e información del proyecto</string>
+    <string name="about_app_desc">Speye es un registrador de notificaciones y gestor de historial para Android centrado en la privacidad. Captura y conserva cada notificación, historial de edición, tarjetas multimedia y mensajes de voz directamente en tu dispositivo.</string>
+    <string name="device_and_build">DISPOSITIVO Y COMPILACIÓN</string>
+    <string name="build_flavor">Variante de compilación</string>
+    <string name="device_architecture">Arquitectura del dispositivo</string>
+    <string name="device_model">Modelo del dispositivo</string>
+    <string name="android_version">Versión de Android</string>
+    <string name="project_info">PROYECTO Y CREADOR</string>
+    <string name="creator">Creador</string>
+    <string name="source_code">Código fuente</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">PERMISOS Y TRANSPARENCIA</string>
+    <string name="not_granted">NO CONCEDIDO</string>
+    <string name="whitelisted">EXENTO</string>
+    <string name="not_whitelisted">NO EXENTO</string>
+    <string name="why_label">Por qué</string>
+    <string name="how_label">Cómo</string>
+    <string name="where_label">Dónde</string>
+    <string name="handling_label">Tratamiento</string>
+    <string name="perm_network_title">Acceso a Internet y redes</string>
+    <string name="offline_zero_perms">100% SIN CONEXIÓN</string>
+    <string name="cloud_ads_only">SOLO DRIVE Y ANUNCIOS</string>
+    <string name="perm_notif_access_why">Captura notificaciones entrantes, editadas y descartadas, archivos adjuntos de mensajería y reproducción multimedia.</string>
+    <string name="perm_notif_access_how">Vinculado directamente por el marco de escucha de notificaciones del SO Android.</string>
+    <string name="perm_notif_access_where">Servicio en segundo plano NotificationService.</string>
+    <string name="perm_notif_access_handling">Guardado íntegramente en tu base de datos SQLite privada en el dispositivo. Nunca se envía a servidores remotos.</string>
+    <string name="perm_post_notif_why">Se usa para enviar avisos de finalización de sincronización en la nube y notificaciones de prueba del menú de depuración.</string>
+    <string name="perm_post_notif_how">Aviso de permisos de notificación estándar en tiempo de ejecución de Android 13+.</string>
+    <string name="perm_post_notif_where">Panel de notificaciones del sistema.</string>
+    <string name="perm_post_notif_handling">Solo notificaciones locales del sistema. Sin analíticas ni rastreo.</string>
+    <string name="perm_battery_why">Garantiza que el modo Doze de Android no cierre el servicio de notificaciones durante el modo de espera prolongado.</string>
+    <string name="perm_battery_how">Solicita exención al Administrador de energía del sistema.</string>
+    <string name="perm_battery_where">Política de batería del sistema.</string>
+    <string name="perm_battery_handling">Exención pasiva. Speye no ejecuta bloqueos de suspensión ni bucles agresivos de CPU.</string>
+    <string name="perm_network_foss_why">La variante FOSS declara 0 permisos de red en su Android Manifest.</string>
+    <string name="perm_network_foss_how">Arquitectura totalmente sin conexión. El sistema operativo Android impide la creación de sockets.</string>
+    <string name="perm_network_foss_where">Almacenamiento del dispositivo totalmente aislado.</string>
+    <string name="perm_network_foss_handling">Completamente sin conexión por diseño.</string>
+    <string name="perm_network_play_why">Se usa exclusivamente para copias de seguridad en Google Drive configuradas por el usuario y Google AdMob.</string>
+    <string name="perm_network_play_how">Permisos estándar de Android INTERNET y ACCESS_NETWORK_STATE.</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / Cliente API de Google Drive.</string>
+    <string name="perm_network_play_handling">Los registros de notificaciones solo se suben a tu carpeta privada AppData de Google Drive cuando está habilitado.</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">Establecer contraseña de copia (Opcional)</string>
+    <string name="password_optional_desc">Cifra opcionalmente tus notificaciones exportadas con AES-256-GCM. Deja en blanco para exportar sin cifrar.</string>
+    <string name="enter_password">Introducir contraseña</string>
+    <string name="export_with_password">Exportar</string>
+    <string name="decrypt_and_import">Descifrar e importar</string>
+    <string name="encrypted_backup_title">Copia de seguridad cifrada</string>
+    <string name="encrypted_backup_desc">Este archivo de copia está cifrado con contraseña. Introduce la contraseña para descifrar y restaurar:</string>
+    <string name="invalid_password">Contraseña incorrecta o archivo de copia dañado</string>
 </resources>

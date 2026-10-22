@@ -34,10 +34,16 @@ fun DebugLogScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
 
+    val reduceMotion = SpeyeTheme.reduceMotion
+
     // Auto-scroll to bottom
-    LaunchedEffect(logs.size) {
+    LaunchedEffect(logs.size, reduceMotion) {
         if (logs.isNotEmpty()) {
-            listState.animateScrollToItem(logs.size - 1)
+            if (reduceMotion) {
+                listState.scrollToItem(logs.size - 1)
+            } else {
+                listState.animateScrollToItem(logs.size - 1)
+            }
         }
     }
 

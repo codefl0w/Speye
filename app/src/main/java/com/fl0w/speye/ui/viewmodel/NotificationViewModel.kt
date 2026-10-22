@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -36,6 +37,8 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
     val searchQuery: StateFlow<String> = _searchQuery
 
     val groupedNotifications: StateFlow<Map<String, List<NotificationWithHistory>>> = dao.getAllNotificationsWithHistory()
+        .flowOn(Dispatchers.IO)
+        .conflate()
         .combine(_searchQuery) { list, query ->
             if (query.isBlank()) {
                 list.groupBy { it.notification.packageName }
@@ -45,6 +48,10 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
                             item.notification.text?.contains(query, ignoreCase = true) == true ||
                             item.notification.appName?.contains(query, ignoreCase = true) == true ||
                             item.notification.packageName.contains(query, ignoreCase = true) ||
+                            item.notification.mediaTitle?.contains(query, ignoreCase = true) == true ||
+                            item.notification.mediaArtist?.contains(query, ignoreCase = true) == true ||
+                            item.notification.mediaAlbum?.contains(query, ignoreCase = true) == true ||
+                            item.notification.voiceSender?.contains(query, ignoreCase = true) == true ||
                             item.history.any { it.oldText?.contains(query, ignoreCase = true) == true }
                 }.groupBy { it.notification.packageName }
             }
@@ -68,8 +75,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
 
     fun deleteNotification(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            val notif = dao.getNotificationById(id)
-            notif?.audioPath?.let { File(it).delete() }
+            com.fl0w.speye.utils.VoicePlayerManager.stopIfMatching(id)
             dao.deleteById(id)
         }
     }
@@ -77,7 +83,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
     fun deleteGroup(packageName: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val notifs = dao.getNotificationsByPackageName(packageName)
-            notifs.forEach { it.audioPath?.let { p -> File(p).delete() } }
+            com.fl0w.speye.utils.VoicePlayerManager.stopIfMatching(notifs.map { it.id })
             dao.deleteByPackageName(packageName)
         }
     }

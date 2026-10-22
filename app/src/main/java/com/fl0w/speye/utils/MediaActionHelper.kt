@@ -7,6 +7,10 @@ import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import com.fl0w.speye.service.NotificationService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object MediaActionHelper {
 
@@ -40,7 +44,7 @@ object MediaActionHelper {
     fun continuePlayback(context: Context, packageName: String, positionMs: Long?): Boolean {
         val controller = getActiveController(context, packageName)
         if (controller != null) {
-            try {
+            return try {
                 if (positionMs != null && positionMs > 0) {
                     controller.transportControls.seekTo(positionMs)
                 }
@@ -48,15 +52,33 @@ object MediaActionHelper {
                 val sessionActivity = controller.sessionActivity
                 if (sessionActivity != null) {
                     sessionActivity.send()
-                    return true
                 }
+                true
             } catch (e: Exception) {
                 SpeyeLogger.e("MediaActionHelper", "Failed to continue playback via controller", e)
+                false
             }
         }
 
-        // Fallback: Launch app
-        return try {
+        // App was killed or has no active session.
+        // 1. Send MEDIA_PLAY key events to wake up the app's MediaButtonReceiver
+        try {
+            val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                setPackage(packageName)
+                putExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PLAY))
+            }
+            context.sendOrderedBroadcast(downIntent, null)
+            val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
+                setPackage(packageName)
+                putExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_MEDIA_PLAY))
+            }
+            context.sendOrderedBroadcast(upIntent, null)
+        } catch (e: Exception) {
+            SpeyeLogger.w("MediaActionHelper", "Failed to broadcast media button: ${e.message}")
+        }
+
+        // 2. Launch the app package
+        val launched = try {
             val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
             if (launchIntent != null) {
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -69,5 +91,29 @@ object MediaActionHelper {
             SpeyeLogger.e("MediaActionHelper", "Failed to launch package", e)
             false
         }
+
+        // 3. Asynchronously wait for revived player's MediaSession, then seek to position and play
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            var attempts = 0
+            while (attempts < 15) { // 15 x 300ms = 4.5s window
+                kotlinx.coroutines.delay(300L)
+                val newController = getActiveController(context, packageName)
+                if (newController != null) {
+                    try {
+                        if (positionMs != null && positionMs > 0) {
+                            newController.transportControls.seekTo(positionMs)
+                        }
+                        newController.transportControls.play()
+                        SpeyeLogger.d("MediaActionHelper", "Resumed playback on revived player: $packageName at $positionMs ms")
+                        break
+                    } catch (e: Exception) {
+                        SpeyeLogger.w("MediaActionHelper", "Retrying resume on revived player: ${e.message}")
+                    }
+                }
+                attempts++
+            }
+        }
+
+        return launched
     }
 }

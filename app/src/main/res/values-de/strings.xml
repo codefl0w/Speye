@@ -13,6 +13,12 @@
     <string name="test_image">Bildanhang Test</string>
     <string name="test_progress">Fortschrittsbalken-Test</string>
     <string name="test_indeterminate_progress">Unbestimmter Fortschritt-Test</string>
+    <string name="test_voice_message">Sprachnachricht-Test</string>
+    <string name="save_to_device">Auf Gerät speichern</string>
+    <string name="voice_message_saved">Sprachnachricht gespeichert unter %s</string>
+    <string name="voice_message_save_failed">Sprachnachricht konnte nicht gespeichert werden</string>
+    <string name="voice_message">Sprachnachricht</string>
+    <string name="audio_file_not_found">Audiodatei auf dem Gerät nicht gefunden</string>
     <string name="no_notifications">Noch keine Benachrichtigungen gespeichert</string>
     <string name="no_title">Kein Titel</string>
     <string name="no_results">Keine passenden Benachrichtigungen gefunden</string>
@@ -33,11 +39,17 @@
     <string name="confirm_delete_all">Sind Sie sicher, dass Sie ALLE Benachrichtigungen löschen möchten?</string>
     <string name="confirm_delete_group">Alle Benachrichtigungen für diese App löschen?</string>
     <string name="confirm_delete_item">Diese Benachrichtigung löschen?</string>
+    <string name="confirm_delete_history_item">Diesen Bearbeitungsverlauf löschen?</string>
     <string name="cancel">ABBRECHEN</string>
     <string name="notification_count">%d Benachrichtigungen</string>
     <string name="dismissed">VERWORFEN</string>
     <string name="edited">BEARBEITET (%d)</string>
     <string name="history">VERLAUF</string>
+    <string name="content_copied">In Zwischenablage kopiert</string>
+    <string name="copy_history">Bearbeitung kopieren</string>
+    <string name="delete_history_item">Bearbeitung löschen</string>
+    <string name="show_more_history">Mehr anzeigen (+%d)</string>
+    <string name="show_more_messages">Mehr Nachrichten anzeigen (+%d)</string>
     <string name="search_placeholder">Benachrichtigungen suchen…</string>
 
     <!-- App List -->
@@ -167,4 +179,78 @@
     <string name="high_contrast_sub">Kontrast für bessere Lesbarkeit erhöhen</string>
     <string name="reduce_motion_title">Bewegung reduzieren</string>
     <string name="reduce_motion_sub">Animationen und Übergänge minimieren</string>
+
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">Unbekannter Titel</string>
+    <string name="unknown_artist">Unbekannter Interpret</string>
+    <string name="test_media">Testmedien (Lied)</string>
+    <string name="test_media_playback">Medienwiedergabe testen</string>
+    <string name="test_media_playback_sub">Test-Medienbenachrichtigung mit Steuerung senden</string>
+    <string name="test_voice_playback_sub">Sprachnachrichten-Benachrichtigung mit Audio simulieren</string>
+    <string name="simulate_pro_user">Pro-Benutzer simulieren</string>
+    <string name="simulate_pro_user_sub">Pro-Status umschalten, um Benutzeroberfläche und Werbung zu testen</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">Nur über WLAN sichern</string>
+    <string name="wifi_only_backup_sub">Cloud-Synchronisierung nur bei Verbindung mit ungemessenem WLAN ausführen</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">Entwickler unterstützen</string>
+    <string name="support_developer_sub">Kauf mir einen Kaffee auf buymeacoffee.com/fl0w</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">Über Speye</string>
+    <string name="about_speye_sub">App-Version, Gerätearchitektur und Projektinformationen</string>
+    <string name="about_app_desc">Speye ist ein datenschutzorientierter Benachrichtigungs-Logger und Verlaufsmanager für Android. Erfassen und bewahren Sie jede Benachrichtigung, jeden Bearbeitungsverlauf, Medienkarten und Sprachnachrichten direkt auf Ihrem Gerät auf.</string>
+    <string name="device_and_build">GERÄT &amp; BUILD</string>
+    <string name="build_flavor">Build-Variante</string>
+    <string name="device_architecture">Gerätearchitektur</string>
+    <string name="device_model">Gerätemodell</string>
+    <string name="android_version">Android-Version</string>
+    <string name="project_info">PROJEKT &amp; ENTWICKLER</string>
+    <string name="creator">Entwickler</string>
+    <string name="source_code">Quellcode</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">BERECHTIGUNGEN &amp; TRANSPARENZ</string>
+    <string name="not_granted">NICHT GEWÄHRT</string>
+    <string name="whitelisted">AUSGENOMMEN</string>
+    <string name="not_whitelisted">NICHT AUSGENOMMEN</string>
+    <string name="why_label">Warum</string>
+    <string name="how_label">Wie</string>
+    <string name="where_label">Wo</string>
+    <string name="handling_label">Verarbeitung</string>
+    <string name="perm_network_title">Internet- &amp; Netzwerkzugriff</string>
+    <string name="offline_zero_perms">100% OFFLINE</string>
+    <string name="cloud_ads_only">NUR DRIVE &amp; WERBUNG</string>
+    <string name="perm_notif_access_why">Erfasst eingehende, bearbeitete und verworfene Benachrichtigungen, Messenger-Anhänge und Medienwiedergabe.</string>
+    <string name="perm_notif_access_how">Wird direkt an das Benachrichtigungs-Listener-Framework des Android-Betriebssystems gebunden.</string>
+    <string name="perm_notif_access_where">NotificationService-Hintergrunddienst.</string>
+    <string name="perm_notif_access_handling">Wird vollständig in Ihrer privaten SQLite-Datenbank auf dem Gerät gespeichert. Niemals an Remoteserver gesendet.</string>
+    <string name="perm_post_notif_why">Wird für Benachrichtigungen über den Abschluss der Cloud-Synchronisierung und Testbenachrichtigungen im Debug-Menü verwendet.</string>
+    <string name="perm_post_notif_how">Standardmäßige Android 13+ Laufzeit-Benachrichtigungsaufforderung.</string>
+    <string name="perm_post_notif_where">Systembenachrichtigungsleiste.</string>
+    <string name="perm_post_notif_handling">Nur lokale Systembenachrichtigungen. Keine Analysen oder Verfolgung.</string>
+    <string name="perm_battery_why">Stellt sicher, dass der Android-Doze-Modus den Benachrichtigungs-Listener bei längerem Standby nicht beendet.</string>
+    <string name="perm_battery_how">Fordert eine Ausnahme von der Systemenergieverwaltung an.</string>
+    <string name="perm_battery_where">System-Akkurichtlinie.</string>
+    <string name="perm_battery_handling">Passive Ausnahme. Speye führt keine Wake-Locks oder aggressiven CPU-Schleifen aus.</string>
+    <string name="perm_network_foss_why">Die FOSS-Variante hat 0 Netzwerkberechtigungen im Android-Manifest deklariert.</string>
+    <string name="perm_network_foss_how">Reine Offline-Architektur. Das Android-Betriebssystem verhindert die Socket-Erstellung.</string>
+    <string name="perm_network_foss_where">Vollständig isolierter Gerätespeicher.</string>
+    <string name="perm_network_foss_handling">Konstruktionsbedingt vollständig offline.</string>
+    <string name="perm_network_play_why">Ausschließlich für vom Benutzer konfigurierte Google Drive-Cloud-Backups und Google AdMob verwendet.</string>
+    <string name="perm_network_play_how">Standardmäßige Android-Berechtigungen INTERNET und ACCESS_NETWORK_STATE.</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / Google Drive API-Client.</string>
+    <string name="perm_network_play_handling">Benachrichtigungsprotokolle werden nur bei Aktivierung in Ihren privaten Google Drive AppData-Ordner hochgeladen.</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">Backup-Passwort festlegen (Optional)</string>
+    <string name="password_optional_desc">Verschlüsseln Sie Ihre exportierten Benachrichtigungen optional mit AES-256-GCM. Für unverschlüsselten Export leer lassen.</string>
+    <string name="enter_password">Passwort eingeben</string>
+    <string name="export_with_password">Exportieren</string>
+    <string name="decrypt_and_import">Entschlüsseln &amp; Importieren</string>
+    <string name="encrypted_backup_title">Verschlüsseltes Backup</string>
+    <string name="encrypted_backup_desc">Diese Sicherungsdatei ist mit einem Passwort verschlüsselt. Passwort eingeben, um sie zu entschlüsseln und wiederherzustellen:</string>
+    <string name="invalid_password">Falsches Passwort oder beschädigte Sicherungsdatei</string>
 </resources>

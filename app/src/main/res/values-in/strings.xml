@@ -13,6 +13,12 @@
     <string name="test_image">Uji Lampiran Gambar</string>
     <string name="test_progress">Uji Bilah Kemajuan</string>
     <string name="test_indeterminate_progress">Uji Kemajuan Tidak Tentu</string>
+    <string name="test_voice_message">Uji Pesan Suara</string>
+    <string name="save_to_device">Simpan ke perangkat</string>
+    <string name="voice_message_saved">Pesan suara disimpan ke %s</string>
+    <string name="voice_message_save_failed">Gagal menyimpan pesan suara</string>
+    <string name="voice_message">Pesan suara</string>
+    <string name="audio_file_not_found">File audio tidak ditemukan di perangkat</string>
     <string name="no_notifications">Belum ada notifikasi yang disimpan</string>
     <string name="no_title">Tanpa Judul</string>
     <string name="no_results">Tidak ada notifikasi yang cocok</string>
@@ -33,11 +39,17 @@
     <string name="confirm_delete_all">Apakah Anda yakin ingin menghapus SEMUA notifikasi?</string>
     <string name="confirm_delete_group">Hapus semua notifikasi untuk aplikasi ini?</string>
     <string name="confirm_delete_item">Hapus notifikasi ini?</string>
+    <string name="confirm_delete_history_item">Hapus riwayat pengeditan ini?</string>
     <string name="cancel">BATAL</string>
     <string name="notification_count">%d notifikasi</string>
     <string name="dismissed">DITUTUP</string>
     <string name="edited">DIEDIT (%d)</string>
     <string name="history">RIWAYAT</string>
+    <string name="content_copied">Disalin ke papan klip</string>
+    <string name="copy_history">Salin editan</string>
+    <string name="delete_history_item">Hapus editan</string>
+    <string name="show_more_history">Tampilkan lebih banyak (+%d)</string>
+    <string name="show_more_messages">Tampilkan lebih banyak pesan (+%d)</string>
     <string name="search_placeholder">Cari notifikasi…</string>
 
     <!-- App List -->
@@ -167,4 +179,78 @@
     <string name="high_contrast_sub">Tingkatkan kontras untuk kemudahan membaca</string>
     <string name="reduce_motion_title">Kurangi Gerakan</string>
     <string name="reduce_motion_sub">Minimalkan animasi dan transisi antarmuka</string>
+
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">Trek Tidak Dikenal</string>
+    <string name="unknown_artist">Artis Tidak Dikenal</string>
+    <string name="test_media">Uji Media (Lagu)</string>
+    <string name="test_media_playback">Uji Pemutaran Media</string>
+    <string name="test_media_playback_sub">Kirim notifikasi media uji dengan kontrol</string>
+    <string name="test_voice_playback_sub">Simulasikan notifikasi pesan suara dengan audio</string>
+    <string name="simulate_pro_user">Simulasikan Pengguna Pro</string>
+    <string name="simulate_pro_user_sub">Alihkan status Pro untuk menguji UI &amp; iklan</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">Cadangkan Hanya Lewat Wi-Fi</string>
+    <string name="wifi_only_backup_sub">Hanya lakukan sinkronisasi cloud saat terhubung ke Wi-Fi tanpa kuota</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">Dukung Pengembang</string>
+    <string name="support_developer_sub">Belikan saya kopi di buymeacoffee.com/fl0w</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">Tentang Speye</string>
+    <string name="about_speye_sub">Versi aplikasi, arsitektur perangkat, dan informasi proyek</string>
+    <string name="about_app_desc">Speye adalah pencatat notifikasi dan pengelola riwayat berorientasi privasi untuk Android. Tangkap dan simpan setiap notifikasi, riwayat pengeditan, kartu media, dan pesan suara langsung di perangkat Anda.</string>
+    <string name="device_and_build">PERANGKAT &amp; VERSI BUILD</string>
+    <string name="build_flavor">Varian Build</string>
+    <string name="device_architecture">Arsitektur Perangkat</string>
+    <string name="device_model">Model Perangkat</string>
+    <string name="android_version">Versi Android</string>
+    <string name="project_info">PROYEK &amp; PENGEMBANG</string>
+    <string name="creator">Pengembang</string>
+    <string name="source_code">Kode Sumber</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">IZIN &amp; TRANSPARANSI</string>
+    <string name="not_granted">TIDAK DIIZINKAN</string>
+    <string name="whitelisted">DIKECUALIKAN</string>
+    <string name="not_whitelisted">TIDAK DIKECUALIKAN</string>
+    <string name="why_label">Mengapa</string>
+    <string name="how_label">Bagaimana</string>
+    <string name="where_label">Di mana</string>
+    <string name="handling_label">Penanganan</string>
+    <string name="perm_network_title">Akses Internet &amp; Jaringan</string>
+    <string name="offline_zero_perms">100% OFFLINE</string>
+    <string name="cloud_ads_only">HANYA DRIVE &amp; IKLAN</string>
+    <string name="perm_notif_access_why">Menangkap notifikasi masuk, yang diedit, dan yang dihapus, lampiran pesan, serta pemutaran media.</string>
+    <string name="perm_notif_access_how">Terhubung langsung melalui Framework Pendengar Notifikasi Android OS.</string>
+    <string name="perm_notif_access_where">Layanan latar belakang NotificationService.</string>
+    <string name="perm_notif_access_handling">Disimpan sepenuhnya di database SQLite privat di perangkat Anda. Tidak pernah dikirim ke server jarak jauh.</string>
+    <string name="perm_post_notif_why">Digunakan untuk mengirim pemberitahuan penyelesaian sinkronisasi cloud dan notifikasi pengujian dari Menu Debug.</string>
+    <string name="perm_post_notif_how">Permintaan izin notifikasi runtime standar Android 13+.</string>
+    <string name="perm_post_notif_where">Panel notifikasi sistem.</string>
+    <string name="perm_post_notif_handling">Hanya notifikasi sistem lokal. Tidak ada analitik atau pelacakan.</string>
+    <string name="perm_battery_why">Memastikan Android Doze tidak mematikan pendengar notifikasi saat perangkat dalam mode siaga lama.</string>
+    <string name="perm_battery_how">Meminta pengecualian dari Pengelola Daya sistem.</string>
+    <string name="perm_battery_where">Kebijakan baterai sistem.</string>
+    <string name="perm_battery_handling">Pengecualian pasif. Speye tidak menggunakan wake-lock atau loop CPU yang agresif.</string>
+    <string name="perm_network_foss_why">Varian FOSS mendeklarasikan 0 izin jaringan dalam Android Manifest-nya.</string>
+    <string name="perm_network_foss_how">Arsitektur murni offline. Android OS memblokir pembuatan socket apa pun.</string>
+    <string name="perm_network_foss_where">Penyimpanan perangkat yang sepenuhnya terisolasi.</string>
+    <string name="perm_network_foss_handling">Benar-benar offline berdasarkan desain.</string>
+    <string name="perm_network_play_why">Digunakan secara eksklusif untuk pencadangan cloud Google Drive yang dikonfigurasi pengguna dan Google AdMob.</string>
+    <string name="perm_network_play_how">Izin standar Android INTERNET &amp; ACCESS_NETWORK_STATE.</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / Klien API Google Drive.</string>
+    <string name="perm_network_play_handling">Log notifikasi hanya diunggah ke folder AppData Google Drive pribadi Anda jika diaktifkan.</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">Atur Kata Sandi Cadangan (Opsional)</string>
+    <string name="password_optional_desc">Enkripsi notifikasi yang diekspor secara opsional dengan AES-256-GCM. Biarkan kosong untuk ekspor tanpa enkripsi.</string>
+    <string name="enter_password">Masukkan Kata Sandi</string>
+    <string name="export_with_password">Ekspor</string>
+    <string name="decrypt_and_import">Dekripsi &amp; Impor</string>
+    <string name="encrypted_backup_title">Cadangan Terenkripsi</string>
+    <string name="encrypted_backup_desc">File cadangan ini dienkripsi dengan kata sandi. Masukkan kata sandi untuk mendekripsi dan memulihkan:</string>
+    <string name="invalid_password">Kata sandi salah atau file cadangan rusak</string>
 </resources>

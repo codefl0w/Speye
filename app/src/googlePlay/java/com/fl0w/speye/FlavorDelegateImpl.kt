@@ -65,8 +65,18 @@ object FlavorDelegateImpl : FlavorDelegate {
     private fun getOrCreateAdView(activity: android.app.Activity): AdView {
         val existing = cachedAdView
         if (existing != null) {
-            (existing.parent as? android.view.ViewGroup)?.removeView(existing)
-            return existing
+            if (existing.context === activity) {
+                (existing.parent as? android.view.ViewGroup)?.removeView(existing)
+                return existing
+            } else {
+                try {
+                    (existing.parent as? android.view.ViewGroup)?.removeView(existing)
+                    existing.destroy()
+                } catch (e: Exception) {
+                    SpeyeLogger.w("FlavorDelegate", "Error destroying stale AdView: ${e.message}")
+                }
+                cachedAdView = null
+            }
         }
 
         SpeyeLogger.d("FlavorDelegate", "Creating persistent AdView instance for Activity: $activity")
@@ -117,6 +127,11 @@ object FlavorDelegateImpl : FlavorDelegate {
             subtitle = stringResource(R.string.drive_backup_sub),
             onClick = onNavigate
         )
+    }
+
+    @Composable
+    override fun SupportDeveloperItem() {
+        // No-op for Google Play flavor
     }
 
     @Composable
@@ -227,8 +242,8 @@ object FlavorDelegateImpl : FlavorDelegate {
 
             SettingsToggleItem(
                 icon = Icons.Default.Stars,
-                title = "Simulate Pro User",
-                subtitle = "Toggle Pro version state for testing UI & ads",
+                title = androidx.compose.ui.res.stringResource(com.fl0w.speye.R.string.simulate_pro_user),
+                subtitle = androidx.compose.ui.res.stringResource(com.fl0w.speye.R.string.simulate_pro_user_sub),
                 checked = isPro,
                 onCheckedChange = { scope.launch { billingSettings.setProUser(it) } }
             )

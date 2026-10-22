@@ -14,8 +14,8 @@ android {
         applicationId = "com.fl0w.speye"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1108261007
-        versionName = "1.6.0-beta"
+        versionCode = 1108261022
+        versionName = "1.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -98,6 +98,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
     debugImplementation(libs.androidx.ui.tooling)
 
     // Flavor specific dependencies
@@ -110,14 +111,9 @@ dependencies {
     "googlePlayImplementation"(libs.speye.drive.api)
     "googlePlayImplementation"(libs.speye.drive.client)
     "googlePlayImplementation"(libs.speye.http.gson)
-    "googlePlayImplementation"("com.google.http-client:google-http-client-android:1.44.1")
+    "googlePlayImplementation"(libs.speyehttpclientdroid)
     "googlePlayImplementation"(libs.speye.work.ktx)
     "googlePlayImplementation"(libs.speye.play.auth)
-
-    // Firebase (Google Play Only)
-    val firebaseBom = platform(libs.firebase.bom)
-    "googlePlayImplementation"(firebaseBom)
-    "googlePlayImplementation"(libs.firebase.auth.ktx)
 
     // Room
     implementation(libs.androidx.room.runtime)

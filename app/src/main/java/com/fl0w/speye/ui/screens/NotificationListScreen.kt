@@ -200,7 +200,7 @@ fun NotificationListScreen(
                                     onClick = { onTestIndeterminateProgress(); showTestMenu = false }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Test Media (Song)", color = SpeyeTheme.colors.primary) },
+                                    text = { Text(stringResource(R.string.test_media), color = SpeyeTheme.colors.primary) },
                                     onClick = { onTestMedia(); showTestMenu = false }
                                 )
                                 DropdownMenuItem(
@@ -538,11 +538,11 @@ fun NotificationItemWrapper(
                         onClick = {
                             val audioPath = item.notification.audioPath
                             if (audioPath != null) {
-                                val savedFile = com.fl0w.speye.utils.AudioUtils.exportVoiceMessage(context, audioPath)
-                                if (savedFile != null) {
+                                val savedPath = com.fl0w.speye.utils.AudioUtils.exportVoiceMessage(context, audioPath)
+                                if (savedPath != null) {
                                     android.widget.Toast.makeText(
                                         context,
-                                        context.getString(R.string.voice_message_saved, savedFile.absolutePath),
+                                        context.getString(R.string.voice_message_saved, savedPath),
                                         android.widget.Toast.LENGTH_LONG
                                     ).show()
                                 } else {
@@ -572,8 +572,29 @@ fun NotificationItemWrapper(
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.copy_content), color = SpeyeTheme.colors.textPrimary) },
                     onClick = {
-                        val rawText = item.notification.text ?: ""
-                        HtmlUtils.copyRichText(context, item.notification.appName ?: "Speye", rawText)
+                        val notif = item.notification
+                        val rawText = if (notif.isMedia) {
+                            val title = notif.mediaTitle ?: notif.title ?: ""
+                            val artist = notif.mediaArtist
+                            val album = notif.mediaAlbum
+                            buildString {
+                                append(title)
+                                if (!artist.isNullOrBlank()) append(" — ").append(artist)
+                                if (!album.isNullOrBlank()) append(" (").append(album).append(")")
+                            }.ifBlank { notif.text ?: "" }
+                        } else if (notif.isVoiceMessage) {
+                            val sender = notif.voiceSender ?: notif.title ?: ""
+                            val durMs = notif.mediaDurationMs ?: 0L
+                            val durationText = if (durMs > 0) {
+                                val totalSec = durMs / 1000
+                                String.format(java.util.Locale.getDefault(), " (%d:%02d)", totalSec / 60, totalSec % 60)
+                            } else ""
+                            val vmLabel = context.getString(R.string.voice_message)
+                            if (sender.isNotBlank()) "$sender: $vmLabel$durationText" else "$vmLabel$durationText"
+                        } else {
+                            notif.text ?: ""
+                        }
+                        HtmlUtils.copyRichText(context, notif.appName ?: "Speye", rawText)
                         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
                             android.widget.Toast.makeText(context, R.string.content_copied, android.widget.Toast.LENGTH_SHORT).show()
                         }
@@ -831,7 +852,7 @@ fun AppGroupHeader(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = packageName,
-                        fontSize = 10.sp,
+                        fontSize = 11.sp,
                         color = SpeyeTheme.colors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -893,7 +914,7 @@ fun NotificationItem(
                 onLongClick = onLongPress
             )
             .padding(16.dp)
-            .alpha(if (notification.isSystemRemoved) 0.5f else 1.0f)
+            .alpha(if (notification.isSystemRemoved) 0.85f else 1.0f)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -906,21 +927,21 @@ fun NotificationItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(SpeyeTheme.colors.divider)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 6.dp, vertical = 3.dp)
                     ) {
-                        Text(stringResource(R.string.dismissed), fontSize = 9.sp, color = SpeyeTheme.colors.textSecondary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.dismissed), fontSize = 10.sp, color = SpeyeTheme.colors.textSecondary, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
                 Text(
                     text = DateUtils.getRelativeTimeSpanString(notification.timestamp).toString().uppercase(),
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     color = SpeyeTheme.colors.textSecondary,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
-        if (!notification.isVoiceMessage) {
+        if (!notification.isVoiceMessage && !notification.isMedia) {
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -939,7 +960,7 @@ fun NotificationItem(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.edited, item.history.size), color = SpeyeTheme.colors.secondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.edited, item.history.size), color = SpeyeTheme.colors.secondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             Icon(
                                 if (isHistoryExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                                 contentDescription = null,

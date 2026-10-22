@@ -18,7 +18,7 @@ import java.nio.ByteOrder
 import kotlin.math.sin
 
 object TestVoiceManager {
-    private const val NOTIFICATION_ID = 8888
+    private const val NOTIFICATION_ID = 8890
     private const val CHANNEL_ID = "test_voice_channel"
 
     fun sendTestVoiceMessage(context: Context) {

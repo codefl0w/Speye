@@ -17,6 +17,22 @@ object FlavorDelegateImpl : FlavorDelegate {
     }
 
     @Composable
+    override fun SupportDeveloperItem() {
+        val context = androidx.compose.ui.platform.LocalContext.current
+        com.fl0w.speye.ui.components.SettingsItem(
+            icon = com.fl0w.speye.ui.SpeyeIcons.Heart,
+            title = androidx.compose.ui.res.stringResource(com.fl0w.speye.R.string.support_developer),
+            subtitle = "buymeacoffee.com/fl0w",
+            onClick = {
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://buymeacoffee.com/fl0w"))
+                try {
+                    context.startActivity(intent)
+                } catch (_: Exception) {}
+            }
+        )
+    }
+
+    @Composable
     override fun ProVersionHeader() {
         // No-op for FOSS
     }

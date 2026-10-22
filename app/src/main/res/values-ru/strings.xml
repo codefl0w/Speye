@@ -13,6 +13,12 @@
     <string name="test_image">Тест вложения изображения</string>
     <string name="test_progress">Тест индикатора выполнения</string>
     <string name="test_indeterminate_progress">Тест неопределенного выполнения</string>
+    <string name="test_voice_message">Тест голосового сообщения</string>
+    <string name="save_to_device">Сохранить на устройство</string>
+    <string name="voice_message_saved">Голосовое сообщение сохранено в %s</string>
+    <string name="voice_message_save_failed">Не удалось сохранить голосовое сообщение</string>
+    <string name="voice_message">Голосовое сообщение</string>
+    <string name="audio_file_not_found">Аудиофайл не найден на устройстве</string>
     <string name="no_notifications">Уведомления еще не сохранены</string>
     <string name="no_title">Без заголовка</string>
     <string name="no_results">Подходящих уведомлений не найдено</string>
@@ -33,11 +39,17 @@
     <string name="confirm_delete_all">Вы уверены, что хотите удалить ВСЕ уведомления?</string>
     <string name="confirm_delete_group">Удалить все уведомления для этого приложения?</string>
     <string name="confirm_delete_item">Удалить это уведомление?</string>
+    <string name="confirm_delete_history_item">Удалить эту запись изменения?</string>
     <string name="cancel">ОТМЕНА</string>
     <string name="notification_count">Уведомлений: %d</string>
     <string name="dismissed">СКРЫТО</string>
     <string name="edited">ИЗМЕНЕНО (%d)</string>
     <string name="history">ИСТОРИЯ</string>
+    <string name="content_copied">Скопировано в буфер обмена</string>
+    <string name="copy_history">Копировать изменение</string>
+    <string name="delete_history_item">Удалить изменение</string>
+    <string name="show_more_history">Показать еще (+%d)</string>
+    <string name="show_more_messages">Показать еще сообщений (+%d)</string>
     <string name="search_placeholder">Поиск уведомлений…</string>
 
     <!-- App List -->
@@ -167,4 +179,78 @@
     <string name="high_contrast_sub">Повысить контрастность для удобства чтения</string>
     <string name="reduce_motion_title">Уменьшение движения</string>
     <string name="reduce_motion_sub">Минимизировать анимации и переходы интерфейса</string>
+
+    <!-- Media and Debug UI Strings -->
+    <string name="unknown_track">Неизвестный трек</string>
+    <string name="unknown_artist">Неизвестный исполнитель</string>
+    <string name="test_media">Тест медиа (Песня)</string>
+    <string name="test_media_playback">Тест воспроизведения медиа</string>
+    <string name="test_media_playback_sub">Отправить тестовое медиа-уведомление с элементами управления</string>
+    <string name="test_voice_playback_sub">Имитировать уведомление голосового сообщения с аудио</string>
+    <string name="simulate_pro_user">Имитировать Pro-пользователя</string>
+    <string name="simulate_pro_user_sub">Переключить статус Pro для тестирования интерфейса и рекламы</string>
+
+    <!-- Cloud Sync & Wi-Fi Only -->
+    <string name="wifi_only_backup">Резервное копирование только по Wi-Fi</string>
+    <string name="wifi_only_backup_sub">Выполнять облачную синхронизацию только при подключении к безлимитному Wi-Fi</string>
+
+    <!-- FOSS Support Developer -->
+    <string name="support_developer">Поддержать разработчика</string>
+    <string name="support_developer_sub">Угостить кофе на buymeacoffee.com/fl0w</string>
+
+    <!-- About Screen -->
+    <string name="about_speye">О приложении Speye</string>
+    <string name="about_speye_sub">Версия приложения, архитектура устройства и информация о проекте</string>
+    <string name="about_app_desc">Speye — это ориентированный на конфиденциальность журнал уведомлений и менеджер истории для Android. Сохраняйте каждое уведомление, историю изменений, медиа-карточки и голосовые сообщения прямо на вашем устройстве.</string>
+    <string name="device_and_build">УСТРОЙСТВО И СБОРКА</string>
+    <string name="build_flavor">Вариант сборки</string>
+    <string name="device_architecture">Архитектура устройства</string>
+    <string name="device_model">Модель устройства</string>
+    <string name="android_version">Версия Android</string>
+    <string name="project_info">ПРОЕКТ И СОЗДАТЕЛЬ</string>
+    <string name="creator">Создатель</string>
+    <string name="source_code">Исходный код</string>
+
+    <!-- Permission Transparency Diagnostics -->
+    <string name="perm_transparency_title">РАЗРЕШЕНИЯ И ПРОЗРАЧНОСТЬ</string>
+    <string name="not_granted">НЕ ПРЕДОСТАВЛЕНО</string>
+    <string name="whitelisted">В ИСКЛЮЧЕНИЯХ</string>
+    <string name="not_whitelisted">НЕ В ИСКЛЮЧЕНИЯХ</string>
+    <string name="why_label">Зачем</string>
+    <string name="how_label">Как</string>
+    <string name="where_label">Где</string>
+    <string name="handling_label">Обработка</string>
+    <string name="perm_network_title">Доступ к интернету и сети</string>
+    <string name="offline_zero_perms">100% ОФФЛАЙН</string>
+    <string name="cloud_ads_only">ТОЛЬКО ДИСК И РЕКЛАМА</string>
+    <string name="perm_notif_access_why">Перехватывает входящие, отредактированные и закрытые уведомления, вложения сообщений и воспроизведение медиа.</string>
+    <string name="perm_notif_access_how">Подключается напрямую через системную службу Notification Listener в Android.</string>
+    <string name="perm_notif_access_where">Фоновая служба NotificationService.</string>
+    <string name="perm_notif_access_handling">Сохраняется исключительно в локальной базе данных SQLite на устройстве. Никогда не передается на удаленные серверы.</string>
+    <string name="perm_post_notif_why">Используется для оповещений об успешной синхронизации с облаком и отправки тестовых уведомлений из меню отладки.</string>
+    <string name="perm_post_notif_how">Стандартный системный диалог разрешений на уведомления в Android 13+.</string>
+    <string name="perm_post_notif_where">Системная шторка уведомлений.</string>
+    <string name="perm_post_notif_handling">Только локальные системные уведомления. Без аналитики и трекинга.</string>
+    <string name="perm_battery_why">Гарантирует, что режим энергосбережения Doze не отключит службу перехвата уведомлений при длительном сне.</string>
+    <string name="perm_battery_how">Запрашивает системное исключение из оптимизации батареи.</string>
+    <string name="perm_battery_where">Системная политика энергопотребления.</string>
+    <string name="perm_battery_handling">Пассивное исключение. Speye не использует wake lock и не нагружает процессор в цикле.</string>
+    <string name="perm_network_foss_why">FOSS-версия не имеет сетевых разрешений в Android Manifest.</string>
+    <string name="perm_network_foss_how">Полностью оффлайн архитектура. Android блокирует создание сетевых сокетов.</string>
+    <string name="perm_network_foss_where">Полностью изолированное хранилище устройства.</string>
+    <string name="perm_network_foss_handling">Полностью автономно по архитектуре.</string>
+    <string name="perm_network_play_why">Используется исключительно для пользовательских резервных копий в Google Drive и Google AdMob.</string>
+    <string name="perm_network_play_how">Стандартные разрешения Android INTERNET и ACCESS_NETWORK_STATE.</string>
+    <string name="perm_network_play_where">SpeyeSyncManager / клиент API Google Drive.</string>
+    <string name="perm_network_play_handling">Журналы уведомлений загружаются только в личную папку AppData на Google Диске при включении функции.</string>
+
+    <!-- Encrypted Backup Strings -->
+    <string name="password_optional_title">Установить пароль резервной копии (Необязательно)</string>
+    <string name="password_optional_desc">Шифрование экспортируемых уведомлений алгоритмом AES-256-GCM. Оставьте пустым для обычного экспорта.</string>
+    <string name="enter_password">Введите пароль</string>
+    <string name="export_with_password">Экспортировать</string>
+    <string name="decrypt_and_import">Расшифровать и импортировать</string>
+    <string name="encrypted_backup_title">Зашифрованная резервная копия</string>
+    <string name="encrypted_backup_desc">Этот файл резервной копии зашифрован паролем. Введите пароль для расшифровки и восстановления:</string>
+    <string name="invalid_password">Неверный пароль или поврежденный файл копии</string>
 </resources>

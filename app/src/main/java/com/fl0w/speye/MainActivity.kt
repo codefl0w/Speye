@@ -232,6 +232,7 @@ class MainActivity : ComponentActivity() {
                                             onNavigateToGoogleDrive = { navController.navigate("google_drive") },
                                             onNavigateToFaq = { navController.navigate("faq") },
                                             onNavigateToPrivacyPolicy = { navController.navigate("privacy_policy") },
+                                            onNavigateToAbout = { navController.navigate("about") },
                                             onTestMedia = { sendMediaTest() },
                                             onTestVoiceMessage = { sendVoiceMessageTest() }
                                         )
@@ -244,6 +245,9 @@ class MainActivity : ComponentActivity() {
                                     }
                                     composable("privacy_policy") {
                                         PrivacyPolicyScreen(onBack = { navController.popBackStack() })
+                                    }
+                                    composable("about") {
+                                        com.fl0w.speye.ui.screens.AboutScreen(onBack = { navController.popBackStack() })
                                     }
                                     composable("debug_logs") {
                                         DebugLogScreen(onBack = { navController.popBackStack() })
@@ -568,7 +572,7 @@ fun SpeyeTheme(
             primary = Color(0xFFFF8FF5),
             secondary = Color(0xFF03DAC6),
             textPrimary = Color.White,
-            textSecondary = Color(0xFF888888),
+            textSecondary = Color(0xFFA8A8A8),
             error = Color(0xFFCF6679),
             divider = Color(0xFF222222)
         )

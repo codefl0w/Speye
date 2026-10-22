@@ -216,4 +216,248 @@ class BackupManagerTest {
             extractDir.deleteRecursively()
         }
     }
+
+    @Test
+    fun writeBackupZipAndExtract_mediaAndVoiceMessage_preservedInRoundTrip() {
+        val tempDir = Files.createTempDirectory("backup_media_voice_test").toFile()
+        val extractDir = Files.createTempDirectory("backup_media_voice_extract").toFile()
+        try {
+            val audioFile = File(tempDir, "aud_test123.ogg")
+            audioFile.writeBytes("dummy ogg audio data".toByteArray(Charsets.UTF_8))
+
+            val mediaNotification = SerializableNotification(
+                sbnKey = "0|com.spotify.music|1|tag|1000",
+                packageName = "com.spotify.music",
+                title = "Song Title",
+                text = "Artist Name",
+                timestamp = 1700000010000L,
+                appName = "Spotify",
+                isSystemRemoved = false,
+                imagePath = null,
+                history = emptyList(),
+                isMedia = true,
+                mediaTitle = "Song Title",
+                mediaArtist = "Artist Name",
+                mediaAlbum = "Greatest Hits",
+                mediaDurationMs = 210000L,
+                mediaPositionMs = 45000L,
+                mediaPlaybackState = 3
+            )
+
+            val voiceNotification = SerializableNotification(
+                sbnKey = "0|com.whatsapp|2|voice|1000",
+                packageName = "com.whatsapp",
+                title = null,
+                text = "0:17",
+                timestamp = 1700000020000L,
+                appName = "WhatsApp",
+                isSystemRemoved = false,
+                imagePath = null,
+                history = emptyList(),
+                audioPath = "aud_test123.ogg",
+                isVoiceMessage = true,
+                voiceSender = "Bob"
+            )
+
+            val backupData = BackupData(
+                notifications = listOf(mediaNotification, voiceNotification),
+                ignoredApps = listOf("com.ignore.app")
+            )
+
+            val outStream = ByteArrayOutputStream()
+            BackupManager.writeBackupZip(backupData, listOf(audioFile), outStream)
+            val extracted = BackupManager.extractBackupZip(ByteArrayInputStream(outStream.toByteArray()), extractDir)
+
+            assertEquals(2, extracted.notifications.size)
+            val extractedMedia = extracted.notifications.first { it.isMedia }
+            assertTrue(extractedMedia.isMedia)
+            assertEquals("Song Title", extractedMedia.mediaTitle)
+            assertEquals("Artist Name", extractedMedia.mediaArtist)
+            assertEquals("Greatest Hits", extractedMedia.mediaAlbum)
+            assertEquals(210000L, extractedMedia.mediaDurationMs)
+            assertEquals(45000L, extractedMedia.mediaPositionMs)
+            assertEquals(3, extractedMedia.mediaPlaybackState)
+
+            val extractedVoice = extracted.notifications.first { it.isVoiceMessage }
+            assertTrue(extractedVoice.isVoiceMessage)
+            assertEquals("Bob", extractedVoice.voiceSender)
+            assertEquals("aud_test123.ogg", extractedVoice.audioPath)
+
+            val extractedAudioAttachment = File(extractDir, "attachments/aud_test123.ogg")
+            assertTrue(extractedAudioAttachment.exists())
+            assertEquals("dummy ogg audio data", extractedAudioAttachment.readText(Charsets.UTF_8))
+        } finally {
+            tempDir.deleteRecursively()
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun encryptedBackup_correctPassword_decryptsSuccessfully() {
+        val extractDir = Files.createTempDirectory("backup_enc_test").toFile()
+        try {
+            val backupData = BackupData(
+                notifications = listOf(
+                    SerializableNotification(
+                        sbnKey = "0|com.enc.test|1|null|1000",
+                        packageName = "com.enc.test",
+                        title = "Secret",
+                        text = "Confidential notification",
+                        timestamp = 1700000000000L,
+                        appName = "EncApp",
+                        isSystemRemoved = false,
+                        imagePath = null,
+                        history = emptyList()
+                    )
+                ),
+                ignoredApps = emptyList()
+            )
+
+            val rawBaos = ByteArrayOutputStream()
+            BackupManager.writeBackupZip(backupData, emptyList(), rawBaos)
+            val encryptedBytes = BackupManager.encryptZipBytes(rawBaos.toByteArray(), "MySecretPassword123")
+
+            val extracted = BackupManager.extractBackupZip(
+                ByteArrayInputStream(encryptedBytes),
+                extractDir,
+                password = "MySecretPassword123"
+            )
+
+            assertEquals(1, extracted.notifications.size)
+            assertEquals("Secret", extracted.notifications[0].title)
+            assertEquals("Confidential notification", extracted.notifications[0].text)
+        } finally {
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun encryptedBackup_missingPassword_throwsEncryptedBackupException() {
+        val extractDir = Files.createTempDirectory("backup_enc_missing").toFile()
+        try {
+            val backupData = BackupData(notifications = emptyList(), ignoredApps = emptyList())
+            val rawBaos = ByteArrayOutputStream()
+            BackupManager.writeBackupZip(backupData, emptyList(), rawBaos)
+            val encryptedBytes = BackupManager.encryptZipBytes(rawBaos.toByteArray(), "MySecretPassword123")
+
+            try {
+                BackupManager.extractBackupZip(
+                    ByteArrayInputStream(encryptedBytes),
+                    extractDir,
+                    password = null
+                )
+                fail("Expected EncryptedBackupException when password is null")
+            } catch (e: com.fl0w.speye.utils.EncryptedBackupException) {
+                assertTrue(e.needsPassword)
+            }
+        } finally {
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun encryptedBackup_wrongPassword_throwsEncryptedBackupException() {
+        val extractDir = Files.createTempDirectory("backup_enc_wrong").toFile()
+        try {
+            val backupData = BackupData(notifications = emptyList(), ignoredApps = emptyList())
+            val rawBaos = ByteArrayOutputStream()
+            BackupManager.writeBackupZip(backupData, emptyList(), rawBaos)
+            val encryptedBytes = BackupManager.encryptZipBytes(rawBaos.toByteArray(), "MySecretPassword123")
+
+            try {
+                BackupManager.extractBackupZip(
+                    ByteArrayInputStream(encryptedBytes),
+                    extractDir,
+                    password = "WrongPassword!"
+                )
+                fail("Expected EncryptedBackupException when password is wrong")
+            } catch (e: com.fl0w.speye.utils.EncryptedBackupException) {
+                assertTrue(e.isInvalidPassword)
+            }
+        } finally {
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun deriveKeyFallback_producesIdenticalBytesToJcePbkdf2() {
+        val password = "TestPassword_123!@#"
+        val salt = "1234567890123456".toByteArray(Charsets.UTF_8)
+        val jceKey = BackupManager.deriveKey(password, salt)
+        val fallbackKey = BackupManager.deriveKeyFallback(password, salt)
+        assertArrayEquals(jceKey, fallbackKey)
+    }
+
+    @Test
+    fun encryptedBackup_streamingRoundTrip_success() {
+        val tempDir = Files.createTempDirectory("backup_stream_test").toFile()
+        val extractDir = Files.createTempDirectory("backup_stream_extract").toFile()
+        try {
+            val attachmentFile = File(tempDir, "aud_test.ogg")
+            attachmentFile.writeBytes("voice note streaming bytes".toByteArray(Charsets.UTF_8))
+
+            val notification = SerializableNotification(
+                sbnKey = "0|com.example.voice|1|tag|2000",
+                packageName = "com.example.voice",
+                title = "Bob",
+                text = "Voice message",
+                timestamp = 1700000000456L,
+                appName = "VoiceApp",
+                audioPath = "aud_test.ogg",
+                isVoiceMessage = true
+            )
+            val backupData = BackupData(notifications = listOf(notification), ignoredApps = emptyList())
+
+            val encryptedOut = ByteArrayOutputStream()
+            BackupManager.encryptZipStream(
+                rawStreamWriter = { cos ->
+                    BackupManager.writeBackupZip(backupData, listOf(attachmentFile), cos)
+                },
+                destination = encryptedOut,
+                password = "StreamPassword456"
+            )
+            val encryptedBytes = encryptedOut.toByteArray()
+            assertTrue(encryptedBytes.isNotEmpty())
+
+            val extracted = BackupManager.extractBackupZip(
+                inputStream = ByteArrayInputStream(encryptedBytes),
+                targetDir = extractDir,
+                password = "StreamPassword456"
+            )
+
+            assertEquals(1, extracted.notifications.size)
+            assertEquals("Bob", extracted.notifications[0].title)
+            assertEquals("aud_test.ogg", extracted.notifications[0].audioPath)
+            assertTrue(extracted.notifications[0].isVoiceMessage)
+
+            val extractedAudio = File(extractDir, "attachments/aud_test.ogg")
+            assertTrue(extractedAudio.exists())
+            assertEquals("voice note streaming bytes", extractedAudio.readText(Charsets.UTF_8))
+        } finally {
+            tempDir.deleteRecursively()
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun imageUtils_isAnimatedImage_detectsGifAndAnimatedWebP() {
+        val gifBytes = byteArrayOf(0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00)
+        assertTrue(com.fl0w.speye.utils.ImageUtils.isAnimatedImage(gifBytes))
+
+        // WebP with ANIM chunk
+        val webpAnimHeader = byteArrayOf(
+            0x52, 0x49, 0x46, 0x46, 0x20, 0x00, 0x00, 0x00,
+            0x57, 0x45, 0x42, 0x50, 0x41, 0x4E, 0x49, 0x4D,
+            0x00, 0x00, 0x00, 0x00
+        )
+        assertTrue(com.fl0w.speye.utils.ImageUtils.isAnimatedImage(webpAnimHeader))
+
+        // Static JPEG
+        val jpegBytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte(), 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01)
+        assertFalse(com.fl0w.speye.utils.ImageUtils.isAnimatedImage(jpegBytes, "image/jpeg"))
+
+        // Static PNG
+        val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D)
+        assertFalse(com.fl0w.speye.utils.ImageUtils.isAnimatedImage(pngBytes, "image/png"))
+    }
 }

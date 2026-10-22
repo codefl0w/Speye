@@ -23,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import com.fl0w.speye.R
 import com.fl0w.speye.SpeyeTheme
 import com.fl0w.speye.ui.SpeyeIcons
@@ -33,6 +36,7 @@ import com.fl0w.speye.ui.viewmodel.AppListViewModel
 fun AppListScreen(viewModel: AppListViewModel) {
     val apps by viewModel.apps.collectAsState()
     val currentFilter by viewModel.currentFilter.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Custom Top Bar
@@ -60,7 +64,54 @@ fun AppListScreen(viewModel: AppListViewModel) {
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Search Bar
+            TextField(
+                value = searchQuery,
+                onValueChange = { viewModel.setSearchQuery(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(1.dp, SpeyeTheme.colors.divider, RoundedCornerShape(12.dp)),
+                placeholder = {
+                    Text(
+                        stringResource(R.string.search_placeholder),
+                        color = SpeyeTheme.colors.textSecondary,
+                        fontSize = 13.sp
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = SpeyeTheme.colors.textSecondary
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                tint = SpeyeTheme.colors.textSecondary
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = SpeyeTheme.colors.surface,
+                    unfocusedContainerColor = SpeyeTheme.colors.surface,
+                    focusedTextColor = SpeyeTheme.colors.textPrimary,
+                    unfocusedTextColor = SpeyeTheme.colors.textPrimary,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Filter Tags
             Row(

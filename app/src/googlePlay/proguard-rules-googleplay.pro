@@ -53,3 +53,9 @@
 -keep public class com.google.ads.** {
    public *;
 }
+
+# ----------------------------------------------------------------------------
+# Androidx Credentials
+# ----------------------------------------------------------------------------
+-keep class androidx.credentials.** { *; }
+-dontwarn androidx.credentials.**

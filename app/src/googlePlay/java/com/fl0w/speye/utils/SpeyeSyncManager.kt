@@ -21,14 +21,20 @@ object SpeyeSyncManager {
             val cloudManager = CloudSettingsManager(context)
             val enabled = cloudManager.isAutoBackupEnabled.first()
             val frequency = cloudManager.backupFrequency.first()
+            val wifiOnly = cloudManager.isWifiOnlyBackup.first()
             
             if (enabled && frequency != "Manual") {
-                scheduleSync(context, frequency, ExistingPeriodicWorkPolicy.KEEP)
+                scheduleSync(context, frequency, ExistingPeriodicWorkPolicy.KEEP, wifiOnly)
             }
         }
     }
 
-    fun scheduleSync(context: Context, frequency: String, policy: ExistingPeriodicWorkPolicy) {
+    fun scheduleSync(
+        context: Context,
+        frequency: String,
+        policy: ExistingPeriodicWorkPolicy,
+        wifiOnly: Boolean = false
+    ) {
         val workManager = WorkManager.getInstance(context)
         
         if (frequency == "Manual") {
@@ -57,12 +63,13 @@ object SpeyeSyncManager {
         }
         
         val initialDelay = calendar.timeInMillis - now
+        val networkType = if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
         
         val syncRequest = PeriodicWorkRequestBuilder<SyncWorker>(intervalDays, TimeUnit.DAYS)
             .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
             .setConstraints(
                 Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .setRequiredNetworkType(networkType)
                     .setRequiresBatteryNotLow(true)
                     .build()
             )
@@ -73,7 +80,7 @@ object SpeyeSyncManager {
             policy,
             syncRequest
         )
-        SpeyeLogger.d(TAG, "Background sync scheduled every $intervalDays days. Policy: $policy. Initial delay: ${initialDelay / 1000 / 60} minutes")
+        SpeyeLogger.d(TAG, "Background sync scheduled every $intervalDays days. Policy: $policy. Network: $networkType. Initial delay: ${initialDelay / 1000 / 60} minutes")
     }
 
     fun cancelSync(context: Context) {

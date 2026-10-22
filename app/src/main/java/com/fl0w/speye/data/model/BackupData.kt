@@ -16,13 +16,23 @@ data class SerializableNotification(
     val text: String?,
     val timestamp: Long,
     val appName: String?,
-    val isSystemRemoved: Boolean,
-    val imagePath: String?,
-    val history: List<SerializableHistory>,
+    val isSystemRemoved: Boolean = false,
+    val imagePath: String? = null,
+    val history: List<SerializableHistory> = emptyList(),
     val contentIntentUri: String? = null,
     val progress: Int? = null,
     val progressMax: Int? = null,
-    val isIndeterminate: Boolean? = null
+    val isIndeterminate: Boolean? = null,
+    val isMedia: Boolean = false,
+    val mediaTitle: String? = null,
+    val mediaArtist: String? = null,
+    val mediaAlbum: String? = null,
+    val mediaDurationMs: Long? = null,
+    val mediaPositionMs: Long? = null,
+    val mediaPlaybackState: Int? = null,
+    val audioPath: String? = null,
+    val isVoiceMessage: Boolean = false,
+    val voiceSender: String? = null
 )
 
 @Serializable

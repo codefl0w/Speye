@@ -78,8 +78,16 @@ object MediaSessionExtractor {
         val durationMs = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION)?.takeIf { it > 0 }
             ?: (if (extras.containsKey(Notification.EXTRA_PROGRESS_MAX)) extras.getInt(Notification.EXTRA_PROGRESS_MAX).toLong().takeIf { it > 0 } else null)
 
-        val positionMs = playbackState?.position?.takeIf { it >= 0 }
-            ?: (if (extras.containsKey(Notification.EXTRA_PROGRESS)) extras.getInt(Notification.EXTRA_PROGRESS).toLong().takeIf { it >= 0 } else null)
+        val positionMs = playbackState?.let { ps ->
+            var pos = ps.position
+            if (ps.state == PlaybackState.STATE_PLAYING && ps.lastPositionUpdateTime > 0) {
+                val delta = android.os.SystemClock.elapsedRealtime() - ps.lastPositionUpdateTime
+                if (delta > 0) {
+                    pos += (delta * ps.playbackSpeed).toLong()
+                }
+            }
+            pos.takeIf { it >= 0 }
+        } ?: (if (extras.containsKey(Notification.EXTRA_PROGRESS)) extras.getInt(Notification.EXTRA_PROGRESS).toLong().takeIf { it >= 0 } else null)
 
         val stateInt = playbackState?.state ?: inferPlaybackStateFromActions(notification)
 

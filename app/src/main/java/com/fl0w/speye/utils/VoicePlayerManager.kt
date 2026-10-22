@@ -163,6 +163,19 @@ object VoicePlayerManager {
         _playbackState.value = null
     }
 
+    fun stopIfMatching(notificationId: Long) {
+        if (_playbackState.value?.notificationId == notificationId) {
+            stopAndRelease(null)
+        }
+    }
+
+    fun stopIfMatching(notificationIds: Collection<Long>) {
+        val activeId = _playbackState.value?.notificationId
+        if (activeId != null && activeId in notificationIds) {
+            stopAndRelease(null)
+        }
+    }
+
     private fun startProgressTracker(context: Context, notificationId: Long) {
         stopProgressTracker()
         progressJob = scope.launch {

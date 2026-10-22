@@ -12,6 +12,9 @@ interface FlavorDelegate {
     fun GoogleDriveSettingsItem(onNavigate: () -> Unit)
 
     @Composable
+    fun SupportDeveloperItem()
+
+    @Composable
     fun ProVersionHeader()
 
     @Composable
