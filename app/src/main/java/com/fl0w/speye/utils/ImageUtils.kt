@@ -126,12 +126,28 @@ object ImageUtils {
     fun exportToGallery(context: Context, filePath: String): String? {
         val srcFile = File(filePath)
         if (!srcFile.exists() || !srcFile.isFile) {
-            Toast.makeText(context, context.getString(com.fl0w.speye.R.string.image_not_found), Toast.LENGTH_SHORT).show()
+            showToast(context, context.getString(com.fl0w.speye.R.string.image_not_found))
             return null
         }
 
         return try {
-            val extension = srcFile.extension.lowercase().ifEmpty { "png" }
+            val rawBytes = srcFile.readBytes()
+            val isAnimWebp = AnimatedWebpConverter.isAnimatedWebp(rawBytes)
+            val convertedGifBytes = if (isAnimWebp) {
+                try {
+                    AnimatedWebpConverter.convertAnimatedWebpToGif(rawBytes)
+                } catch (e: Exception) {
+                    SpeyeLogger.w("ImageUtils", "Animated WebP to GIF conversion fallback: ${e.message}")
+                    null
+                }
+            } else null
+
+            val exportBytes = convertedGifBytes ?: rawBytes
+            val extension = when {
+                convertedGifBytes != null -> "gif"
+                rawBytes.size >= 4 && rawBytes[0] == 0x47.toByte() && rawBytes[1] == 0x49.toByte() && rawBytes[2] == 0x46.toByte() -> "gif"
+                else -> srcFile.extension.lowercase().ifEmpty { "png" }
+            }
             val mimeType = when (extension) {
                 "jpg", "jpeg" -> "image/jpeg"
                 "webp" -> "image/webp"
@@ -152,19 +168,18 @@ object ImageUtils {
                 val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 if (uri != null) {
                     resolver.openOutputStream(uri)?.use { out ->
-                        srcFile.inputStream().use { input ->
-                            input.copyTo(out)
-                        }
+                        out.write(exportBytes)
+                        out.flush()
                     }
                     val updateValues = ContentValues().apply {
                         put(MediaStore.MediaColumns.IS_PENDING, 0)
                     }
                     resolver.update(uri, updateValues, null, null)
-                    SpeyeLogger.d("ImageUtils", "Exported photo via MediaStore to $uri")
-                    Toast.makeText(context, context.getString(com.fl0w.speye.R.string.saved_to_gallery_success), Toast.LENGTH_SHORT).show()
+                    SpeyeLogger.d("ImageUtils", "Exported photo via MediaStore to $uri ($mimeType)")
+                    showToast(context, context.getString(com.fl0w.speye.R.string.saved_to_gallery_success))
                     "Pictures/Speye/$fileName"
                 } else {
-                    Toast.makeText(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed), Toast.LENGTH_SHORT).show()
+                    showToast(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed))
                     null
                 }
             } else {
@@ -187,7 +202,7 @@ object ImageUtils {
                 }
 
                 val destFile = File(targetDir, fileName)
-                srcFile.copyTo(destFile, overwrite = true)
+                destFile.writeBytes(exportBytes)
                 try {
                     MediaScannerConnection.scanFile(
                         context.applicationContext,
@@ -198,13 +213,24 @@ object ImageUtils {
                 } catch (e: Exception) {
                     SpeyeLogger.w("ImageUtils", "MediaScanner failed for ${destFile.absolutePath}: ${e.message}")
                 }
-                Toast.makeText(context, context.getString(com.fl0w.speye.R.string.saved_to_gallery_success), Toast.LENGTH_SHORT).show()
+                showToast(context, context.getString(com.fl0w.speye.R.string.saved_to_gallery_success))
                 destFile.absolutePath
             }
         } catch (e: Exception) {
             SpeyeLogger.e("ImageUtils", "Error exporting image: $filePath", e)
-            Toast.makeText(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed), Toast.LENGTH_SHORT).show()
+            showToast(context, context.getString(com.fl0w.speye.R.string.gallery_save_failed))
             null
+        }
+    }
+
+    private fun showToast(context: Context, message: String) {
+        val mainLooper = android.os.Looper.getMainLooper()
+        if (android.os.Looper.myLooper() == mainLooper) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        } else {
+            android.os.Handler(mainLooper).post {
+                Toast.makeText(context.applicationContext, message, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -223,9 +249,10 @@ object ImageUtils {
             return targetFile.absolutePath
         }
 
-        // Check if already stored under another valid extension
-        val existingAlternative = ImageFormatSetting.values()
-            .map { File(directory, "img_${hash}.${it.extension}") }
+        // Check if already stored under another valid extension (including animated formats)
+        val existingAlternative = (ImageFormatSetting.values().map { it.extension } + listOf("gif", "apng", "webp"))
+            .distinct()
+            .map { File(directory, "img_${hash}.$it") }
             .firstOrNull { it.exists() && it.length() > 0L }
         if (existingAlternative != null) {
             existingAlternative.setLastModified(System.currentTimeMillis())
@@ -267,15 +294,9 @@ object ImageUtils {
             return true
         }
 
-        // WebP: RIFF....WEBP with "ANIM" chunk
-        if (bytes[0] == 0x52.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() && bytes[3] == 0x46.toByte() &&
-            bytes.size >= 16 && bytes[8] == 0x57.toByte() && bytes[9] == 0x45.toByte() && bytes[10] == 0x42.toByte() && bytes[11] == 0x50.toByte()) {
-            val searchLimit = minOf(bytes.size - 4, 1024)
-            for (i in 12..searchLimit) {
-                if (bytes[i] == 0x41.toByte() && bytes[i + 1] == 0x4E.toByte() && bytes[i + 2] == 0x49.toByte() && bytes[i + 3] == 0x4D.toByte()) { // "ANIM"
-                    return true
-                }
-            }
+        // WebP: delegate to AnimatedWebpConverter (checks VP8X animation bit + ANIM/ANMF chunks up to 2 KB)
+        if (AnimatedWebpConverter.isAnimatedWebp(bytes)) {
+            return true
         }
 
         // APNG: starts with PNG magic and contains "acTL" chunk
@@ -291,18 +312,30 @@ object ImageUtils {
         return false
     }
 
-    fun saveRawImageFromUri(
+    fun readAnimatedImageBytesFromUri(
         context: Context,
         uri: Uri,
-        mimeType: String? = null,
-        directory: File = context.filesDir,
-        onlyAnimated: Boolean = true
-    ): String? {
+        mimeType: String? = null
+    ): ByteArray? {
         return try {
-            val bytes = context.contentResolver.openInputStream(uri)?.use { stream ->
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                val headerBuf = ByteArray(2048)
+                var headerLen = 0
+                while (headerLen < headerBuf.size) {
+                    val r = stream.read(headerBuf, headerLen, headerBuf.size - headerLen)
+                    if (r == -1) break
+                    headerLen += r
+                }
+                if (headerLen < 12) return null
+                val headerSlice = if (headerLen == headerBuf.size) headerBuf else headerBuf.copyOf(headerLen)
+                if (!isAnimatedImage(headerSlice, mimeType)) {
+                    return null
+                }
+
                 val buffer = java.io.ByteArrayOutputStream()
+                buffer.write(headerBuf, 0, headerLen)
                 val data = ByteArray(8192)
-                var total = 0L
+                var total = headerLen.toLong()
                 var read: Int
                 while (stream.read(data).also { read = it } != -1) {
                     total += read
@@ -313,10 +346,57 @@ object ImageUtils {
                     buffer.write(data, 0, read)
                 }
                 buffer.toByteArray()
-            } ?: return null
+            }
+        } catch (e: Exception) {
+            SpeyeLogger.w("ImageUtils", "Could not read animated image bytes from uri $uri: ${e.message}")
+            null
+        }
+    }
 
-            if (onlyAnimated && !isAnimatedImage(bytes, mimeType)) {
-                return null
+    fun isAnimatedFile(filePath: String?): Boolean {
+        if (filePath.isNullOrBlank()) return false
+        val file = File(filePath)
+        if (!file.exists() || !file.isFile) return false
+        val ext = file.extension.lowercase(java.util.Locale.ROOT)
+        if (ext == "gif" || ext == "apng") return true
+        if (ext == "webp") {
+            return try {
+                val header = ByteArray(minOf(file.length().toInt(), 2048))
+                file.inputStream().use { it.read(header) }
+                isAnimatedImage(header, "image/webp")
+            } catch (_: Exception) {
+                false
+            }
+        }
+        return false
+    }
+
+    fun saveRawImageFromUri(
+        context: Context,
+        uri: Uri,
+        mimeType: String? = null,
+        directory: File = context.filesDir,
+        onlyAnimated: Boolean = true
+    ): String? {
+        return try {
+            val bytes = if (onlyAnimated) {
+                readAnimatedImageBytesFromUri(context, uri, mimeType) ?: return null
+            } else {
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    val buffer = java.io.ByteArrayOutputStream()
+                    val data = ByteArray(8192)
+                    var total = 0L
+                    var read: Int
+                    while (stream.read(data).also { read = it } != -1) {
+                        total += read
+                        if (total > MAX_RAW_IMAGE_SIZE) {
+                            SpeyeLogger.w("ImageUtils", "Raw image exceeds MAX_RAW_IMAGE_SIZE ($MAX_RAW_IMAGE_SIZE bytes)")
+                            return null
+                        }
+                        buffer.write(data, 0, read)
+                    }
+                    buffer.toByteArray()
+                } ?: return null
             }
             saveRawImageFromBytes(bytes, mimeType, directory)
         } catch (e: Exception) {
@@ -334,15 +414,33 @@ object ImageUtils {
         val md = MessageDigest.getInstance("MD5")
         val hash = md.digest(bytes).joinToString("") { "%02x".format(it) }
 
-        val ext = when {
-            mimeType?.contains("gif", ignoreCase = true) == true -> "gif"
-            mimeType?.contains("webp", ignoreCase = true) == true -> "webp"
-            mimeType?.contains("png", ignoreCase = true) == true -> "png"
-            mimeType?.contains("jpeg", ignoreCase = true) == true || mimeType?.contains("jpg", ignoreCase = true) == true -> "jpg"
-            bytes.size >= 4 && bytes[0] == 0x47.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() -> "gif"
-            bytes.size >= 12 && bytes[0] == 0x52.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() && bytes[3] == 0x46.toByte() -> "webp"
-            bytes.size >= 8 && bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() -> "png"
-            else -> "webp"
+        val bytesToWrite: ByteArray
+        val ext: String
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && AnimatedWebpConverter.isAnimatedWebp(bytes)) {
+            val convertedGif = try {
+                AnimatedWebpConverter.convertAnimatedWebpToGif(bytes)
+            } catch (_: Exception) {
+                null
+            }
+            if (convertedGif != null) {
+                bytesToWrite = convertedGif
+                ext = "gif"
+            } else {
+                bytesToWrite = bytes
+                ext = "webp"
+            }
+        } else {
+            bytesToWrite = bytes
+            ext = when {
+                bytes.size >= 4 && bytes[0] == 0x47.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() -> "gif"
+                bytes.size >= 12 && bytes[0] == 0x52.toByte() && bytes[1] == 0x49.toByte() && bytes[2] == 0x46.toByte() && bytes[3] == 0x46.toByte() -> "webp"
+                bytes.size >= 8 && bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() -> "png"
+                mimeType?.contains("gif", ignoreCase = true) == true -> "gif"
+                mimeType?.contains("webp", ignoreCase = true) == true -> "webp"
+                mimeType?.contains("png", ignoreCase = true) == true -> "png"
+                mimeType?.contains("jpeg", ignoreCase = true) == true || mimeType?.contains("jpg", ignoreCase = true) == true -> "jpg"
+                else -> "webp"
+            }
         }
 
         val targetFileName = "img_${hash}.$ext"
@@ -362,7 +460,7 @@ object ImageUtils {
 
         val tempFile = File(directory, "$targetFileName.${System.currentTimeMillis()}.tmp")
         return try {
-            tempFile.writeBytes(bytes)
+            tempFile.writeBytes(bytesToWrite)
             if (tempFile.renameTo(targetFile) || targetFile.exists()) {
                 if (tempFile.exists()) tempFile.delete()
                 targetFile.absolutePath

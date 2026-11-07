@@ -51,6 +51,7 @@
     <string name="show_more_history">Показать еще (+%d)</string>
     <string name="show_more_messages">Показать еще сообщений (+%d)</string>
     <string name="search_placeholder">Поиск уведомлений…</string>
+    <string name="search_apps_placeholder">Поиск приложений…</string>
 
     <!-- App List -->
     <string name="app_list_description">Выберите приложения для отслеживания или игнорирования уведомлений.</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">Зашифрованная резервная копия</string>
     <string name="encrypted_backup_desc">Этот файл резервной копии зашифрован паролем. Введите пароль для расшифровки и восстановления:</string>
     <string name="invalid_password">Неверный пароль или поврежденный файл копии</string>
+    <string name="test_interactable">Тест кнопок (Банк)</string>
+    <string name="test_interactable_title">Тест интерактивного уведомления</string>
+    <string name="test_interactable_sub">Отправить запрос платежа с кнопками Подтвердить и Отклонить</string>
+    <string name="action_expired">Действие больше недоступно (уведомление закрыто)</string>
+    <string name="filter_type_text">Тексты</string>
+    <string name="filter_type_text_sub">Обычные текстовые сообщения и история изменений</string>
+    <string name="filter_type_lazy_assets">Отложенные ресурсы</string>
+    <string name="filter_type_lazy_assets_sub">Фото профилей, значки погоды и статичные изображения</string>
+    <string name="filter_type_stickers">Анимированные стикеры и GIF</string>
+    <string name="filter_type_stickers_sub">Анимированные стикеры WebP, GIF и APNG</string>
+    <string name="filter_type_media">Медиакарточки</string>
+    <string name="filter_type_media_sub">Музыкальные плееры и активные медиасессии</string>
+    <string name="filter_type_voice">Голосовые сообщения</string>
+    <string name="filter_type_voice_sub">Аудиозаметки и голосовые вложения</string>
+    <string name="filter_type_progress">Индикаторы прогресса</string>
+    <string name="filter_type_progress_sub">Загрузки и выполнение текущих задач</string>
+    <string name="filter_type_actions">Интерактивные действия</string>
+    <string name="filter_type_actions_sub">Кнопки действий (Подтвердить, Отклонить и т. д.)</string>
 </resources>

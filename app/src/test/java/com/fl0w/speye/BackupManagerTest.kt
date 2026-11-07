@@ -460,4 +460,258 @@ class BackupManagerTest {
         val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D)
         assertFalse(com.fl0w.speye.utils.ImageUtils.isAnimatedImage(pngBytes, "image/png"))
     }
+
+    @Test
+    fun notificationActionManager_encodesDecodesAndRoundTripsInBackup() {
+        val titles = listOf("Confirm", "Reject")
+        val encoded = com.fl0w.speye.utils.NotificationActionManager.encodeActionTitles(titles)
+        assertEquals("Confirm\nReject", encoded)
+        assertEquals(titles, com.fl0w.speye.utils.NotificationActionManager.decodeActionTitles(encoded))
+        assertNull(com.fl0w.speye.utils.NotificationActionManager.encodeActionTitles(emptyList()))
+        assertTrue(com.fl0w.speye.utils.NotificationActionManager.decodeActionTitles(null).isEmpty())
+
+        val backup = BackupData(
+            notifications = listOf(
+                SerializableNotification(
+                    sbnKey = "0|com.fl0w.speye|8891|null|10000",
+                    packageName = "com.fl0w.speye",
+                    title = "Speye Bank • Payment Request",
+                    text = "Approve transfer of $240.00?",
+                    timestamp = 1710009000000L,
+                    appName = "Speye",
+                    actionTitles = encoded
+                )
+            ),
+            ignoredApps = emptyList()
+        )
+        val out = ByteArrayOutputStream()
+        BackupManager.writeBackupZip(backup, emptyList(), out)
+        val tempDir = createTempDir("speye_action_test")
+        try {
+            val extracted = BackupManager.extractBackupZip(ByteArrayInputStream(out.toByteArray()), tempDir)
+            assertEquals(1, extracted.notifications.size)
+            assertEquals("Confirm\nReject", extracted.notifications[0].actionTitles)
+            assertEquals(
+                listOf("Confirm", "Reject"),
+                com.fl0w.speye.utils.NotificationActionManager.decodeActionTitles(extracted.notifications[0].actionTitles)
+            )
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun animatedWebpConverter_parsesChunksAndEncodesValidAnimatedGif() {
+        // Construct a synthetic multi-frame Animated WebP container (RIFF....WEBP + VP8X + ANIM + 2 ANMF chunks)
+        val out = ByteArrayOutputStream()
+        out.write("RIFF".toByteArray(Charsets.US_ASCII))
+        out.write(byteArrayOf(0, 0, 0, 0)) // placeholder size
+        out.write("WEBP".toByteArray(Charsets.US_ASCII))
+
+        // VP8X chunk (size 10): flags=0x12 (alpha + animation), canvas 64x64 (stored as 63, 63 in 24-bit LE)
+        out.write("VP8X".toByteArray(Charsets.US_ASCII))
+        out.write(byteArrayOf(10, 0, 0, 0))
+        out.write(byteArrayOf(0x12, 0, 0, 0, 63, 0, 0, 63, 0, 0))
+
+        // ANIM chunk (size 6): bg=0, loopCount=0 (infinite)
+        out.write("ANIM".toByteArray(Charsets.US_ASCII))
+        out.write(byteArrayOf(6, 0, 0, 0))
+        out.write(byteArrayOf(0, 0, 0, 0, 0, 0))
+
+        // Two ANMF chunks with VP8L sub-chunk payload
+        for (frameIdx in 0..1) {
+            val vp8lPayload = byteArrayOf(
+                'V'.code.toByte(), 'P'.code.toByte(), '8'.code.toByte(), 'L'.code.toByte(),
+                4, 0, 0, 0,
+                0x2F, 0x00, 0x00, 0x00
+            )
+            val anmfSize = 16 + vp8lPayload.size
+            out.write("ANMF".toByteArray(Charsets.US_ASCII))
+            out.write(byteArrayOf(anmfSize.toByte(), 0, 0, 0))
+            // x=0, y=0, w-1=63, h-1=63, duration=100ms, flags=0x02 (doNotBlend)
+            out.write(byteArrayOf(0, 0, 0, 0, 0, 0, 63, 0, 0, 63, 0, 0, 100, 0, 0, 0x02))
+            out.write(vp8lPayload)
+        }
+
+        val webpBytes = out.toByteArray()
+        val riffSize = webpBytes.size - 8
+        webpBytes[4] = (riffSize and 0xFF).toByte()
+        webpBytes[5] = ((riffSize ushr 8) and 0xFF).toByte()
+
+        assertTrue(com.fl0w.speye.utils.AnimatedWebpConverter.isAnimatedWebp(webpBytes))
+        val parsed = com.fl0w.speye.utils.AnimatedWebpConverter.parseAnimatedWebp(webpBytes)
+        assertNotNull(parsed)
+        assertEquals(64, parsed!!.canvasWidth)
+        assertEquals(64, parsed.canvasHeight)
+        assertEquals(0, parsed.loopCount)
+        assertEquals(2, parsed.frames.size)
+        assertEquals(100, parsed.frames[0].durationMs)
+        // Verify standalone single-frame WebP wrapper starts with RIFF....WEBP
+        assertEquals("RIFF", String(parsed.frames[0].singleFrameWebpBytes, 0, 4, Charsets.US_ASCII))
+        assertEquals("WEBP", String(parsed.frames[0].singleFrameWebpBytes, 8, 4, Charsets.US_ASCII))
+
+        // Verify GIF89a encoding of 2 frames with transparency & colors
+        val frame1Pixels = IntArray(4 * 4) { i -> if (i % 2 == 0) 0xFFFF0000.toInt() else 0x00000000 }
+        val frame2Pixels = IntArray(4 * 4) { i -> if (i % 2 == 1) 0xFF00FF00.toInt() else 0x00000000 }
+        val gifOut = ByteArrayOutputStream()
+        com.fl0w.speye.utils.AnimatedWebpConverter.encodeGif(
+            frames = listOf(
+                com.fl0w.speye.utils.AnimatedWebpConverter.GifFrameData(4, 4, 100, frame1Pixels),
+                com.fl0w.speye.utils.AnimatedWebpConverter.GifFrameData(4, 4, 120, frame2Pixels)
+            ),
+            loopCount = 0,
+            out = gifOut
+        )
+        val gifBytes = gifOut.toByteArray()
+        assertEquals("GIF89a", String(gifBytes, 0, 6, Charsets.US_ASCII))
+        assertTrue(com.fl0w.speye.utils.ImageUtils.isAnimatedImage(gifBytes, "image/gif"))
+        assertEquals(0x3B.toByte(), gifBytes.last()) // GIF trailer
+        val gifAscii = String(gifBytes, Charsets.ISO_8859_1)
+        assertTrue(gifAscii.contains("NETSCAPE2.0"))
+    }
+
+    @Test
+    fun backupAndEncryptedRestore_animatedWebpAndGifStickers_preservedBitForBit() {
+        val tempDir = Files.createTempDirectory("backup_sticker_test").toFile()
+        val extractDir = Files.createTempDirectory("backup_sticker_extract").toFile()
+        try {
+            val animWebpBytes = byteArrayOf(
+                0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00,
+                0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x58,
+                0x0A, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00,
+                0x3F, 0x00, 0x00, 0x3F, 0x00, 0x00, 0x41, 0x4E,
+                0x49, 0x4D, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00
+            )
+            val animGifBytes = byteArrayOf(
+                0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00,
+                0x10, 0x00, 0xF0.toByte(), 0x00, 0x00, 0x21, 0xFF.toByte(), 0x0B,
+                0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45,
+                0x32, 0x2E, 0x30, 0x03, 0x01, 0x00, 0x00, 0x00,
+                0x3B
+            )
+
+            val webpPath = com.fl0w.speye.utils.ImageUtils.saveRawImageFromBytes(animWebpBytes, "image/webp", tempDir)
+            val gifPath = com.fl0w.speye.utils.ImageUtils.saveRawImageFromBytes(animGifBytes, "image/gif", tempDir)
+            assertNotNull(webpPath)
+            assertNotNull(gifPath)
+
+            val webpFile = File(webpPath!!)
+            val gifFile = File(gifPath!!)
+            assertTrue(webpFile.name.endsWith(".webp"))
+            assertTrue(gifFile.name.endsWith(".gif"))
+            assertTrue(com.fl0w.speye.utils.ImageUtils.isAnimatedFile(webpFile.absolutePath))
+            assertTrue(com.fl0w.speye.utils.ImageUtils.isAnimatedFile(gifFile.absolutePath))
+
+            val n1 = SerializableNotification(
+                sbnKey = "0|com.whatsapp|10|sticker1|1000",
+                packageName = "com.whatsapp",
+                title = "Alice",
+                text = "Sticker",
+                timestamp = 1700000100000L,
+                appName = "WhatsApp",
+                imagePath = webpFile.name
+            )
+            val n2 = SerializableNotification(
+                sbnKey = "0|org.telegram.messenger|11|sticker2|1000",
+                packageName = "org.telegram.messenger",
+                title = "Bob",
+                text = "GIF",
+                timestamp = 1700000200000L,
+                appName = "Telegram",
+                imagePath = gifFile.name
+            )
+
+            val backupData = BackupData(notifications = listOf(n1, n2), ignoredApps = emptyList())
+            val encryptedOut = ByteArrayOutputStream()
+            BackupManager.encryptZipStream(
+                rawStreamWriter = { cos ->
+                    BackupManager.writeBackupZip(backupData, listOf(webpFile, gifFile), cos)
+                },
+                destination = encryptedOut,
+                password = "StickerBackupPassword!"
+            )
+
+            val extracted = BackupManager.extractBackupZip(
+                inputStream = ByteArrayInputStream(encryptedOut.toByteArray()),
+                targetDir = extractDir,
+                password = "StickerBackupPassword!"
+            )
+
+            assertEquals(2, extracted.notifications.size)
+            val restoredWebp = File(extractDir, "attachments/${webpFile.name}")
+            val restoredGif = File(extractDir, "attachments/${gifFile.name}")
+            assertTrue(restoredWebp.exists())
+            assertTrue(restoredGif.exists())
+            assertArrayEquals(animWebpBytes, restoredWebp.readBytes())
+            assertArrayEquals(animGifBytes, restoredGif.readBytes())
+        } finally {
+            tempDir.deleteRecursively()
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun backupAndRestore_granularAppFilters_roundTripsCorrectly() {
+        val allOn = com.fl0w.speye.data.model.IgnoredAppEntity.allOn("com.example.all_on")
+        assertTrue(allOn.isAllOn)
+        assertFalse(allOn.isAllOff)
+        assertTrue(allOn.isMainToggleOn)
+
+        val allOff = com.fl0w.speye.data.model.IgnoredAppEntity.allOff("com.example.all_off")
+        assertFalse(allOff.isAllOn)
+        assertTrue(allOff.isAllOff)
+        assertFalse(allOff.isMainToggleOn)
+
+        val partial = allOn.copy(packageName = "com.example.partial", allowLazyAssets = false, allowStickers = false)
+        assertFalse(partial.isAllOn)
+        assertFalse(partial.isAllOff)
+        assertTrue(partial.isMainToggleOn)
+
+        val backup = BackupData(
+            notifications = emptyList(),
+            ignoredApps = listOf("com.example.all_off"),
+            appFilters = listOf(
+                com.fl0w.speye.data.model.SerializableAppFilter(
+                    packageName = "com.example.partial",
+                    allowText = true,
+                    allowLazyAssets = false,
+                    allowStickers = false,
+                    allowMedia = true,
+                    allowVoice = true,
+                    allowProgress = true,
+                    allowActions = false
+                ),
+                com.fl0w.speye.data.model.SerializableAppFilter(
+                    packageName = "com.example.all_off",
+                    allowText = false,
+                    allowLazyAssets = false,
+                    allowStickers = false,
+                    allowMedia = false,
+                    allowVoice = false,
+                    allowProgress = false,
+                    allowActions = false
+                )
+            )
+        )
+        val out = ByteArrayOutputStream()
+        BackupManager.writeBackupZip(backup, emptyList(), out)
+        val tempDir = Files.createTempDirectory("speye_app_filter_test").toFile()
+        try {
+            val extracted = BackupManager.extractBackupZip(ByteArrayInputStream(out.toByteArray()), tempDir)
+            assertEquals(1, extracted.ignoredApps.size)
+            assertEquals("com.example.all_off", extracted.ignoredApps[0])
+            assertEquals(2, extracted.appFilters.size)
+            val p = extracted.appFilters.first { it.packageName == "com.example.partial" }
+            assertTrue(p.allowText)
+            assertFalse(p.allowLazyAssets)
+            assertFalse(p.allowStickers)
+            assertTrue(p.allowMedia)
+            assertTrue(p.allowVoice)
+            assertTrue(p.allowProgress)
+            assertFalse(p.allowActions)
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
 }

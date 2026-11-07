@@ -23,5 +23,6 @@ data class NotificationHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val notificationId: Long,
     val oldText: String?,
-    val timestamp: Long
+    val timestamp: Long,
+    val oldActionTitles: String? = null
 )

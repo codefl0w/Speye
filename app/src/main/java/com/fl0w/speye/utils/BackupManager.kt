@@ -81,10 +81,32 @@ object BackupManager {
 
                 val backupData = extractBackupZip(inputStream, tempDir, password)
 
-                SpeyeLogger.d(TAG, "Importing ${backupData.notifications.size} notifications and ${backupData.ignoredApps.size} ignored apps")
+                SpeyeLogger.d(TAG, "Importing ${backupData.notifications.size} notifications, ${backupData.ignoredApps.size} ignored apps, ${backupData.appFilters.size} app filters")
+
+                val handledFilterPackages = HashSet<String>()
+                for (filter in backupData.appFilters) {
+                    handledFilterPackages.add(filter.packageName)
+                    val entity = IgnoredAppEntity(
+                        packageName = filter.packageName,
+                        allowText = filter.allowText,
+                        allowLazyAssets = filter.allowLazyAssets,
+                        allowStickers = filter.allowStickers,
+                        allowMedia = filter.allowMedia,
+                        allowVoice = filter.allowVoice,
+                        allowProgress = filter.allowProgress,
+                        allowActions = filter.allowActions
+                    )
+                    if (entity.isAllOn) {
+                        db.ignoredAppDao().deleteByPackageName(filter.packageName)
+                    } else {
+                        db.ignoredAppDao().ignoreApp(entity)
+                    }
+                }
 
                 for (pkg in backupData.ignoredApps) {
-                    db.ignoredAppDao().ignoreApp(IgnoredAppEntity(pkg))
+                    if (!handledFilterPackages.contains(pkg)) {
+                        db.ignoredAppDao().ignoreApp(IgnoredAppEntity.allOff(pkg))
+                    }
                 }
 
                 var importedCount = 0
@@ -152,7 +174,8 @@ object BackupManager {
                                 mediaPlaybackState = sNotif.mediaPlaybackState,
                                 audioPath = finalAudioPath,
                                 isVoiceMessage = sNotif.isVoiceMessage,
-                                voiceSender = sNotif.voiceSender
+                                voiceSender = sNotif.voiceSender,
+                                actionTitles = sNotif.actionTitles
                             )
                         )
                         for (h in sNotif.history) {
@@ -160,7 +183,8 @@ object BackupManager {
                                 NotificationHistoryEntity(
                                     notificationId = nId,
                                     oldText = h.oldText,
-                                    timestamp = h.timestamp
+                                    timestamp = h.timestamp,
+                                    oldActionTitles = h.oldActionTitles ?: sNotif.actionTitles
                                 )
                             )
                         }
@@ -177,7 +201,8 @@ object BackupManager {
                             mediaPositionMs = sNotif.mediaPositionMs ?: existing.mediaPositionMs,
                             mediaPlaybackState = sNotif.mediaPlaybackState ?: existing.mediaPlaybackState,
                             isVoiceMessage = if (sNotif.isVoiceMessage) true else existing.isVoiceMessage,
-                            voiceSender = sNotif.voiceSender ?: existing.voiceSender
+                            voiceSender = sNotif.voiceSender ?: existing.voiceSender,
+                            actionTitles = sNotif.actionTitles ?: existing.actionTitles
                         )
                         if (updated != existing) {
                             db.notificationDao().update(updated)
@@ -448,9 +473,22 @@ object BackupManager {
     private suspend fun performExportToStream(context: Context, outputStream: OutputStream) {
         val db = AppDatabase.getDatabase(context)
         val notifications = db.notificationDao().getAllNotificationsWithHistoryList()
-        val ignoredApps = db.ignoredAppDao().getAllIgnoredApps().first().map { it.packageName }
+        val ignoredEntities = db.ignoredAppDao().getAllIgnoredApps().first()
+        val ignoredApps = ignoredEntities.filter { it.isAllOff }.map { it.packageName }
+        val appFilters = ignoredEntities.map {
+            SerializableAppFilter(
+                packageName = it.packageName,
+                allowText = it.allowText,
+                allowLazyAssets = it.allowLazyAssets,
+                allowStickers = it.allowStickers,
+                allowMedia = it.allowMedia,
+                allowVoice = it.allowVoice,
+                allowProgress = it.allowProgress,
+                allowActions = it.allowActions
+            )
+        }
 
-        SpeyeLogger.d(TAG, "Exporting ${notifications.size} notifications and ${ignoredApps.size} ignored apps")
+        SpeyeLogger.d(TAG, "Exporting ${notifications.size} notifications, ${ignoredApps.size} ignored apps, ${appFilters.size} app filters")
 
         val serializableNotifications = notifications.map { item ->
             SerializableNotification(
@@ -462,7 +500,7 @@ object BackupManager {
                 appName = item.notification.appName,
                 isSystemRemoved = item.notification.isSystemRemoved,
                 imagePath = item.notification.imagePath?.let { File(it).name },
-                history = item.history.map { SerializableHistory(it.oldText, it.timestamp) },
+                history = item.history.map { SerializableHistory(it.oldText, it.timestamp, it.oldActionTitles) },
                 contentIntentUri = item.notification.contentIntentUri,
                 progress = item.notification.progress,
                 progressMax = item.notification.progressMax,
@@ -476,11 +514,12 @@ object BackupManager {
                 mediaPlaybackState = item.notification.mediaPlaybackState,
                 audioPath = item.notification.audioPath?.let { File(it).name },
                 isVoiceMessage = item.notification.isVoiceMessage,
-                voiceSender = item.notification.voiceSender
+                voiceSender = item.notification.voiceSender,
+                actionTitles = item.notification.actionTitles
             )
         }
 
-        val backupData = BackupData(serializableNotifications, ignoredApps)
+        val backupData = BackupData(serializableNotifications, ignoredApps, appFilters)
         val attachmentFiles = mutableListOf<File>()
         val seenFileNames = HashSet<String>()
         for (item in notifications) {

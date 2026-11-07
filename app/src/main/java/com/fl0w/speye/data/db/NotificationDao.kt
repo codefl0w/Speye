@@ -72,18 +72,6 @@ interface NotificationDao {
     @Query("UPDATE notifications SET isSystemRemoved = 1 WHERE id = :id")
     suspend fun markAsSystemRemovedById(id: Long)
 
-    @Query("SELECT imagePath FROM notifications WHERE id = :id AND imagePath IS NOT NULL")
-    suspend fun getImagePathById(id: Long): String?
-
-    @Query("SELECT imagePath FROM notifications WHERE packageName = :packageName AND imagePath IS NOT NULL")
-    suspend fun getImagePathsByPackageName(packageName: String): List<String>
-
-    @Query("SELECT imagePath FROM notifications WHERE imagePath IS NOT NULL")
-    suspend fun getAllImagePaths(): List<String>
-
-    @Query("SELECT imagePath FROM notifications WHERE timestamp < :cutoffTimestamp AND imagePath IS NOT NULL")
-    suspend fun getImagePathsOlderThan(cutoffTimestamp: Long): List<String>
-
     @Query("SELECT COUNT(*) FROM notifications WHERE imagePath = :imagePath")
     suspend fun countNotificationsUsingImage(imagePath: String): Int
 
@@ -110,8 +98,5 @@ interface NotificationDao {
 
     @Query("SELECT COUNT(*) FROM notifications WHERE audioPath = :audioPath")
     suspend fun countNotificationsUsingAudio(audioPath: String): Int
-
-    @Query("SELECT audioPath FROM notifications WHERE audioPath IS NOT NULL")
-    suspend fun getAllAudioPaths(): List<String>
 }
 

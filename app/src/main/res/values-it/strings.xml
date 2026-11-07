@@ -51,6 +51,7 @@
     <string name="show_more_history">Mostra altro (+%d)</string>
     <string name="show_more_messages">Mostra più messaggi (+%d)</string>
     <string name="search_placeholder">Cerca notifiche…</string>
+    <string name="search_apps_placeholder">Cerca app…</string>
 
     <!-- App List -->
     <string name="app_list_description">Seleziona le app per monitorare o ignorare le notifiche.</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">Backup crittografato</string>
     <string name="encrypted_backup_desc">Questo file di backup è protetto da password. Inserisci la password per decrittografare e ripristinare:</string>
     <string name="invalid_password">Password errata o file di backup danneggiato</string>
+    <string name="test_interactable">Test interattiva (Banca)</string>
+    <string name="test_interactable_title">Test notifica interattiva</string>
+    <string name="test_interactable_sub">Invia richiesta di pagamento con pulsanti Conferma e Rifiuta</string>
+    <string name="action_expired">Azione non più disponibile (notifica rimossa)</string>
+    <string name="filter_type_text">Testi</string>
+    <string name="filter_type_text_sub">Messaggi di testo standard e cronologia modifiche</string>
+    <string name="filter_type_lazy_assets">Risorse a caricamento differito</string>
+    <string name="filter_type_lazy_assets_sub">Foto profilo, icone meteo e immagini statiche</string>
+    <string name="filter_type_stickers">Sticker animati e GIF</string>
+    <string name="filter_type_stickers_sub">Sticker WebP animati, GIF e APNG</string>
+    <string name="filter_type_media">Schede multimediali</string>
+    <string name="filter_type_media_sub">Lettori musicali e sessioni multimediali attive</string>
+    <string name="filter_type_voice">Messaggi vocali</string>
+    <string name="filter_type_voice_sub">Note vocali e allegati audio</string>
+    <string name="filter_type_progress">Barre di avanzamento</string>
+    <string name="filter_type_progress_sub">Download e avanzamento attività in corso</string>
+    <string name="filter_type_actions">Azioni interattive</string>
+    <string name="filter_type_actions_sub">Pulsanti personalizzati (Conferma, Rifiuta, ecc.)</string>
 </resources>

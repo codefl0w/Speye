@@ -5,7 +5,20 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BackupData(
     val notifications: List<SerializableNotification>,
-    val ignoredApps: List<String>
+    val ignoredApps: List<String> = emptyList(),
+    val appFilters: List<SerializableAppFilter> = emptyList()
+)
+
+@Serializable
+data class SerializableAppFilter(
+    val packageName: String,
+    val allowText: Boolean = false,
+    val allowLazyAssets: Boolean = false,
+    val allowStickers: Boolean = false,
+    val allowMedia: Boolean = false,
+    val allowVoice: Boolean = false,
+    val allowProgress: Boolean = false,
+    val allowActions: Boolean = false
 )
 
 @Serializable
@@ -32,11 +45,13 @@ data class SerializableNotification(
     val mediaPlaybackState: Int? = null,
     val audioPath: String? = null,
     val isVoiceMessage: Boolean = false,
-    val voiceSender: String? = null
+    val voiceSender: String? = null,
+    val actionTitles: String? = null
 )
 
 @Serializable
 data class SerializableHistory(
     val oldText: String?,
-    val timestamp: Long
+    val timestamp: Long,
+    val oldActionTitles: String? = null
 )

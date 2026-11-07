@@ -51,6 +51,7 @@
     <string name="show_more_history">Afficher plus (+%d)</string>
     <string name="show_more_messages">Afficher plus de messages (+%d)</string>
     <string name="search_placeholder">Rechercher des notifications…</string>
+    <string name="search_apps_placeholder">Rechercher des applications…</string>
 
     <!-- App List -->
     <string name="app_list_description">Sélectionnez les applications pour suivre ou ignorer leurs notifications.</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">Sauvegarde chiffrée</string>
     <string name="encrypted_backup_desc">Ce fichier de sauvegarde est chiffré par mot de passe. Entrez le mot de passe pour le déchiffrer et le restaurer :</string>
     <string name="invalid_password">Mot de passe incorrect ou fichier de sauvegarde corrompu</string>
+    <string name="test_interactable">Tester interactive (Banque)</string>
+    <string name="test_interactable_title">Tester notification interactive</string>
+    <string name="test_interactable_sub">Émettre une demande de paiement avec boutons Confirmer et Rejeter</string>
+    <string name="action_expired">Action plus disponible (notification fermée)</string>
+    <string name="filter_type_text">Textes</string>
+    <string name="filter_type_text_sub">Messages texte standard et historique des modifications</string>
+    <string name="filter_type_lazy_assets">Ressources chargées à la demande</string>
+    <string name="filter_type_lazy_assets_sub">Photos de profil, icônes météo et images statiques</string>
+    <string name="filter_type_stickers">Autocollants animés et GIF</string>
+    <string name="filter_type_stickers_sub">Autocollants WebP animés, GIF et APNG</string>
+    <string name="filter_type_media">Cartes multimédias</string>
+    <string name="filter_type_media_sub">Lecteurs de musique et sessions multimédias actives</string>
+    <string name="filter_type_voice">Messages vocaux</string>
+    <string name="filter_type_voice_sub">Notes vocales et pièces jointes audio</string>
+    <string name="filter_type_progress">Barres de progression</string>
+    <string name="filter_type_progress_sub">Téléchargements et progression des tâches en cours</string>
+    <string name="filter_type_actions">Actions interactives</string>
+    <string name="filter_type_actions_sub">Boutons personnalisés (Confirmer, Refuser, etc.)</string>
 </resources>

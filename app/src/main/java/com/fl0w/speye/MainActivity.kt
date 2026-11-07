@@ -128,6 +128,9 @@ class MainActivity : ComponentActivity() {
         if (intent?.getBooleanExtra("test_voice", false) == true) {
             sendVoiceMessageTest()
         }
+        if (intent?.getBooleanExtra("test_interactable", false) == true) {
+            sendInteractableTest()
+        }
 
         setContent {
             var hasNotificationAccess by remember { mutableStateOf(isNotificationServiceEnabled()) }
@@ -219,7 +222,8 @@ class MainActivity : ComponentActivity() {
                                             onTestProgress = { sendProgressTest() },
                                             onTestIndeterminateProgress = { sendIndeterminateProgressTest() },
                                             onTestMedia = { sendMediaTest() },
-                                            onTestVoiceMessage = { sendVoiceMessageTest() }
+                                            onTestVoiceMessage = { sendVoiceMessageTest() },
+                                            onTestInteractable = { sendInteractableTest() }
                                         )
                                     }
                                     composable("apps") {
@@ -234,7 +238,8 @@ class MainActivity : ComponentActivity() {
                                             onNavigateToPrivacyPolicy = { navController.navigate("privacy_policy") },
                                             onNavigateToAbout = { navController.navigate("about") },
                                             onTestMedia = { sendMediaTest() },
-                                            onTestVoiceMessage = { sendVoiceMessageTest() }
+                                            onTestVoiceMessage = { sendVoiceMessageTest() },
+                                            onTestInteractable = { sendInteractableTest() }
                                         )
                                     }
                                     composable("accessibility") {
@@ -302,6 +307,9 @@ class MainActivity : ComponentActivity() {
         }
         if (intent.getBooleanExtra("test_voice", false)) {
             sendVoiceMessageTest()
+        }
+        if (intent.getBooleanExtra("test_interactable", false)) {
+            sendInteractableTest()
         }
     }
 
@@ -446,6 +454,10 @@ class MainActivity : ComponentActivity() {
 
     fun sendVoiceMessageTest() {
         com.fl0w.speye.utils.TestVoiceManager.sendTestVoiceMessage(this)
+    }
+
+    fun sendInteractableTest() {
+        com.fl0w.speye.utils.TestInteractableManager.sendTestInteractableNotification(this)
     }
 
     override fun onDestroy() {

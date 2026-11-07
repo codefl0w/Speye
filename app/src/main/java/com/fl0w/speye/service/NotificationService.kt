@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.text.HtmlCompat
 import com.fl0w.speye.data.db.AppDatabase
+import com.fl0w.speye.data.model.IgnoredAppEntity
 import com.fl0w.speye.data.model.NotificationEntity
 import com.fl0w.speye.data.model.NotificationHistoryEntity
 import com.fl0w.speye.utils.ImageUtils
@@ -33,7 +34,7 @@ class NotificationService : NotificationListenerService() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val appNameCache = java.util.concurrent.ConcurrentHashMap<String, String>()
-    @Volatile private var ignoredPackages = emptySet<String>()
+    @Volatile private var appFilters = emptyMap<String, IgnoredAppEntity>()
     private lateinit var database: AppDatabase
 
     companion object {
@@ -111,11 +112,11 @@ class NotificationService : NotificationListenerService() {
         super.onCreate()
         database = AppDatabase.getDatabase(this)
 
-        // #6: Cache ignored apps in-memory to avoid per-notification DB query
+        // #6: Cache per-app granular filters in-memory to avoid per-notification DB query
         serviceScope.launch {
             database.ignoredAppDao().getAllIgnoredApps().collectLatest { apps ->
-                ignoredPackages = apps.map { it.packageName }.toSet()
-                SpeyeLogger.d("NotificationService", "Ignored apps cache updated: ${ignoredPackages.size} apps")
+                appFilters = apps.associateBy { it.packageName }
+                SpeyeLogger.d("NotificationService", "App filters cache updated: ${appFilters.size} customized/ignored apps")
             }
         }
 
@@ -152,11 +153,16 @@ class NotificationService : NotificationListenerService() {
         val sbnKey = sbn.key
         val notification = sbn.notification
         val extras = notification.extras ?: Bundle()
-        
+
         // #6: Fast in-memory check instead of DB query
-        if (ignoredPackages.contains(packageName)) return
+        val filter = appFilters[packageName] ?: IgnoredAppEntity.allOn(packageName)
+        if (filter.isAllOff) return
 
         val isMedia = isMediaNotification(notification)
+        if (isMedia && !filter.allowMedia) {
+            SpeyeLogger.d("NotificationService", "Filtered out media notification for $packageName ($sbnKey)")
+            return
+        }
 
         // Skip group summary container notifications (child notifications hold actual conversation data).
         // Media notifications often carry FLAG_GROUP_SUMMARY to anchor playback controls in system drawer,
@@ -242,9 +248,13 @@ class NotificationService : NotificationListenerService() {
         } else null
 
         val hasActiveProgressBar = (rawProgressMax != null && rawProgressMax > 0) || (rawIsIndeterminate == true)
-        val finalProgress = if (hasActiveProgressBar) rawProgress else null
-        val finalProgressMax = if (hasActiveProgressBar) rawProgressMax else null
-        val finalIsIndeterminate = if (hasActiveProgressBar) rawIsIndeterminate else null
+        if (hasActiveProgressBar && !filter.allowProgress) {
+            SpeyeLogger.d("NotificationService", "Filtered out progress bar notification for $packageName ($sbnKey)")
+            return
+        }
+        val finalProgress = if (hasActiveProgressBar && filter.allowProgress) rawProgress else null
+        val finalProgressMax = if (hasActiveProgressBar && filter.allowProgress) rawProgressMax else null
+        val finalIsIndeterminate = if (hasActiveProgressBar && filter.allowProgress) rawIsIndeterminate else null
 
         // Voice message detection
         var detectedVoiceUri: Uri? = null
@@ -297,6 +307,10 @@ class NotificationService : NotificationListenerService() {
         val isTestVoice = extras.getBoolean("speye_test_voice_message", false)
         val testAudioPath = extras.getString("speye_test_audio_path")
         val isVoiceMessageDetected = detectedVoiceUri != null || isTestVoice || testAudioPath != null
+        if (isVoiceMessageDetected && !filter.allowVoice) {
+            SpeyeLogger.d("NotificationService", "Filtered out voice message notification for $packageName ($sbnKey)")
+            return
+        }
 
         // Image / animated sticker detection from MessagingStyle attachments or BigPicture URI
         var detectedImageUri: Uri? = null
@@ -334,11 +348,54 @@ class NotificationService : NotificationListenerService() {
             }
         }
 
-        // Media detection and extraction
-        val mediaSnapshot = com.fl0w.speye.utils.MediaSessionExtractor.extract(this, sbn)
+        // Media & animated sticker detection and extraction
+        val rawAnimatedBytes: ByteArray? = detectedImageUri?.let { uri ->
+            ImageUtils.readAnimatedImageBytesFromUri(this, uri, detectedImageMime)
+        }
+        val isAnimatedSticker = rawAnimatedBytes != null
+        val preloadedAnimatedBytes: ByteArray? = if (filter.allowStickers) rawAnimatedBytes else null
 
-        // #5 & #11: Lazy picture extraction (avoids simultaneous decode of multiple bitmap sources)
-        val picture = mediaSnapshot.coverBitmap ?: extractNotificationPicture(notification, extras)
+        val mediaSnapshot = if (filter.allowMedia) {
+            com.fl0w.speye.utils.MediaSessionExtractor.extract(this, sbn)
+        } else {
+            com.fl0w.speye.utils.MediaSnapshot(isMedia = false)
+        }
+
+        val liveActions = if (filter.allowActions) {
+            com.fl0w.speye.utils.NotificationActionManager.extractActions(notification, mediaSnapshot.isMedia)
+        } else {
+            emptyList()
+        }
+        com.fl0w.speye.utils.NotificationActionManager.updateActions(sbnKey, liveActions)
+        val finalActionTitles = if (filter.allowActions) {
+            com.fl0w.speye.utils.NotificationActionManager.encodeActionTitles(liveActions.map { it.title })
+        } else null
+
+        // #5 & #11: Lazy picture extraction (gated by filter.allowLazyAssets)
+        val picture = when {
+            preloadedAnimatedBytes != null || isAnimatedSticker -> null
+            mediaSnapshot.isMedia -> mediaSnapshot.coverBitmap ?: if (filter.allowLazyAssets) extractNotificationPicture(notification, extras) else null
+            filter.allowLazyAssets -> extractNotificationPicture(notification, extras)
+            else -> null
+        }
+
+        // If standard notification (not media, voice, or progress) has allowText disabled and no allowed special asset/action, drop it
+        if (!isVoiceMessageDetected && !mediaSnapshot.isMedia && !hasActiveProgressBar) {
+            if (isAnimatedSticker && !filter.allowStickers && !filter.allowText) {
+                SpeyeLogger.d("NotificationService", "Filtered out animated sticker notification for $packageName ($sbnKey)")
+                return
+            }
+            if (!filter.allowText && preloadedAnimatedBytes == null && picture == null && liveActions.isEmpty()) {
+                SpeyeLogger.d("NotificationService", "Filtered out text notification for $packageName ($sbnKey)")
+                return
+            }
+        }
+
+        val effectiveHtmlText = if (filter.allowText || isVoiceMessageDetected || mediaSnapshot.isMedia || hasActiveProgressBar || liveActions.isNotEmpty()) {
+            finalHtmlText
+        } else {
+            null
+        }
 
         SpeyeLogger.d("NotificationService", "Intercepted (Immediate): $packageName - $finalTitle (Picture: ${picture != null}, Media: ${mediaSnapshot.isMedia}, Voice: $isVoiceMessageDetected, Progress: $finalProgress/$finalProgressMax, Indet: $finalIsIndeterminate)")
 
@@ -353,8 +410,8 @@ class NotificationService : NotificationListenerService() {
                 }
             }
             
-            val imagePath = if (detectedImageUri != null) {
-                ImageUtils.saveRawImageFromUri(this@NotificationService, detectedImageUri, detectedImageMime)
+            val imagePath = if (preloadedAnimatedBytes != null) {
+                ImageUtils.saveRawImageFromBytes(preloadedAnimatedBytes, detectedImageMime, filesDir)
                     ?: if (picture != null) ImageUtils.saveBitmap(this@NotificationService, picture, currentImageSetting) else null
             } else if (picture != null) {
                 ImageUtils.saveBitmap(this@NotificationService, picture, currentImageSetting)
@@ -385,10 +442,10 @@ class NotificationService : NotificationListenerService() {
                     database.notificationDao().update(
                         existing.copy(
                             title = finalTitle ?: existing.title,
-                            text = finalHtmlText ?: existing.text,
+                            text = effectiveHtmlText ?: existing.text,
                             timestamp = finalTimestamp,
                             isSystemRemoved = false,
-                            imagePath = imagePath ?: existing.imagePath,
+                            imagePath = if (!filter.allowLazyAssets && !filter.allowStickers) null else if (detectedImageUri == null && ImageUtils.isAnimatedFile(existing.imagePath)) existing.imagePath else (imagePath ?: existing.imagePath),
                             contentIntentUri = finalIntentUri ?: existing.contentIntentUri,
                             audioPath = effectiveAudioPath ?: existing.audioPath,
                             isVoiceMessage = true,
@@ -408,7 +465,7 @@ class NotificationService : NotificationListenerService() {
                             packageName = packageName,
                             appName = appName,
                             title = finalTitle,
-                            text = finalHtmlText,
+                            text = effectiveHtmlText,
                             timestamp = finalTimestamp,
                             imagePath = imagePath,
                             contentIntentUri = finalIntentUri,
@@ -426,7 +483,7 @@ class NotificationService : NotificationListenerService() {
 
             if (mediaSnapshot.isMedia) {
                 val effectiveMediaTitle = mediaSnapshot.title ?: finalTitle
-                val effectiveMediaArtist = mediaSnapshot.artist ?: finalHtmlText
+                val effectiveMediaArtist = mediaSnapshot.artist ?: effectiveHtmlText
                 val isSameTrack = existing != null &&
                         existing.isMedia &&
                         existing.packageName == packageName &&
@@ -449,7 +506,7 @@ class NotificationService : NotificationListenerService() {
                             text = effectiveMediaArtist ?: existing.text,
                             timestamp = finalTimestamp,
                             isSystemRemoved = false,
-                            imagePath = imagePath ?: existing.imagePath,
+                            imagePath = if (detectedImageUri == null && ImageUtils.isAnimatedFile(existing.imagePath)) existing.imagePath else (imagePath ?: existing.imagePath),
                             contentIntentUri = finalIntentUri ?: existing.contentIntentUri,
                             isMedia = true,
                             mediaTitle = mediaSnapshot.title ?: existing.mediaTitle,
@@ -525,34 +582,49 @@ class NotificationService : NotificationListenerService() {
 
             if (existing != null && isSameNotificationContext) {
                 val hasNewTitle = finalTitle != null && finalTitle != existing.title
-                val hasNewText = existing.text != finalHtmlText
-                val hasNewImage = imagePath != null && imagePath != existing.imagePath
+                val hasNewText = existing.text != effectiveHtmlText
+                val effectiveImagePath = if (!filter.allowLazyAssets && !filter.allowStickers) {
+                    null
+                } else if (detectedImageUri == null && ImageUtils.isAnimatedFile(existing.imagePath)) {
+                    if (filter.allowStickers) existing.imagePath else null
+                } else {
+                    imagePath ?: if (filter.allowLazyAssets) existing.imagePath else null
+                }
+                val hasNewImage = effectiveImagePath != existing.imagePath
                 val hasNewProgress = finalProgress != existing.progress ||
                         finalProgressMax != existing.progressMax ||
                         finalIsIndeterminate != existing.isIndeterminate
+                val triggeredAction = com.fl0w.speye.utils.NotificationActionManager.getTriggeredAction(sbnKey)
+                val existingActionsWithTriggered = com.fl0w.speye.utils.NotificationActionManager.markTriggeredInEncoded(
+                    existing.actionTitles,
+                    triggeredAction
+                )
+                val hasNewActions = finalActionTitles != existing.actionTitles
 
-                if (hasNewTitle || hasNewText || hasNewImage || hasNewProgress) {
+                if (hasNewTitle || hasNewText || hasNewImage || hasNewProgress || hasNewActions) {
                     // Progress updates update row in-place without flooding history table
-                    if (!isProgressUpdate && hasNewText && existing.text != null) {
+                    if (!isProgressUpdate && hasNewText && existing.text != null && filter.allowText) {
                         database.notificationDao().insertHistory(
                             NotificationHistoryEntity(
                                 notificationId = existing.id,
                                 oldText = existing.text,
-                                timestamp = System.currentTimeMillis()
+                                timestamp = System.currentTimeMillis(),
+                                oldActionTitles = if (filter.allowActions) existingActionsWithTriggered else null
                             )
                         )
                     }
                     database.notificationDao().update(
                         existing.copy(
                             title = finalTitle ?: existing.title,
-                            text = finalHtmlText ?: existing.text,
+                            text = effectiveHtmlText ?: if (filter.allowText) existing.text else null,
                             timestamp = finalTimestamp,
                             isSystemRemoved = false,
-                            imagePath = imagePath ?: existing.imagePath,
+                            imagePath = effectiveImagePath,
                             contentIntentUri = finalIntentUri ?: existing.contentIntentUri,
                             progress = finalProgress,
                             progressMax = finalProgressMax,
-                            isIndeterminate = finalIsIndeterminate
+                            isIndeterminate = finalIsIndeterminate,
+                            actionTitles = if (!filter.allowActions) null else if (hasNewText) finalActionTitles else (finalActionTitles ?: existingActionsWithTriggered)
                         )
                     )
                     if (isProgressUpdate) {
@@ -570,13 +642,14 @@ class NotificationService : NotificationListenerService() {
                         packageName = packageName,
                         appName = appName,
                         title = finalTitle,
-                        text = finalHtmlText,
+                        text = effectiveHtmlText,
                         timestamp = finalTimestamp,
                         imagePath = imagePath,
                         contentIntentUri = finalIntentUri,
                         progress = finalProgress,
                         progressMax = finalProgressMax,
-                        isIndeterminate = finalIsIndeterminate
+                        isIndeterminate = finalIsIndeterminate,
+                        actionTitles = finalActionTitles
                     )
                 )
                 if (hasActiveProgressBar) {
@@ -722,6 +795,7 @@ class NotificationService : NotificationListenerService() {
         lastProgressValues.remove(sbnKey)
         lastMediaUpdateTimestamps.remove(sbnKey)
         lastMediaStates.remove(sbnKey)
+        com.fl0w.speye.utils.NotificationActionManager.onNotificationRemoved(sbnKey)
         SpeyeLogger.d("NotificationService", "System removed: $sbnKey")
         serviceScope.launch {
             val existing = database.notificationDao().getActiveNotificationBySbnKey(sbnKey)

@@ -52,6 +52,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
                             item.notification.mediaArtist?.contains(query, ignoreCase = true) == true ||
                             item.notification.mediaAlbum?.contains(query, ignoreCase = true) == true ||
                             item.notification.voiceSender?.contains(query, ignoreCase = true) == true ||
+                            item.notification.actionTitles?.contains(query, ignoreCase = true) == true ||
                             item.history.any { it.oldText?.contains(query, ignoreCase = true) == true }
                 }.groupBy { it.notification.packageName }
             }
@@ -98,6 +99,7 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
 
     fun deleteAll() {
         viewModelScope.launch(Dispatchers.IO) {
+            com.fl0w.speye.utils.VoicePlayerManager.stopAndRelease(null)
             dao.deleteAll()
             com.fl0w.speye.utils.RetentionCleaner.sweepOrphanImages(getApplication(), gracePeriodMs = 0L)
             com.fl0w.speye.utils.RetentionCleaner.sweepOrphanAudio(getApplication(), gracePeriodMs = 0L)

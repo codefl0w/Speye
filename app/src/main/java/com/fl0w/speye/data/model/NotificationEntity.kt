@@ -37,5 +37,6 @@ data class NotificationEntity(
     val mediaPlaybackState: Int? = null,
     val audioPath: String? = null,
     val isVoiceMessage: Boolean = false,
-    val voiceSender: String? = null
+    val voiceSender: String? = null,
+    val actionTitles: String? = null
 )

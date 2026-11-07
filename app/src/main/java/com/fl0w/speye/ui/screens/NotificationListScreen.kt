@@ -1,8 +1,7 @@
 package com.fl0w.speye.ui.screens
 
-import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.text.format.DateUtils
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
@@ -20,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
@@ -35,25 +35,18 @@ import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.graphics.drawable.toBitmap
-import androidx.core.text.HtmlCompat
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.ui.res.stringResource
@@ -72,6 +65,7 @@ import com.fl0w.speye.utils.HtmlUtils
 import com.fl0w.speye.utils.ImageUtils
 import com.fl0w.speye.utils.SpeyeLogger
 import com.fl0w.speye.data.settings.DebugSettingsManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotificationListScreen(
@@ -82,7 +76,8 @@ fun NotificationListScreen(
     onTestProgress: () -> Unit = {},
     onTestIndeterminateProgress: () -> Unit = {},
     onTestMedia: () -> Unit = {},
-    onTestVoiceMessage: () -> Unit = {}
+    onTestVoiceMessage: () -> Unit = {},
+    onTestInteractable: () -> Unit = {}
 ) {
     val groupedNotifications by viewModel.groupedNotifications.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
@@ -94,9 +89,15 @@ fun NotificationListScreen(
     val isAccordionEnabled by debugManager.isAccordionEnabled.collectAsState(initial = false)
 
     var deleteTarget by remember { mutableStateOf<DeleteTarget?>(null) }
+    val scope = rememberCoroutineScope()
     var showTestMenu by remember { mutableStateOf(false) }
     var viewerImagePath by remember { mutableStateOf<String?>(null) }
-    var isSearchMode by remember { mutableStateOf(false) }
+    var isSearchMode by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler(enabled = isSearchMode) {
+        isSearchMode = false
+        viewModel.setSearchQuery("")
+    }
     val groupLimits = rememberSaveable(
         saver = androidx.compose.runtime.saveable.listSaver(
             save = { it.entries.map { e -> "${e.key}=${e.value}" } },
@@ -206,6 +207,10 @@ fun NotificationListScreen(
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.test_voice_message), color = SpeyeTheme.colors.primary) },
                                     onClick = { onTestVoiceMessage(); showTestMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.test_interactable), color = SpeyeTheme.colors.primary) },
+                                    onClick = { onTestInteractable(); showTestMenu = false }
                                 )
                             }
                         }
@@ -481,7 +486,12 @@ fun NotificationListScreen(
         ImageViewerDialog(
             imagePath = path,
             onDismiss = { viewerImagePath = null },
-            onExport = { ImageUtils.exportToGallery(context, path) }
+            onExport = {
+                val appContext = context.applicationContext
+                scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    ImageUtils.exportToGallery(appContext, path)
+                }
+            }
         )
     }
 }
@@ -495,6 +505,7 @@ fun NotificationItemWrapper(
     onIgnoreApp: () -> Unit
 ) {
     val context = LocalContext.current
+    val itemScope = rememberCoroutineScope()
     var showMenu by remember { mutableStateOf(false) }
 
     Box {
@@ -537,20 +548,25 @@ fun NotificationItemWrapper(
                         text = { Text(stringResource(R.string.save_to_device), color = SpeyeTheme.colors.primary) },
                         onClick = {
                             val audioPath = item.notification.audioPath
+                            val appContext = context.applicationContext
                             if (audioPath != null) {
-                                val savedPath = com.fl0w.speye.utils.AudioUtils.exportVoiceMessage(context, audioPath)
-                                if (savedPath != null) {
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        context.getString(R.string.voice_message_saved, savedPath),
-                                        android.widget.Toast.LENGTH_LONG
-                                    ).show()
-                                } else {
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        context.getString(R.string.voice_message_save_failed),
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
+                                itemScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                    val savedPath = com.fl0w.speye.utils.AudioUtils.exportVoiceMessage(appContext, audioPath)
+                                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                        if (savedPath != null) {
+                                            android.widget.Toast.makeText(
+                                                appContext,
+                                                appContext.getString(R.string.voice_message_saved, savedPath),
+                                                android.widget.Toast.LENGTH_LONG
+                                            ).show()
+                                        } else {
+                                            android.widget.Toast.makeText(
+                                                appContext,
+                                                appContext.getString(R.string.voice_message_save_failed),
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
                                 }
                             }
                             showMenu = false
@@ -561,8 +577,11 @@ fun NotificationItemWrapper(
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.save_to_device), color = SpeyeTheme.colors.primary) },
                         onClick = {
+                            val appContext = context.applicationContext
                             item.notification.imagePath?.let { imgPath ->
-                                ImageUtils.exportToGallery(context, imgPath)
+                                itemScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                    ImageUtils.exportToGallery(appContext, imgPath)
+                                }
                             }
                             showMenu = false
                         },
@@ -1053,6 +1072,18 @@ fun NotificationItem(
                     }
                 }
             }
+
+            val decodedActions = remember(notification.actionTitles) {
+                com.fl0w.speye.utils.NotificationActionManager.decodeActionsWithState(notification.actionTitles)
+            }
+            if (decodedActions.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                SpeyeActionButtonsRow(
+                    notification = notification,
+                    actions = decodedActions,
+                    isHistoricalEntry = false
+                )
+            }
         }
 
         var historyPageLimit by rememberSaveable(notification.id) { mutableStateOf(100) }
@@ -1064,6 +1095,7 @@ fun NotificationItem(
         if (reduceMotion) {
             if (isHistoryExpanded) {
                 HistoryContent(
+                    notification = notification,
                     visibleHistory = visibleHistory,
                     remainingCount = remainingCount,
                     onShowMore = { historyPageLimit += 100 },
@@ -1073,6 +1105,7 @@ fun NotificationItem(
         } else {
             AnimatedVisibility(visible = isHistoryExpanded) {
                 HistoryContent(
+                    notification = notification,
                     visibleHistory = visibleHistory,
                     remainingCount = remainingCount,
                     onShowMore = { historyPageLimit += 100 },
@@ -1085,6 +1118,7 @@ fun NotificationItem(
 
 @Composable
 private fun HistoryContent(
+    notification: NotificationEntity,
     visibleHistory: List<NotificationHistoryEntity>,
     remainingCount: Int,
     onShowMore: () -> Unit,
@@ -1107,6 +1141,7 @@ private fun HistoryContent(
         visibleHistory.forEach { historyItem ->
             key(historyItem.id) {
                 HistoryEntryRow(
+                    notification = notification,
                     historyItem = historyItem,
                     onDelete = { onDeleteHistoryItem(historyItem.id) }
                 )
@@ -1132,6 +1167,7 @@ private fun HistoryContent(
 
 @Composable
 fun HistoryEntryRow(
+    notification: NotificationEntity,
     historyItem: NotificationHistoryEntity,
     onDelete: () -> Unit
 ) {
@@ -1140,13 +1176,16 @@ fun HistoryEntryRow(
     val renderedHistory = remember(historyItem.id, historyContent) {
         HtmlUtils.fromHtmlToAnnotatedString(historyContent)
     }
+    val historyActions = remember(historyItem.id, historyItem.oldActionTitles) {
+        com.fl0w.speye.utils.NotificationActionManager.decodeActionsWithState(historyItem.oldActionTitles)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .background(SpeyeTheme.colors.divider.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
-            .padding(8.dp)
+            .padding(10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1155,48 +1194,153 @@ fun HistoryEntryRow(
         ) {
             Text(
                 text = DateUtils.getRelativeTimeSpanString(historyItem.timestamp).toString().uppercase(),
-                fontSize = 9.sp,
+                fontSize = 10.sp,
                 color = SpeyeTheme.colors.textSecondary,
                 fontWeight = FontWeight.Bold
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = {
-                        HtmlUtils.copyRichText(context, context.getString(R.string.history), historyContent)
-                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
-                            android.widget.Toast.makeText(context, R.string.content_copied, android.widget.Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.size(24.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(SpeyeTheme.colors.primary.copy(alpha = 0.12f))
+                        .clickable {
+                            HtmlUtils.copyRichText(context, context.getString(R.string.history), historyContent)
+                            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                                android.widget.Toast.makeText(context, R.string.content_copied, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.ContentCopy,
                         contentDescription = stringResource(R.string.copy_history),
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(15.dp),
                         tint = SpeyeTheme.colors.primary
                     )
                 }
-                Spacer(modifier = Modifier.width(6.dp))
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(24.dp)
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(SpeyeTheme.colors.error.copy(alpha = 0.12f))
+                        .clickable { onDelete() },
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.DeleteOutline,
                         contentDescription = stringResource(R.string.delete_history_item),
-                        modifier = Modifier.size(15.dp),
+                        modifier = Modifier.size(16.dp),
                         tint = SpeyeTheme.colors.error
                     )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         SelectionContainer {
             Text(
                 text = renderedHistory,
                 fontSize = 13.sp,
                 color = SpeyeTheme.colors.textPrimary
             )
+        }
+        if (historyActions.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            SpeyeActionButtonsRow(
+                notification = notification,
+                actions = historyActions,
+                isHistoricalEntry = true
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun SpeyeActionButtonsRow(
+    notification: NotificationEntity,
+    actions: List<com.fl0w.speye.utils.DecodedNotificationAction>,
+    isHistoricalEntry: Boolean = false
+) {
+    val context = LocalContext.current
+    val actionVersion by com.fl0w.speye.utils.NotificationActionManager.versionFlow.collectAsState()
+
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        actions.forEachIndexed { idx, actionItem ->
+            val actionLabel = actionItem.title
+            val isLive = remember(actionVersion, notification.sbnKey, notification.isSystemRemoved, actionLabel, idx, isHistoricalEntry) {
+                if (isHistoricalEntry) false
+                else com.fl0w.speye.utils.NotificationActionManager.hasLiveAction(
+                    sbnKey = notification.sbnKey,
+                    index = idx,
+                    title = actionLabel,
+                    isSystemRemoved = notification.isSystemRemoved
+                )
+            }
+            val wasTriggered = remember(actionVersion, notification.sbnKey, actionLabel, actionItem.isTriggered, isHistoricalEntry) {
+                actionItem.isTriggered || (!isHistoricalEntry && com.fl0w.speye.utils.NotificationActionManager.wasActionTriggered(
+                    sbnKey = notification.sbnKey,
+                    title = actionLabel
+                ))
+            }
+
+            val borderColor = when {
+                isLive -> SpeyeTheme.colors.primary
+                wasTriggered -> SpeyeTheme.colors.secondary
+                else -> SpeyeTheme.colors.divider
+            }
+            val textColor = when {
+                isLive -> SpeyeTheme.colors.primary
+                wasTriggered -> SpeyeTheme.colors.secondary
+                else -> SpeyeTheme.colors.textSecondary.copy(alpha = 0.6f)
+            }
+            val bgColor = when {
+                isLive -> SpeyeTheme.colors.primary.copy(alpha = 0.12f)
+                wasTriggered -> SpeyeTheme.colors.secondary.copy(alpha = 0.12f)
+                else -> SpeyeTheme.colors.surface
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(bgColor)
+                    .border(1.dp, borderColor, RoundedCornerShape(10.dp))
+                    .clickable {
+                        com.fl0w.speye.utils.NotificationActionManager.triggerAction(
+                            context = context,
+                            sbnKey = notification.sbnKey,
+                            index = idx,
+                            title = actionLabel
+                        )
+                    }
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (wasTriggered) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = SpeyeTheme.colors.secondary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = actionLabel,
+                        color = textColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }

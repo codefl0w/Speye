@@ -51,6 +51,7 @@
     <string name="show_more_history">और दिखाएं (+%d)</string>
     <string name="show_more_messages">और संदेश दिखाएं (+%d)</string>
     <string name="search_placeholder">सूचनाएं खोजें…</string>
+    <string name="search_apps_placeholder">ऐप्स खोजें…</string>
 
     <!-- App List -->
     <string name="app_list_description">सूचनाओं को ट्रैक या अनदेखा करने के लिए ऐप्स चुनें।</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">एन्क्रिप्टेड बैकअप</string>
     <string name="encrypted_backup_desc">यह बैकअप फ़ाइल पासवर्ड से सुरक्षित है। डिक्रिप्ट और पुनर्स्थापित करने के लिए पासवर्ड दर्ज करें:</string>
     <string name="invalid_password">गलत पासवर्ड या दूषित बैकअप फ़ाइल</string>
+    <string name="test_interactable">इंटरएक्टिव टेस्ट (बैंक)</string>
+    <string name="test_interactable_title">इंटरएक्टिव नोटिफिकेशन टेस्ट करें</string>
+    <string name="test_interactable_sub">पुष्टि और अस्वीकार बटन के साथ भुगतान अनुरोध भेजें</string>
+    <string name="action_expired">कार्रवाई अब उपलब्ध नहीं है (नोटिफिकेशन हटा दिया गया)</string>
+    <string name="filter_type_text">टेक्स्ट</string>
+    <string name="filter_type_text_sub">सामान्य टेक्स्ट संदेश और संपादन इतिहास</string>
+    <string name="filter_type_lazy_assets">लेज़ी-लोडिंग एसेट्स</string>
+    <string name="filter_type_lazy_assets_sub">प्रोफ़ाइल चित्र, मौसम आइकन और स्थिर चित्र</string>
+    <string name="filter_type_stickers">एनिमेटेड स्टिकर और GIF</string>
+    <string name="filter_type_stickers_sub">चलते हुए WebP स्टिकर, GIF और APNG</string>
+    <string name="filter_type_media">मीडिया कार्ड</string>
+    <string name="filter_type_media_sub">म्यूज़िक प्लेयर और सक्रिय मीडिया सत्र</string>
+    <string name="filter_type_voice">वॉयस संदेश</string>
+    <string name="filter_type_voice_sub">ऑडियो नोट्स और वॉयस अटैचमेंट</string>
+    <string name="filter_type_progress">प्रोग्रेस बार</string>
+    <string name="filter_type_progress_sub">डाउनलोड और चल रहे कार्यों की प्रगति</string>
+    <string name="filter_type_actions">इंटरएक्टिव एक्शन</string>
+    <string name="filter_type_actions_sub">कस्टम नोटिफिकेशन बटन (पुष्टि करें, अस्वीकार करें, आदि)</string>
 </resources>

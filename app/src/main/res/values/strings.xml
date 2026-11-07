@@ -51,6 +51,7 @@
     <string name="show_more_history">Show more (+%d)</string>
     <string name="show_more_messages">Show more messages (+%d)</string>
     <string name="search_placeholder">Search notifications...</string>
+    <string name="search_apps_placeholder">Search apps...</string>
 
     <!-- App List -->
     <string name="app_list_description">Select apps to track or ignore notifications.</string>
@@ -256,4 +257,22 @@
     <string name="encrypted_backup_title">Encrypted Backup</string>
     <string name="encrypted_backup_desc">This backup file is encrypted with a password. Enter the password to decrypt and restore:</string>
     <string name="invalid_password">Incorrect password or corrupted backup file</string>
+    <string name="test_interactable">Test Interactable (Bank)</string>
+    <string name="test_interactable_title">Test Interactable Notification</string>
+    <string name="test_interactable_sub">Emit payment request with Confirm &amp; Reject buttons</string>
+    <string name="action_expired">Action no longer available (notification dismissed)</string>
+    <string name="filter_type_text">Texts</string>
+    <string name="filter_type_text_sub">Standard text messages and edit history</string>
+    <string name="filter_type_lazy_assets">Lazy-Loading Assets</string>
+    <string name="filter_type_lazy_assets_sub">Profile pictures, weather icons, and static images</string>
+    <string name="filter_type_stickers">Animated Stickers &amp; GIFs</string>
+    <string name="filter_type_stickers_sub">Moving WebP stickers, GIFs, and APNGs</string>
+    <string name="filter_type_media">Media Cards</string>
+    <string name="filter_type_media_sub">Music players and active media sessions</string>
+    <string name="filter_type_voice">Voice Messages</string>
+    <string name="filter_type_voice_sub">Audio notes and voice attachments</string>
+    <string name="filter_type_progress">Progress Bars</string>
+    <string name="filter_type_progress_sub">Downloads and ongoing task progress</string>
+    <string name="filter_type_actions">Interactive Actions</string>
+    <string name="filter_type_actions_sub">Custom notification buttons (Confirm, Reject, etc.)</string>
 </resources>

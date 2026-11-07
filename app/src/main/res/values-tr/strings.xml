@@ -51,6 +51,7 @@
     <string name="show_more_history">Daha fazla göster (+%d)</string>
     <string name="show_more_messages">Daha fazla mesaj göster (+%d)</string>
     <string name="search_placeholder">Bildirimlerde ara…</string>
+    <string name="search_apps_placeholder">Uygulamalarda ara…</string>
 
     <!-- App List -->
     <string name="app_list_description">Bildirimleri takip edilecek veya yok sayılacak uygulamaları seçin.</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">Şifreli Yedekleme</string>
     <string name="encrypted_backup_desc">Bu yedekleme dosyası bir parola ile şifrelenmiştir. Şifreyi çözmek ve geri yüklemek için parolayı girin:</string>
     <string name="invalid_password">Hatalı parola veya bozuk yedekleme dosyası</string>
+    <string name="test_interactable">Etkileşimli Test (Banka)</string>
+    <string name="test_interactable_title">Etkileşimli Bildirim Testi</string>
+    <string name="test_interactable_sub">Onayla ve Reddet butonlu ödeme isteği gönder</string>
+    <string name="action_expired">İşlem artık kullanılamıyor (bildirim kapatıldı)</string>
+    <string name="filter_type_text">Metinler</string>
+    <string name="filter_type_text_sub">Standart metin mesajları ve düzenleme geçmişi</string>
+    <string name="filter_type_lazy_assets">Tembel Yüklenen Varlıklar</string>
+    <string name="filter_type_lazy_assets_sub">Profil fotoğrafları, hava durumu simgeleri ve sabit görseller</string>
+    <string name="filter_type_stickers">Hareketli Çıkartmalar ve GIF\'ler</string>
+    <string name="filter_type_stickers_sub">Hareketli WebP çıkartmaları, GIF ve APNG\'ler</string>
+    <string name="filter_type_media">Medya Kartları</string>
+    <string name="filter_type_media_sub">Müzik çalarlar ve etkin medya oturumları</string>
+    <string name="filter_type_voice">Sesli Mesajlar</string>
+    <string name="filter_type_voice_sub">Ses kayıtları ve ses ekleri</string>
+    <string name="filter_type_progress">İlerleme Çubukları</string>
+    <string name="filter_type_progress_sub">İndirmeler ve devam eden görev ilerlemesi</string>
+    <string name="filter_type_actions">Etkileşimli Eylemler</string>
+    <string name="filter_type_actions_sub">Özel bildirim düğmeleri (Onayla, Reddet vb.)</string>
 </resources>

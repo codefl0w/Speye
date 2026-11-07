@@ -16,7 +16,13 @@ interface IgnoredAppDao {
     @Delete
     suspend fun unignoreApp(app: IgnoredAppEntity)
 
-    @Query("SELECT EXISTS(SELECT 1 FROM ignored_apps WHERE packageName = :packageName)")
+    @Query("DELETE FROM ignored_apps WHERE packageName = :packageName")
+    suspend fun deleteByPackageName(packageName: String)
+
+    @Query("SELECT * FROM ignored_apps WHERE packageName = :packageName LIMIT 1")
+    suspend fun getAppFilter(packageName: String): IgnoredAppEntity?
+
+    @Query("SELECT EXISTS(SELECT 1 FROM ignored_apps WHERE packageName = :packageName AND allowText = 0 AND allowLazyAssets = 0 AND allowStickers = 0 AND allowMedia = 0 AND allowVoice = 0 AND allowProgress = 0 AND allowActions = 0)")
     suspend fun isIgnored(packageName: String): Boolean
 
     @Query("SELECT * FROM ignored_apps")

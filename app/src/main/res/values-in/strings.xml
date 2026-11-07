@@ -51,6 +51,7 @@
     <string name="show_more_history">Tampilkan lebih banyak (+%d)</string>
     <string name="show_more_messages">Tampilkan lebih banyak pesan (+%d)</string>
     <string name="search_placeholder">Cari notifikasi…</string>
+    <string name="search_apps_placeholder">Cari aplikasi…</string>
 
     <!-- App List -->
     <string name="app_list_description">Pilih aplikasi untuk melacak atau mengabaikan notifikasi.</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">Cadangan Terenkripsi</string>
     <string name="encrypted_backup_desc">File cadangan ini dienkripsi dengan kata sandi. Masukkan kata sandi untuk mendekripsi dan memulihkan:</string>
     <string name="invalid_password">Kata sandi salah atau file cadangan rusak</string>
+    <string name="test_interactable">Uji Interaktif (Bank)</string>
+    <string name="test_interactable_title">Uji Notifikasi Interaktif</string>
+    <string name="test_interactable_sub">Kirim permintaan pembayaran dengan tombol Konfirmasi &amp; Tolak</string>
+    <string name="action_expired">Tindakan tidak lagi tersedia (notifikasi ditutup)</string>
+    <string name="filter_type_text">Teks</string>
+    <string name="filter_type_text_sub">Pesan teks standar dan riwayat edit</string>
+    <string name="filter_type_lazy_assets">Aset Muat Lambat</string>
+    <string name="filter_type_lazy_assets_sub">Foto profil, ikon cuaca, dan gambar statis</string>
+    <string name="filter_type_stickers">Stiker Animasi &amp; GIF</string>
+    <string name="filter_type_stickers_sub">Stiker WebP bergerak, GIF, dan APNG</string>
+    <string name="filter_type_media">Kartu Media</string>
+    <string name="filter_type_media_sub">Pemutar musik dan sesi media aktif</string>
+    <string name="filter_type_voice">Pesan Suara</string>
+    <string name="filter_type_voice_sub">Catatan suara dan lampiran audio</string>
+    <string name="filter_type_progress">Bilah Kemajuan</string>
+    <string name="filter_type_progress_sub">Unduhan dan kemajuan tugas yang sedang berlangsung</string>
+    <string name="filter_type_actions">Tindakan Interaktif</string>
+    <string name="filter_type_actions_sub">Tombol notifikasi khusus (Konfirmasi, Tolak, dll.)</string>
 </resources>

@@ -6,9 +6,11 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -32,7 +34,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate6To8_preservesExistingDataAndValidatesRoomSchema() = runBlocking {
+    fun migrate6To12_preservesExistingDataAndValidatesRoomSchema() = runBlocking {
         // 1. Create a SQLite database with the exact Room v6 schema
         val openHelperConfig = SupportSQLiteOpenHelper.Configuration.builder(context)
             .name(dbName)
@@ -65,13 +67,17 @@ class AppDatabaseMigrationTest {
             "INSERT INTO notification_history (id, notificationId, oldText, timestamp) " +
             "VALUES (201, 101, 'Download Queued', 1699999999000)"
         )
+        v6Db.execSQL("INSERT INTO ignored_apps (packageName) VALUES ('com.legacy.ignored')")
         v6Db.close()
 
         // 3. Open via Room with all migrations registered
         val migratedRoomDb = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
             .addMigrations(
                 AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_6_8,
-                AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_7_9, AppDatabase.MIGRATION_6_9
+                AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_7_9, AppDatabase.MIGRATION_6_9,
+                AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_8_10, AppDatabase.MIGRATION_7_10, AppDatabase.MIGRATION_6_10,
+                AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_9_11, AppDatabase.MIGRATION_8_11, AppDatabase.MIGRATION_7_11, AppDatabase.MIGRATION_6_11,
+                AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_10_12, AppDatabase.MIGRATION_9_12, AppDatabase.MIGRATION_8_12, AppDatabase.MIGRATION_7_12, AppDatabase.MIGRATION_6_12
             )
             .build()
 
@@ -100,6 +106,13 @@ class AppDatabaseMigrationTest {
 
         assertEquals("History entry should survive migration", 1, notificationWithHistory.history.size)
         assertEquals("Download Queued", notificationWithHistory.history[0].oldText)
+
+        // Verify legacy ignored_apps entry migrated as all-off
+        val ignoredApps = migratedRoomDb.ignoredAppDao().getAllIgnoredApps().first()
+        assertEquals(1, ignoredApps.size)
+        assertEquals("com.legacy.ignored", ignoredApps[0].packageName)
+        assertTrue(ignoredApps[0].isAllOff)
+        assertFalse(ignoredApps[0].isMainToggleOn)
 
         // 5. Verify new rows can be written and queried with progress and media data
         dao.update(
@@ -136,7 +149,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate7To8_preservesExistingDataAndValidatesRoomSchema() = runBlocking {
+    fun migrate7To12_preservesExistingDataAndValidatesRoomSchema() = runBlocking {
         // 1. Create a SQLite database with the Room v7 schema
         val openHelperConfig = SupportSQLiteOpenHelper.Configuration.builder(context)
             .name(dbName)
@@ -170,13 +183,16 @@ class AppDatabaseMigrationTest {
         val migratedRoomDb = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
             .addMigrations(
                 AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_6_8,
-                AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_7_9, AppDatabase.MIGRATION_6_9
+                AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_7_9, AppDatabase.MIGRATION_6_9,
+                AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_8_10, AppDatabase.MIGRATION_7_10, AppDatabase.MIGRATION_6_10,
+                AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_9_11, AppDatabase.MIGRATION_8_11, AppDatabase.MIGRATION_7_11, AppDatabase.MIGRATION_6_11,
+                AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_10_12, AppDatabase.MIGRATION_9_12, AppDatabase.MIGRATION_8_12, AppDatabase.MIGRATION_7_12, AppDatabase.MIGRATION_6_12
             )
             .build()
 
         val dao = migratedRoomDb.notificationDao()
         val notif = dao.getNotificationById(102)
-        assertTrue("Notification should exist in migrated v9 DB", notif != null)
+        assertTrue("Notification should exist in migrated v12 DB", notif != null)
         assertEquals(80, notif!!.progress)
         assertEquals(false, notif.isMedia)
         assertNull(notif.mediaTitle)
@@ -187,7 +203,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate8To9_preservesExistingDataAndValidatesRoomSchema() = runBlocking {
+    fun migrate8To12_preservesExistingDataAndValidatesRoomSchema() = runBlocking {
         // 1. Create a SQLite database with the Room v8 schema
         val openHelperConfig = SupportSQLiteOpenHelper.Configuration.builder(context)
             .name(dbName)
@@ -217,17 +233,20 @@ class AppDatabaseMigrationTest {
         )
         v8Db.close()
 
-        // 2. Open via Room with MIGRATION_8_9
+        // 2. Open via Room with migrations
         val migratedRoomDb = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
             .addMigrations(
                 AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_6_8,
-                AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_7_9, AppDatabase.MIGRATION_6_9
+                AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_7_9, AppDatabase.MIGRATION_6_9,
+                AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_8_10, AppDatabase.MIGRATION_7_10, AppDatabase.MIGRATION_6_10,
+                AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_9_11, AppDatabase.MIGRATION_8_11, AppDatabase.MIGRATION_7_11, AppDatabase.MIGRATION_6_11,
+                AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_10_12, AppDatabase.MIGRATION_9_12, AppDatabase.MIGRATION_8_12, AppDatabase.MIGRATION_7_12, AppDatabase.MIGRATION_6_12
             )
             .build()
 
         val dao = migratedRoomDb.notificationDao()
         val notif = dao.getNotificationById(103)
-        assertTrue("Notification should exist in migrated v9 DB", notif != null)
+        assertTrue("Notification should exist in migrated v12 DB", notif != null)
         assertTrue(notif!!.isMedia)
         assertEquals("v8 Song", notif.mediaTitle)
         assertEquals(false, notif.isVoiceMessage)

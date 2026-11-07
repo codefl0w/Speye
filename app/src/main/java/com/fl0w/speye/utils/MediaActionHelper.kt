@@ -93,11 +93,12 @@ object MediaActionHelper {
         }
 
         // 3. Asynchronously wait for revived player's MediaSession, then seek to position and play
+        val appContext = context.applicationContext
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             var attempts = 0
             while (attempts < 15) { // 15 x 300ms = 4.5s window
                 kotlinx.coroutines.delay(300L)
-                val newController = getActiveController(context, packageName)
+                val newController = getActiveController(appContext, packageName)
                 if (newController != null) {
                     try {
                         if (positionMs != null && positionMs > 0) {

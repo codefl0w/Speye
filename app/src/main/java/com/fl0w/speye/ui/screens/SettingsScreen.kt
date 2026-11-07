@@ -73,7 +73,8 @@ fun SettingsScreen(
     onNavigateToPrivacyPolicy: () -> Unit,
     onNavigateToAbout: () -> Unit = {},
     onTestMedia: () -> Unit = {},
-    onTestVoiceMessage: () -> Unit = {}
+    onTestVoiceMessage: () -> Unit = {},
+    onTestInteractable: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -268,6 +269,12 @@ fun SettingsScreen(
                     subtitle = stringResource(R.string.test_voice_playback_sub),
                     onClick = onTestVoiceMessage
                 )
+                SettingsItem(
+                    icon = Icons.Default.Extension,
+                    title = stringResource(R.string.test_interactable_title),
+                    subtitle = stringResource(R.string.test_interactable_sub),
+                    onClick = onTestInteractable
+                )
             }
         }
 
@@ -416,7 +423,16 @@ fun SettingsScreen(
                         label = { Text(stringResource(R.string.enter_password)) },
                         singleLine = true,
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            cursorColor = SpeyeTheme.colors.primary,
+                            focusedBorderColor = SpeyeTheme.colors.primary,
+                            unfocusedBorderColor = SpeyeTheme.colors.primary.copy(alpha = 0.5f),
+                            focusedLabelColor = SpeyeTheme.colors.primary,
+                            unfocusedLabelColor = SpeyeTheme.colors.textSecondary
+                        )
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
@@ -476,7 +492,16 @@ fun SettingsScreen(
                         isError = importPasswordError != null,
                         supportingText = importPasswordError?.let { errorText -> { Text(errorText, color = SpeyeTheme.colors.error) } },
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            cursorColor = SpeyeTheme.colors.primary,
+                            focusedBorderColor = SpeyeTheme.colors.primary,
+                            unfocusedBorderColor = SpeyeTheme.colors.primary.copy(alpha = 0.5f),
+                            focusedLabelColor = SpeyeTheme.colors.primary,
+                            unfocusedLabelColor = SpeyeTheme.colors.textSecondary
+                        )
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(

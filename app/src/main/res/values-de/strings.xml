@@ -51,6 +51,7 @@
     <string name="show_more_history">Mehr anzeigen (+%d)</string>
     <string name="show_more_messages">Mehr Nachrichten anzeigen (+%d)</string>
     <string name="search_placeholder">Benachrichtigungen suchen…</string>
+    <string name="search_apps_placeholder">Apps suchen…</string>
 
     <!-- App List -->
     <string name="app_list_description">Wählen Sie Apps aus, um Benachrichtigungen zu verfolgen oder zu ignorieren.</string>
@@ -253,4 +254,22 @@
     <string name="encrypted_backup_title">Verschlüsseltes Backup</string>
     <string name="encrypted_backup_desc">Diese Sicherungsdatei ist mit einem Passwort verschlüsselt. Passwort eingeben, um sie zu entschlüsseln und wiederherzustellen:</string>
     <string name="invalid_password">Falsches Passwort oder beschädigte Sicherungsdatei</string>
+    <string name="test_interactable">Interaktiv testen (Bank)</string>
+    <string name="test_interactable_title">Interaktive Benachrichtigung testen</string>
+    <string name="test_interactable_sub">Zahlungsanfrage mit Bestätigen- &amp; Ablehnen-Buttons senden</string>
+    <string name="action_expired">Aktion nicht mehr verfügbar (Benachrichtigung geschlossen)</string>
+    <string name="filter_type_text">Texte</string>
+    <string name="filter_type_text_sub">Standard-Textnachrichten und Bearbeitungsverlauf</string>
+    <string name="filter_type_lazy_assets">Nachgeladene Assets</string>
+    <string name="filter_type_lazy_assets_sub">Profilbilder, Wettersymbole und statische Bilder</string>
+    <string name="filter_type_stickers">Animierte Sticker &amp; GIFs</string>
+    <string name="filter_type_stickers_sub">Bewegte WebP-Sticker, GIFs und APNGs</string>
+    <string name="filter_type_media">Medienkarten</string>
+    <string name="filter_type_media_sub">Musikplayer und aktive Mediensitzungen</string>
+    <string name="filter_type_voice">Sprachnachrichten</string>
+    <string name="filter_type_voice_sub">Sprachnotizen und Audioanhänge</string>
+    <string name="filter_type_progress">Fortschrittsbalken</string>
+    <string name="filter_type_progress_sub">Downloads und laufender Aufgabenfortschritt</string>
+    <string name="filter_type_actions">Interaktive Aktionen</string>
+    <string name="filter_type_actions_sub">Benutzerdefinierte Schaltflächen (Bestätigen, Ablehnen usw.)</string>
 </resources>

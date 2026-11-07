@@ -3,6 +3,7 @@ package com.fl0w.speye.ui.viewmodel
 import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fl0w.speye.data.db.AppDatabase
@@ -14,15 +15,39 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
+enum class GranularFilterType {
+    TEXT,
+    LAZY_ASSETS,
+    STICKERS,
+    MEDIA,
+    VOICE,
+    PROGRESS,
+    ACTIONS
+}
+
+@Immutable
 data class AppInfo(
     val packageName: String,
     val appName: String,
     val isIgnored: Boolean,
-    val isSystem: Boolean
-)
+    val isSystem: Boolean,
+    val allowText: Boolean = true,
+    val allowLazyAssets: Boolean = true,
+    val allowStickers: Boolean = true,
+    val allowMedia: Boolean = true,
+    val allowVoice: Boolean = true,
+    val allowProgress: Boolean = true,
+    val allowActions: Boolean = true
+) {
+    val isMainToggleOn: Boolean
+        get() = allowText || allowLazyAssets || allowStickers || allowMedia || allowVoice || allowProgress || allowActions
+
+    val isAllOn: Boolean
+        get() = allowText && allowLazyAssets && allowStickers && allowMedia && allowVoice && allowProgress && allowActions
+}
 
 enum class AppFilter { ALL, USER, SYSTEM }
 
@@ -30,12 +55,21 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
     private val dao = AppDatabase.getDatabase(application).ignoredAppDao()
     private val pm = application.packageManager
 
-    private val _installedApps = MutableStateFlow<List<ApplicationInfo>>(emptyList())
+    private data class RawAppEntry(
+        val packageName: String,
+        val appName: String,
+        val isSystem: Boolean
+    )
+
+    private val _installedApps = MutableStateFlow<List<RawAppEntry>>(emptyList())
     private val _currentFilter = MutableStateFlow(AppFilter.USER)
     val currentFilter: StateFlow<AppFilter> = _currentFilter
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _expandedApps = MutableStateFlow<Set<String>>(emptySet())
+    val expandedApps: StateFlow<Set<String>> = _expandedApps
 
     init {
         loadInstalledApps()
@@ -47,25 +81,45 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         _currentFilter,
         _searchQuery
     ) { installed, ignored, filter, query ->
-        val ignoredSet = ignored.map { it.packageName }.toSet()
-        installed.filter { info ->
-            val isSystemApp = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-            when (filter) {
-                AppFilter.ALL -> true
-                AppFilter.USER -> !isSystemApp
-                AppFilter.SYSTEM -> isSystemApp
+        val filterMap = ignored.associateBy { it.packageName }
+        installed.asSequence()
+            .filter { entry ->
+                when (filter) {
+                    AppFilter.ALL -> true
+                    AppFilter.USER -> !entry.isSystem
+                    AppFilter.SYSTEM -> entry.isSystem
+                }
             }
-        }.map { info ->
-            AppInfo(
-                packageName = info.packageName,
-                appName = pm.getApplicationLabel(info).toString(),
-                isIgnored = ignoredSet.contains(info.packageName),
-                isSystem = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-            )
-        }.filter { app ->
-            if (query.isBlank()) true
-            else app.appName.contains(query, ignoreCase = true) || app.packageName.contains(query, ignoreCase = true)
-        }.sortedBy { it.appName }
+            .filter { entry ->
+                if (query.isBlank()) true
+                else entry.appName.contains(query, ignoreCase = true) || entry.packageName.contains(query, ignoreCase = true)
+            }
+            .map { entry ->
+                val cfg = filterMap[entry.packageName]
+                if (cfg == null) {
+                    AppInfo(
+                        packageName = entry.packageName,
+                        appName = entry.appName,
+                        isIgnored = false,
+                        isSystem = entry.isSystem
+                    )
+                } else {
+                    AppInfo(
+                        packageName = entry.packageName,
+                        appName = entry.appName,
+                        isIgnored = cfg.isAllOff,
+                        isSystem = entry.isSystem,
+                        allowText = cfg.allowText,
+                        allowLazyAssets = cfg.allowLazyAssets,
+                        allowStickers = cfg.allowStickers,
+                        allowMedia = cfg.allowMedia,
+                        allowVoice = cfg.allowVoice,
+                        allowProgress = cfg.allowProgress,
+                        allowActions = cfg.allowActions
+                    )
+                }
+            }
+            .toList()
     }.flowOn(Dispatchers.Default)
     .stateIn(
         scope = viewModelScope,
@@ -81,15 +135,25 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                 @Suppress("DEPRECATION")
                 pm.getInstalledApplications(0)
             }
-            _installedApps.value = installed
+            val resolved = installed.map { info ->
+                RawAppEntry(
+                    packageName = info.packageName,
+                    appName = pm.getApplicationLabel(info).toString(),
+                    isSystem = (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                )
+            }.sortedBy { it.appName.lowercase() }
+            _installedApps.value = resolved
 
-            // Pre-warm icon cache on background thread for smooth scrolling
+            // Pre-warm icon cache for user apps first (capped to cache capacity 80)
             val context = getApplication<Application>()
-            installed.forEach { info ->
-                try {
-                    com.fl0w.speye.utils.AppIconCache.getIcon(context, info.packageName)
-                } catch (_: Exception) {}
-            }
+            resolved.asSequence()
+                .filter { !it.isSystem }
+                .take(80)
+                .forEach { entry ->
+                    try {
+                        com.fl0w.speye.utils.AppIconCache.getIcon(context, entry.packageName)
+                    } catch (_: Exception) {}
+                }
         }
     }
 
@@ -101,12 +165,39 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         _searchQuery.value = query
     }
 
+    fun toggleExpand(packageName: String) {
+        _expandedApps.update { current ->
+            if (current.contains(packageName)) current - packageName
+            else current + packageName
+        }
+    }
+
     fun toggleIgnore(packageName: String, currentIgnored: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             if (currentIgnored) {
-                dao.unignoreApp(IgnoredAppEntity(packageName))
+                dao.deleteByPackageName(packageName)
             } else {
-                dao.ignoreApp(IgnoredAppEntity(packageName))
+                dao.ignoreApp(IgnoredAppEntity.allOff(packageName))
+            }
+        }
+    }
+
+    fun setGranularFilter(packageName: String, type: GranularFilterType, enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val current = dao.getAppFilter(packageName) ?: IgnoredAppEntity.allOn(packageName)
+            val updated = when (type) {
+                GranularFilterType.TEXT -> current.copy(allowText = enabled)
+                GranularFilterType.LAZY_ASSETS -> current.copy(allowLazyAssets = enabled)
+                GranularFilterType.STICKERS -> current.copy(allowStickers = enabled)
+                GranularFilterType.MEDIA -> current.copy(allowMedia = enabled)
+                GranularFilterType.VOICE -> current.copy(allowVoice = enabled)
+                GranularFilterType.PROGRESS -> current.copy(allowProgress = enabled)
+                GranularFilterType.ACTIONS -> current.copy(allowActions = enabled)
+            }
+            if (updated.isAllOn) {
+                dao.deleteByPackageName(packageName)
+            } else {
+                dao.ignoreApp(updated)
             }
         }
     }

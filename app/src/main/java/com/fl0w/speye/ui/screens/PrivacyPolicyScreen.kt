@@ -2,6 +2,7 @@ package com.fl0w.speye.ui.screens
 
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +14,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.NotificationAdd
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.*
@@ -228,11 +231,14 @@ private fun PermissionDetailCard(
     whereText: String,
     handlingText: String
 ) {
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
             .background(SpeyeTheme.colors.surface)
+            .clickable { expanded = !expanded }
             .padding(16.dp)
     ) {
         Column {
@@ -257,57 +263,76 @@ private fun PermissionDetailCard(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                        .background(if (isGranted) Color(0xFF1E3A24) else Color(0xFF3A241E))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = if (isGranted) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = statusText,
-                            color = if (isGranted) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                            .background(if (isGranted) Color(0xFF1E3A24) else Color(0xFF3A241E))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = if (isGranted) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = statusText,
+                                color = if (isGranted) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = SpeyeTheme.colors.textSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            Spacer(modifier = Modifier.height(10.dp))
             PermissionFactRow(label = stringResource(R.string.why_label), desc = whyText)
-            Spacer(modifier = Modifier.height(6.dp))
-            PermissionFactRow(label = stringResource(R.string.how_label), desc = howText)
-            Spacer(modifier = Modifier.height(6.dp))
-            PermissionFactRow(label = stringResource(R.string.where_label), desc = whereText)
-            Spacer(modifier = Modifier.height(6.dp))
-            PermissionFactRow(label = stringResource(R.string.handling_label), desc = handlingText)
+
+            if (expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                PermissionFactRow(label = stringResource(R.string.how_label), desc = howText)
+                Spacer(modifier = Modifier.height(8.dp))
+                PermissionFactRow(label = stringResource(R.string.where_label), desc = whereText)
+                Spacer(modifier = Modifier.height(8.dp))
+                PermissionFactRow(label = stringResource(R.string.handling_label), desc = handlingText)
+            }
         }
     }
 }
 
 @Composable
 private fun PermissionFactRow(label: String, desc: String) {
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+            .background(SpeyeTheme.colors.divider.copy(alpha = 0.25f))
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    ) {
         Text(
-            text = "$label: ",
+            text = label.uppercase(),
             color = SpeyeTheme.colors.primary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
         )
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = desc,
             color = SpeyeTheme.colors.textSecondary,
             fontSize = 12.sp,
-            lineHeight = 16.sp
+            lineHeight = 17.sp
         )
     }
 }
