@@ -3,8 +3,11 @@ package com.fl0w.speye.utils
 import android.app.ActivityOptions
 import android.app.Notification
 import android.app.PendingIntent
+import android.app.RemoteInput
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.widget.Toast
 import com.fl0w.speye.R
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +18,15 @@ import java.util.concurrent.ConcurrentHashMap
 data class LiveNotificationAction(
     val title: String,
     val actionIntent: PendingIntent?,
-    val isContextual: Boolean = false
-)
+    val isContextual: Boolean = false,
+    val remoteInputs: Array<RemoteInput>? = null
+) {
+    val hasRemoteInput: Boolean
+        get() = !remoteInputs.isNullOrEmpty()
+
+    val replyHint: String?
+        get() = remoteInputs?.firstOrNull()?.label?.toString()?.takeIf { it.isNotBlank() }
+}
 
 data class DecodedNotificationAction(
     val title: String,
@@ -46,11 +56,13 @@ object NotificationActionManager {
             } else {
                 false
             }
+            val remoteInputs = action.remoteInputs?.takeIf { it.isNotEmpty() }
             result.add(
                 LiveNotificationAction(
                     title = label,
                     actionIntent = action.actionIntent,
-                    isContextual = isContextual
+                    isContextual = isContextual,
+                    remoteInputs = remoteInputs
                 )
             )
         }
@@ -121,6 +133,22 @@ object NotificationActionManager {
         return match?.actionIntent != null
     }
 
+    fun requiresReplyInput(sbnKey: String?, index: Int, title: String, isSystemRemoved: Boolean): Boolean {
+        if (isSystemRemoved || sbnKey == null) return false
+        val list = liveActionsBySbnKey[sbnKey] ?: return false
+        val match = list.getOrNull(index)?.takeIf { it.title == title }
+            ?: list.firstOrNull { it.title == title }
+        return match?.actionIntent != null && match.hasRemoteInput
+    }
+
+    fun getReplyHint(sbnKey: String?, index: Int, title: String): String? {
+        if (sbnKey == null) return null
+        val list = liveActionsBySbnKey[sbnKey] ?: return null
+        val match = list.getOrNull(index)?.takeIf { it.title == title }
+            ?: list.firstOrNull { it.title == title }
+        return match?.replyHint
+    }
+
     fun wasActionTriggered(sbnKey: String?, title: String): Boolean {
         if (sbnKey == null) return false
         return triggeredActionBySbnKey[sbnKey] == title
@@ -164,6 +192,67 @@ object NotificationActionManager {
             false
         } catch (e: Exception) {
             SpeyeLogger.e(TAG, "Failed to send PendingIntent for action '$title'", e)
+            Toast.makeText(context, R.string.action_expired, Toast.LENGTH_SHORT).show()
+            false
+        }
+    }
+
+    fun triggerReplyAction(
+        context: Context,
+        sbnKey: String?,
+        index: Int,
+        title: String,
+        replyText: String
+    ): Boolean {
+        if (sbnKey == null) {
+            Toast.makeText(context, R.string.action_expired, Toast.LENGTH_SHORT).show()
+            return false
+        }
+        val list = liveActionsBySbnKey[sbnKey]
+        val match = list?.getOrNull(index)?.takeIf { it.title == title }
+            ?: list?.firstOrNull { it.title == title }
+        val pendingIntent = match?.actionIntent
+        val remoteInputs = match?.remoteInputs
+        if (pendingIntent == null || remoteInputs.isNullOrEmpty()) {
+            Toast.makeText(context, R.string.action_expired, Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return try {
+            val fillInIntent = Intent().addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+            val resultsBundle = Bundle()
+            for (ri in remoteInputs) {
+                resultsBundle.putCharSequence(ri.resultKey, replyText)
+            }
+            RemoteInput.addResultsToIntent(remoteInputs, fillInIntent, resultsBundle)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                RemoteInput.setResultsSource(fillInIntent, RemoteInput.SOURCE_FREE_FORM_INPUT)
+            }
+
+            triggeredActionBySbnKey[sbnKey] = title
+            _versionFlow.value = _versionFlow.value + 1L
+
+            if (Build.VERSION.SDK_INT >= 34) {
+                val options = ActivityOptions.makeBasic()
+                @Suppress("DEPRECATION")
+                options.setPendingIntentBackgroundActivityStartMode(
+                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                )
+                pendingIntent.send(context, 0, fillInIntent, null, null, null, options.toBundle())
+            } else {
+                pendingIntent.send(context, 0, fillInIntent)
+            }
+            SpeyeLogger.d(TAG, "Triggered reply action '$title' for $sbnKey")
+            true
+        } catch (e: PendingIntent.CanceledException) {
+            SpeyeLogger.w(TAG, "Reply PendingIntent was canceled for '$title' ($sbnKey)")
+            triggeredActionBySbnKey.remove(sbnKey)
+            liveActionsBySbnKey.remove(sbnKey)
+            _versionFlow.value = _versionFlow.value + 1L
+            Toast.makeText(context, R.string.action_expired, Toast.LENGTH_SHORT).show()
+            false
+        } catch (e: Exception) {
+            SpeyeLogger.e(TAG, "Failed to send reply PendingIntent for action '$title'", e)
             Toast.makeText(context, R.string.action_expired, Toast.LENGTH_SHORT).show()
             false
         }

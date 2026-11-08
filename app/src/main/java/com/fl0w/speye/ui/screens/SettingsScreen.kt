@@ -118,24 +118,32 @@ fun SettingsScreen(
     var lastLogoClickTime by remember { mutableLongStateOf(0L) }
 
     var showExportPasswordDialog by remember { mutableStateOf(false) }
-    var exportPassword by remember { mutableStateOf("") }
+    var exportPassword by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    var isBackupBusy by remember { mutableStateOf(false) }
 
     var showImportPasswordDialog by remember { mutableStateOf(false) }
     var pendingImportUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var importPassword by remember { mutableStateOf("") }
     var importPasswordError by remember { mutableStateOf<String?>(null) }
 
+    val appContext = context.applicationContext
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
         onResult = { uri ->
             uri?.let { targetUri ->
                 val pwd = exportPassword.ifBlank { null }
-                scope.launch {
+                exportPassword = ""
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate).launch {
+                    isBackupBusy = true
                     try {
-                        BackupManager.exportData(context, targetUri, pwd)
-                        Toast.makeText(context, exportSuccessMsg, Toast.LENGTH_SHORT).show()
+                        BackupManager.exportData(appContext, targetUri, pwd)
+                        Toast.makeText(appContext, exportSuccessMsg, Toast.LENGTH_SHORT).show()
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        Toast.makeText(context, exportFailedMsg, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(appContext, exportFailedMsg, Toast.LENGTH_SHORT).show()
+                    } finally {
+                        isBackupBusy = false
                     }
                 }
             }
@@ -146,17 +154,22 @@ fun SettingsScreen(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri ->
             uri?.let { targetUri ->
-                scope.launch {
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate).launch {
+                    isBackupBusy = true
                     try {
-                        BackupManager.importData(context, targetUri, password = null)
-                        Toast.makeText(context, importSuccessMsg, Toast.LENGTH_SHORT).show()
+                        BackupManager.importData(appContext, targetUri, password = null)
+                        Toast.makeText(appContext, importSuccessMsg, Toast.LENGTH_SHORT).show()
                     } catch (e: com.fl0w.speye.utils.EncryptedBackupException) {
                         pendingImportUri = targetUri
                         importPassword = ""
                         importPasswordError = null
                         showImportPasswordDialog = true
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        Toast.makeText(context, importFailedMsg, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(appContext, importFailedMsg, Toast.LENGTH_SHORT).show()
+                    } finally {
+                        isBackupBusy = false
                     }
                 }
             }
@@ -515,16 +528,22 @@ fun SettingsScreen(
                         Button(
                             onClick = {
                                 val uriToImport = pendingImportUri ?: return@Button
-                                scope.launch {
+                                val pwdToUse = importPassword
+                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate).launch {
+                                    isBackupBusy = true
                                     try {
-                                        BackupManager.importData(context, uriToImport, importPassword)
+                                        BackupManager.importData(appContext, uriToImport, pwdToUse)
                                         showImportPasswordDialog = false
-                                        Toast.makeText(context, importSuccessMsg, Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(appContext, importSuccessMsg, Toast.LENGTH_SHORT).show()
                                     } catch (e: com.fl0w.speye.utils.EncryptedBackupException) {
-                                        importPasswordError = context.getString(R.string.invalid_password)
+                                        importPasswordError = appContext.getString(R.string.invalid_password)
+                                    } catch (e: kotlinx.coroutines.CancellationException) {
+                                        throw e
                                     } catch (e: Exception) {
                                         showImportPasswordDialog = false
-                                        Toast.makeText(context, importFailedMsg, Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(appContext, importFailedMsg, Toast.LENGTH_SHORT).show()
+                                    } finally {
+                                        isBackupBusy = false
                                     }
                                 }
                             },
@@ -534,6 +553,20 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    if (isBackupBusy) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = {}) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(SpeyeTheme.colors.surface)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(color = SpeyeTheme.colors.primary)
             }
         }
     }

@@ -14,8 +14,8 @@ android {
         applicationId = "com.fl0w.speye"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1108261104
-        versionName = "1.8.0"
+        versionCode = 1108261108
+        versionName = "1.9.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

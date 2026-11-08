@@ -714,4 +714,94 @@ class BackupManagerTest {
             tempDir.deleteRecursively()
         }
     }
+
+    @Test
+    fun encryptedBackup_multiChunkStream_roundTripsWithoutOom() {
+        val tempDir = Files.createTempDirectory("speye_multichunk_src").toFile()
+        val extractDir = Files.createTempDirectory("speye_multichunk_dst").toFile()
+        try {
+            // 220 KB random payload spanning 4 x 64 KB chunks
+            val bigPayload = ByteArray(220 * 1024)
+            java.util.Random(42L).nextBytes(bigPayload)
+            val bigFile = File(tempDir, "big_attachment.bin").apply { writeBytes(bigPayload) }
+
+            val notification = SerializableNotification(
+                sbnKey = "0|com.example|99|null|1000",
+                packageName = "com.example",
+                title = "Large Backup Test",
+                text = "Chunked AES-GCM stream test",
+                timestamp = 1700000000000L,
+                appName = "Example",
+                isSystemRemoved = false,
+                imagePath = bigFile.name
+            )
+            val backupData = BackupData(notifications = listOf(notification), ignoredApps = emptyList())
+            val encryptedFile = File(tempDir, "encrypted_multi.spy")
+
+            encryptedFile.outputStream().use { fos ->
+                BackupManager.encryptZipStream(
+                    rawStreamWriter = { cos ->
+                        BackupManager.writeBackupZip(backupData, listOf(bigFile), cos)
+                    },
+                    destination = fos,
+                    password = "MultiChunkPassword#2026"
+                )
+            }
+
+            val header = encryptedFile.readBytes().copyOfRange(0, 9).toString(Charsets.UTF_8)
+            assertEquals("SPYE_ENC2", header)
+
+            val extracted = encryptedFile.inputStream().use { fis ->
+                BackupManager.extractBackupZip(fis, extractDir, "MultiChunkPassword#2026")
+            }
+            assertEquals(1, extracted.notifications.size)
+            val restoredAttachment = File(extractDir, "attachments/${bigFile.name}")
+            assertTrue(restoredAttachment.exists())
+            assertArrayEquals(bigPayload, restoredAttachment.readBytes())
+        } finally {
+            tempDir.deleteRecursively()
+            extractDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun animatedGifEncoder_adaptivePalette_preservesRichGradientColors() {
+        val width = 32
+        val height = 32
+        val pixels = IntArray(width * height)
+        val inputRgbSet = HashSet<Int>()
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val r = (x * 7 + 20).coerceIn(0, 255)
+                val g = (y * 7 + 15).coerceIn(0, 255)
+                val b = ((x + y) * 3 + 40).coerceIn(0, 255)
+                val rgb = (r shl 16) or (g shl 8) or b
+                inputRgbSet.add(rgb)
+                pixels[y * width + x] = (0xFF shl 24) or rgb
+            }
+        }
+        val frame = com.fl0w.speye.utils.AnimatedWebpConverter.GifFrameData(
+            width = width,
+            height = height,
+            delayMs = 50,
+            argbPixels = pixels
+        )
+        val out = ByteArrayOutputStream()
+        com.fl0w.speye.utils.AnimatedWebpConverter.encodeGif(listOf(frame), loopCount = 0, out = out)
+        val gifBytes = out.toByteArray()
+
+        // Global Color Table starts at byte 13 and is 768 bytes (256 * 3)
+        val paletteColors = HashSet<Int>()
+        for (i in 0 until 255) {
+            val base = 13 + i * 3
+            val r = gifBytes[base].toInt() and 0xFF
+            val g = gifBytes[base + 1].toInt() and 0xFF
+            val b = gifBytes[base + 2].toInt() and 0xFF
+            val rgb = (r shl 16) or (g shl 8) or b
+            if (rgb != 0) paletteColors.add(rgb)
+        }
+        // Old 6x7x6 static cube only matched ~18 colors in this narrow gradient range;
+        // adaptive Median-Cut palette populates >180 distinct gradient shades.
+        assertTrue("Expected >180 distinct adaptive palette colors, got ${paletteColors.size}", paletteColors.size > 180)
+    }
 }

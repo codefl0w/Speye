@@ -314,39 +314,17 @@ object AnimatedWebpConverter {
     }
 
     /**
-     * Pure-Kotlin GIF89a encoder supporting transparency, variable frame delays, and infinite loop.
+     * Pure-Kotlin GIF89a encoder supporting transparency, variable frame delays, infinite loop,
+     * and per-frame 255-color adaptive Median-Cut Local Color Tables with clamped error-diffusion dithering.
      * Accessible directly in host JVM unit tests without requiring Android `Bitmap`.
      */
     fun encodeGif(frames: List<GifFrameData>, loopCount: Int = 0, out: OutputStream) {
         if (frames.isEmpty()) return
         val width = frames[0].width
         val height = frames[0].height
-
-        // Build 256-color palette:
-        // Index 0..251: 6x7x6 uniform RGB cube (252 colors)
-        // Index 252..254: grayscale / white / black extras
-        // Index 255: reserved for transparent pixels (alpha < 128)
-        val palette = ByteArray(256 * 3)
-        var idx = 0
-        for (r in 0 until 6) {
-            for (g in 0 until 7) {
-                for (b in 0 until 6) {
-                    palette[idx * 3] = ((r * 255) / 5).toByte()
-                    palette[idx * 3 + 1] = ((g * 255) / 6).toByte()
-                    palette[idx * 3 + 2] = ((b * 255) / 5).toByte()
-                    idx++
-                }
-            }
-        }
-        // Fill remaining up to 254 with mid-grays
-        while (idx < 255) {
-            val gray = ((idx - 251) * 64).coerceIn(0, 255).toByte()
-            palette[idx * 3] = gray
-            palette[idx * 3 + 1] = gray
-            palette[idx * 3 + 2] = gray
-            idx++
-        }
         val transparentIndex = 255
+
+        val firstFrameQuantized = quantizeFrameAdaptive(frames[0], width, height, transparentIndex)
 
         // 1. Header: GIF89a
         out.write("GIF89a".toByteArray(Charsets.US_ASCII))
@@ -359,8 +337,8 @@ object AnimatedWebpConverter {
         out.write(transparentIndex) // Background color index
         out.write(0) // Pixel aspect ratio
 
-        // 3. Global Color Table (768 bytes)
-        out.write(palette)
+        // 3. Global Color Table (768 bytes) - initialized from frame 0's adaptive palette
+        out.write(firstFrameQuantized.palette)
 
         // 4. NETSCAPE2.0 Application Extension for looping
         out.write(0x21) // Extension Introducer
@@ -372,9 +350,13 @@ object AnimatedWebpConverter {
         writeLeInt16(out, loopCount) // 0 = infinite loop
         out.write(0)    // Block Terminator
 
-        val indexedPixels = ByteArray(width * height)
+        for ((frameIndex, frame) in frames.withIndex()) {
+            val quantized = if (frameIndex == 0) {
+                firstFrameQuantized
+            } else {
+                quantizeFrameAdaptive(frame, width, height, transparentIndex)
+            }
 
-        for (frame in frames) {
             // 5. Graphic Control Extension
             out.write(0x21) // Extension Introducer
             out.write(0xF9) // Graphic Control Label
@@ -392,34 +374,381 @@ object AnimatedWebpConverter {
             writeLeInt16(out, 0) // Top
             writeLeInt16(out, width)
             writeLeInt16(out, height)
-            out.write(0x00) // No Local Color Table, Not Interlaced
+            if (frameIndex == 0) {
+                out.write(0x00) // Frame 0 uses Global Color Table
+            } else {
+                // Local Color Table Flag (1 -> 0x80) | Size of LCT (7 -> 256 entries) = 0x87
+                out.write(0x87)
+                out.write(quantized.palette)
+            }
 
-            // Map ARGB pixels to palette indices
-            val argb = frame.argbPixels
-            val count = minOf(argb.size, indexedPixels.size)
+            // 7. LZW Compressed Image Data
+            lzwEncode(quantized.indexedPixels, quantized.pixelCount, 8, out)
+        }
+
+        // 8. GIF Trailer
+        out.write(0x3B)
+    }
+
+    private class QuantizedFrame(
+        val palette: ByteArray,
+        val indexedPixels: ByteArray,
+        val pixelCount: Int
+    )
+
+    private class MedianCutBox(
+        var start: Int,
+        var end: Int,
+        var pixelCount: Int = 0,
+        var minR: Int = 31,
+        var maxR: Int = 0,
+        var minG: Int = 31,
+        var maxG: Int = 0,
+        var minB: Int = 31,
+        var maxB: Int = 0
+    ) {
+        val binCount: Int get() = end - start
+        val rangeR: Int get() = (maxR - minR) * 3
+        val rangeG: Int get() = (maxG - minG) * 4
+        val rangeB: Int get() = (maxB - minB) * 2
+        val maxWeightedRange: Int get() = maxOf(rangeR, rangeG, rangeB)
+    }
+
+    private fun quantizeFrameAdaptive(
+        frame: GifFrameData,
+        width: Int,
+        height: Int,
+        transparentIndex: Int
+    ): QuantizedFrame {
+        val maxColors = 255
+        val palette = ByteArray(256 * 3)
+        val totalPixels = width * height
+        val argb = frame.argbPixels
+        val count = minOf(argb.size, totalPixels)
+        val indexedPixels = ByteArray(totalPixels)
+
+        // Fast check for <= 255 exact 24-bit colors
+        val exactColors = IntArray(maxColors)
+        var exactColorCount = 0
+        var exceedsExact = false
+        val exactMap = HashMap<Int, Int>(512)
+
+        for (i in 0 until count) {
+            val c = argb[i]
+            val a = (c ushr 24) and 0xFF
+            if (a < 128) continue
+            val rgb = c and 0xFFFFFF
+            if (!exactMap.containsKey(rgb)) {
+                if (exactColorCount < maxColors) {
+                    exactMap[rgb] = exactColorCount
+                    exactColors[exactColorCount++] = rgb
+                } else {
+                    exceedsExact = true
+                    break
+                }
+            }
+        }
+
+        if (!exceedsExact) {
+            for (idx in 0 until exactColorCount) {
+                val rgb = exactColors[idx]
+                palette[idx * 3] = ((rgb ushr 16) and 0xFF).toByte()
+                palette[idx * 3 + 1] = ((rgb ushr 8) and 0xFF).toByte()
+                palette[idx * 3 + 2] = (rgb and 0xFF).toByte()
+            }
             for (i in 0 until count) {
                 val c = argb[i]
                 val a = (c ushr 24) and 0xFF
                 if (a < 128) {
                     indexedPixels[i] = transparentIndex.toByte()
                 } else {
-                    val r = (c ushr 16) and 0xFF
-                    val g = (c ushr 8) and 0xFF
-                    val b = c and 0xFF
-                    val rIdx = (r * 5 + 127) / 255
-                    val gIdx = (g * 6 + 127) / 255
-                    val bIdx = (b * 5 + 127) / 255
-                    val colorIndex = (rIdx * 42) + (gIdx * 6) + bIdx
-                    indexedPixels[i] = colorIndex.toByte()
+                    val rgb = c and 0xFFFFFF
+                    indexedPixels[i] = (exactMap[rgb] ?: 0).toByte()
                 }
             }
-
-            // 7. LZW Compressed Image Data
-            lzwEncode(indexedPixels, count, 8, out)
+            return QuantizedFrame(palette, indexedPixels, count)
         }
 
-        // 8. GIF Trailer
-        out.write(0x3B)
+        // Build 15-bit RGB (32x32x32) histogram with exact 24-bit RGB sums
+        val histSize = 32768
+        val histCounts = IntArray(histSize)
+        val sumR = LongArray(histSize)
+        val sumG = LongArray(histSize)
+        val sumB = LongArray(histSize)
+
+        for (i in 0 until count) {
+            val c = argb[i]
+            val a = (c ushr 24) and 0xFF
+            if (a < 128) continue
+            val r = (c ushr 16) and 0xFF
+            val g = (c ushr 8) and 0xFF
+            val b = c and 0xFF
+            val bin = ((r ushr 3) shl 10) or ((g ushr 3) shl 5) or (b ushr 3)
+            histCounts[bin]++
+            sumR[bin] += r.toLong()
+            sumG[bin] += g.toLong()
+            sumB[bin] += b.toLong()
+        }
+
+        var nonEmptyCount = 0
+        for (bin in 0 until histSize) {
+            if (histCounts[bin] > 0) nonEmptyCount++
+        }
+
+        val activeBins = IntArray(nonEmptyCount)
+        var pos = 0
+        for (bin in 0 until histSize) {
+            if (histCounts[bin] > 0) activeBins[pos++] = bin
+        }
+
+        fun computeBounds(box: MedianCutBox) {
+            var minR = 31; var maxR = 0
+            var minG = 31; var maxG = 0
+            var minB = 31; var maxB = 0
+            var pCount = 0
+            for (i in box.start until box.end) {
+                val bin = activeBins[i]
+                val r5 = (bin ushr 10) and 31
+                val g5 = (bin ushr 5) and 31
+                val b5 = bin and 31
+                if (r5 < minR) minR = r5
+                if (r5 > maxR) maxR = r5
+                if (g5 < minG) minG = g5
+                if (g5 > maxG) maxG = g5
+                if (b5 < minB) minB = b5
+                if (b5 > maxB) maxB = b5
+                pCount += histCounts[bin]
+            }
+            box.minR = minR; box.maxR = maxR
+            box.minG = minG; box.maxG = maxG
+            box.minB = minB; box.maxB = maxB
+            box.pixelCount = pCount
+        }
+
+        val boxes = ArrayList<MedianCutBox>(maxColors)
+        if (nonEmptyCount <= maxColors) {
+            for (i in 0 until nonEmptyCount) {
+                val b = MedianCutBox(i, i + 1)
+                computeBounds(b)
+                boxes.add(b)
+            }
+        } else {
+            val root = MedianCutBox(0, nonEmptyCount)
+            computeBounds(root)
+            boxes.add(root)
+
+            while (boxes.size < maxColors) {
+                // Phase 1 (first 160 colors): prioritize population * range for smooth gradients
+                // Phase 2 (remaining 95 colors): prioritize range to preserve small highlights/sparkles
+                val prioritizePopulation = boxes.size < 160
+                var bestIdx = -1
+                var bestScore = -1L
+
+                for (i in boxes.indices) {
+                    val b = boxes[i]
+                    if (b.binCount <= 1 || b.maxWeightedRange == 0) continue
+                    val score = if (prioritizePopulation) {
+                        b.maxWeightedRange.toLong() * kotlin.math.sqrt(b.pixelCount.toDouble()).toLong().coerceAtLeast(1L)
+                    } else {
+                        b.maxWeightedRange.toLong() * 1000L + b.binCount.toLong()
+                    }
+                    if (score > bestScore) {
+                        bestScore = score
+                        bestIdx = i
+                    }
+                }
+
+                if (bestIdx == -1) break
+                val target = boxes[bestIdx]
+
+                // Sort bins in target along longest perceptual axis using counting sort (0..31)
+                val axis = when {
+                    target.rangeG >= target.rangeR && target.rangeG >= target.rangeB -> 1
+                    target.rangeR >= target.rangeG && target.rangeR >= target.rangeB -> 0
+                    else -> 2
+                }
+                val bucketCounts = IntArray(32)
+                for (i in target.start until target.end) {
+                    val bin = activeBins[i]
+                    val key = when (axis) {
+                        0 -> (bin ushr 10) and 31
+                        1 -> (bin ushr 5) and 31
+                        else -> bin and 31
+                    }
+                    bucketCounts[key]++
+                }
+                val bucketOffsets = IntArray(32)
+                var runningOffset = target.start
+                for (k in 0 until 32) {
+                    bucketOffsets[k] = runningOffset
+                    runningOffset += bucketCounts[k]
+                }
+                val sortedSlice = IntArray(target.binCount)
+                for (i in target.start until target.end) {
+                    val bin = activeBins[i]
+                    val key = when (axis) {
+                        0 -> (bin ushr 10) and 31
+                        1 -> (bin ushr 5) and 31
+                        else -> bin and 31
+                    }
+                    sortedSlice[bucketOffsets[key] - target.start] = bin
+                    bucketOffsets[key]++
+                }
+                System.arraycopy(sortedSlice, 0, activeBins, target.start, target.binCount)
+
+                // Find median pixel split point
+                val halfPixels = target.pixelCount / 2
+                var accPixels = 0
+                var split = target.start + 1
+                for (i in target.start until target.end - 1) {
+                    accPixels += histCounts[activeBins[i]]
+                    if (accPixels >= halfPixels) {
+                        split = i + 1
+                        break
+                    }
+                }
+
+                val rightBox = MedianCutBox(split, target.end)
+                target.end = split
+                computeBounds(target)
+                computeBounds(rightBox)
+                boxes.add(rightBox)
+            }
+        }
+
+        val numPaletteColors = boxes.size.coerceAtLeast(1)
+        val palR = IntArray(numPaletteColors)
+        val palG = IntArray(numPaletteColors)
+        val palB = IntArray(numPaletteColors)
+
+        for (i in 0 until boxes.size) {
+            val b = boxes[i]
+            var sr = 0L; var sg = 0L; var sb = 0L; var sc = 0L
+            for (j in b.start until b.end) {
+                val bin = activeBins[j]
+                sr += sumR[bin]
+                sg += sumG[bin]
+                sb += sumB[bin]
+                sc += histCounts[bin].toLong()
+            }
+            if (sc > 0L) {
+                val rAvg = (sr / sc).toInt().coerceIn(0, 255)
+                val gAvg = (sg / sc).toInt().coerceIn(0, 255)
+                val bAvg = (sb / sc).toInt().coerceIn(0, 255)
+                palR[i] = rAvg
+                palG[i] = gAvg
+                palB[i] = bAvg
+                palette[i * 3] = rAvg.toByte()
+                palette[i * 3 + 1] = gAvg.toByte()
+                palette[i * 3 + 2] = bAvg.toByte()
+            }
+        }
+
+        // 15-bit LUT for fast nearest perceptual palette lookup
+        val lut = IntArray(histSize) { -1 }
+        // Pre-seed LUT with box membership for visited bins, then refine with nearest centroid
+        for (i in 0 until numPaletteColors) {
+            val b = boxes[i]
+            for (j in b.start until b.end) {
+                val bin = activeBins[j]
+                val pCount = histCounts[bin].coerceAtLeast(1)
+                val r = (sumR[bin] / pCount).toInt()
+                val g = (sumG[bin] / pCount).toInt()
+                val bl = (sumB[bin] / pCount).toInt()
+                var bestColor = i
+                var bestDist = Int.MAX_VALUE
+                for (k in 0 until numPaletteColors) {
+                    val dr = r - palR[k]
+                    val dg = g - palG[k]
+                    val db = bl - palB[k]
+                    val dist = dr * dr * 3 + dg * dg * 4 + db * db * 2
+                    if (dist < bestDist) {
+                        bestDist = dist
+                        bestColor = k
+                        if (dist == 0) break
+                    }
+                }
+                lut[bin] = bestColor
+            }
+        }
+
+        fun nearestColorIndex(r: Int, g: Int, b: Int): Int {
+            val bin = ((r ushr 3) shl 10) or ((g ushr 3) shl 5) or (b ushr 3)
+            val cached = lut[bin]
+            if (cached != -1) return cached
+            var bestColor = 0
+            var bestDist = Int.MAX_VALUE
+            for (k in 0 until numPaletteColors) {
+                val dr = r - palR[k]
+                val dg = g - palG[k]
+                val db = b - palB[k]
+                val dist = dr * dr * 3 + dg * dg * 4 + db * db * 2
+                if (dist < bestDist) {
+                    bestDist = dist
+                    bestColor = k
+                    if (dist == 0) break
+                }
+            }
+            lut[bin] = bestColor
+            return bestColor
+        }
+
+        // Clamped Sierra-Lite error-diffusion dithering across opaque pixels
+        var currErrR = IntArray(width + 2)
+        var currErrG = IntArray(width + 2)
+        var currErrB = IntArray(width + 2)
+        var nextErrR = IntArray(width + 2)
+        var nextErrG = IntArray(width + 2)
+        var nextErrB = IntArray(width + 2)
+
+        for (y in 0 until height) {
+            val rowOffset = y * width
+            for (x in 0 until width) {
+                val i = rowOffset + x
+                if (i >= count) break
+                val c = argb[i]
+                val a = (c ushr 24) and 0xFF
+                if (a < 128) {
+                    indexedPixels[i] = transparentIndex.toByte()
+                    continue
+                }
+                val origR = (c ushr 16) and 0xFF
+                val origG = (c ushr 8) and 0xFF
+                val origB = c and 0xFF
+
+                val r = (origR + currErrR[x + 1]).coerceIn(0, 255)
+                val g = (origG + currErrG[x + 1]).coerceIn(0, 255)
+                val b = (origB + currErrB[x + 1]).coerceIn(0, 255)
+
+                val pIdx = nearestColorIndex(r, g, b)
+                indexedPixels[i] = pIdx.toByte()
+
+                // Compute residual error, clamped so flat regions stay clean while gradients smooth out
+                val er = (r - palR[pIdx]).coerceIn(-16, 16)
+                val eg = (g - palG[pIdx]).coerceIn(-16, 16)
+                val eb = (b - palB[pIdx]).coerceIn(-16, 16)
+
+                if (kotlin.math.abs(er) > 1 || kotlin.math.abs(eg) > 1 || kotlin.math.abs(eb) > 1) {
+                    // Sierra-Lite weights: right = 2/4, bottom-left = 1/4, bottom = 1/4
+                    currErrR[x + 2] += er shr 1
+                    currErrG[x + 2] += eg shr 1
+                    currErrB[x + 2] += eb shr 1
+
+                    nextErrR[x] += er shr 2
+                    nextErrG[x] += eg shr 2
+                    nextErrB[x] += eb shr 2
+
+                    nextErrR[x + 1] += er shr 2
+                    nextErrG[x + 1] += eg shr 2
+                    nextErrB[x + 1] += eb shr 2
+                }
+            }
+            val tmpR = currErrR; currErrR = nextErrR; nextErrR = tmpR; java.util.Arrays.fill(nextErrR, 0)
+            val tmpG = currErrG; currErrG = nextErrG; nextErrG = tmpG; java.util.Arrays.fill(nextErrG, 0)
+            val tmpB = currErrB; currErrB = nextErrB; nextErrB = tmpB; java.util.Arrays.fill(nextErrB, 0)
+        }
+
+        return QuantizedFrame(palette, indexedPixels, count)
     }
 
     private fun lzwEncode(pixels: ByteArray, length: Int, minCodeSize: Int, out: OutputStream) {

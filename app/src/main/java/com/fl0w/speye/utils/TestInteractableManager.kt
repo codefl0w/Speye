@@ -19,6 +19,8 @@ object TestInteractableManager {
 
     const val ACTION_CONFIRM = "com.fl0w.speye.ACTION_TEST_BANK_CONFIRM"
     const val ACTION_REJECT = "com.fl0w.speye.ACTION_TEST_BANK_REJECT"
+    const val ACTION_REPLY = "com.fl0w.speye.ACTION_TEST_BANK_REPLY"
+    const val KEY_TEXT_REPLY = "key_text_reply"
 
     private var receiverRegistered = false
 
@@ -55,6 +57,21 @@ object TestInteractableManager {
                     nm.notify(TEST_INTERACTABLE_ID, updated)
                     Toast.makeText(context, "Payment Rejected ($240.00)", Toast.LENGTH_SHORT).show()
                 }
+                ACTION_REPLY -> {
+                    val results = androidx.core.app.RemoteInput.getResultsFromIntent(intent)
+                    val replyText = results?.getCharSequence(KEY_TEXT_REPLY)?.toString()?.trim().orEmpty()
+                    SpeyeLogger.d(TAG, "Bank test payment REPLIED via RemoteInput: '$replyText'")
+                    val updated = NotificationCompat.Builder(context, CHANNEL_ID)
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentTitle("Speye Bank • Payment Request")
+                        .setContentText("Reply sent: $replyText")
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                        .setAutoCancel(true)
+                        .build()
+                    nm.notify(TEST_INTERACTABLE_ID, updated)
+                    Toast.makeText(context, "Reply sent: $replyText", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -65,6 +82,7 @@ object TestInteractableManager {
         val filter = IntentFilter().apply {
             addAction(ACTION_CONFIRM)
             addAction(ACTION_REJECT)
+            addAction(ACTION_REPLY)
         }
         ContextCompat.registerReceiver(
             appContext,
@@ -93,14 +111,27 @@ object TestInteractableManager {
         val nm = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         ensureChannel(nm)
 
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+        val immutableFlags = PendingIntent.FLAG_UPDATE_CURRENT or
             (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        val mutableFlags = PendingIntent.FLAG_UPDATE_CURRENT or
+            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0)
 
         val confirmIntent = Intent(ACTION_CONFIRM).setPackage(appContext.packageName)
-        val confirmPendingIntent = PendingIntent.getBroadcast(appContext, 101, confirmIntent, flags)
+        val confirmPendingIntent = PendingIntent.getBroadcast(appContext, 101, confirmIntent, immutableFlags)
 
         val rejectIntent = Intent(ACTION_REJECT).setPackage(appContext.packageName)
-        val rejectPendingIntent = PendingIntent.getBroadcast(appContext, 102, rejectIntent, flags)
+        val rejectPendingIntent = PendingIntent.getBroadcast(appContext, 102, rejectIntent, immutableFlags)
+
+        val replyIntent = Intent(ACTION_REPLY).setPackage(appContext.packageName)
+        val replyPendingIntent = PendingIntent.getBroadcast(appContext, 103, replyIntent, mutableFlags)
+        val remoteInput = androidx.core.app.RemoteInput.Builder(KEY_TEXT_REPLY)
+            .setLabel("Write a reply...")
+            .build()
+        val replyAction = NotificationCompat.Action.Builder(
+            android.R.drawable.sym_action_chat,
+            "Reply",
+            replyPendingIntent
+        ).addRemoteInput(remoteInput).build()
 
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -108,10 +139,11 @@ object TestInteractableManager {
             .setContentText("Approve transfer of $240.00 to Acme Corp (Ref #4821)?")
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("Approve transfer of $240.00 to Acme Corp (Ref #4821)? Confirm or reject this payment request below.")
+                    .bigText("Approve transfer of $240.00 to Acme Corp (Ref #4821)? Confirm, reject, or reply below.")
             )
             .addAction(android.R.drawable.checkbox_on_background, "Confirm", confirmPendingIntent)
             .addAction(android.R.drawable.ic_delete, "Reject", rejectPendingIntent)
+            .addAction(replyAction)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()

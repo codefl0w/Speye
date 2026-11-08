@@ -49,6 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.Reply
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.content.Intent
@@ -1267,77 +1272,191 @@ fun SpeyeActionButtonsRow(
 ) {
     val context = LocalContext.current
     val actionVersion by com.fl0w.speye.utils.NotificationActionManager.versionFlow.collectAsState()
+    var activeReplyIndex by remember(notification.sbnKey, notification.id, isHistoricalEntry) { mutableStateOf<Int?>(null) }
+    var replyText by remember(notification.sbnKey, notification.id, isHistoricalEntry) { mutableStateOf("") }
 
-    FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        actions.forEachIndexed { idx, actionItem ->
-            val actionLabel = actionItem.title
-            val isLive = remember(actionVersion, notification.sbnKey, notification.isSystemRemoved, actionLabel, idx, isHistoricalEntry) {
-                if (isHistoricalEntry) false
-                else com.fl0w.speye.utils.NotificationActionManager.hasLiveAction(
-                    sbnKey = notification.sbnKey,
-                    index = idx,
-                    title = actionLabel,
-                    isSystemRemoved = notification.isSystemRemoved
-                )
-            }
-            val wasTriggered = remember(actionVersion, notification.sbnKey, actionLabel, actionItem.isTriggered, isHistoricalEntry) {
-                actionItem.isTriggered || (!isHistoricalEntry && com.fl0w.speye.utils.NotificationActionManager.wasActionTriggered(
-                    sbnKey = notification.sbnKey,
-                    title = actionLabel
-                ))
-            }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            actions.forEachIndexed { idx, actionItem ->
+                val actionLabel = actionItem.title
+                val isLive = remember(actionVersion, notification.sbnKey, notification.isSystemRemoved, actionLabel, idx, isHistoricalEntry) {
+                    if (isHistoricalEntry) false
+                    else com.fl0w.speye.utils.NotificationActionManager.hasLiveAction(
+                        sbnKey = notification.sbnKey,
+                        index = idx,
+                        title = actionLabel,
+                        isSystemRemoved = notification.isSystemRemoved
+                    )
+                }
+                val isReplyAction = remember(actionVersion, notification.sbnKey, notification.isSystemRemoved, actionLabel, idx, isHistoricalEntry) {
+                    if (isHistoricalEntry) false
+                    else com.fl0w.speye.utils.NotificationActionManager.requiresReplyInput(
+                        sbnKey = notification.sbnKey,
+                        index = idx,
+                        title = actionLabel,
+                        isSystemRemoved = notification.isSystemRemoved
+                    )
+                }
+                val wasTriggered = remember(actionVersion, notification.sbnKey, actionLabel, actionItem.isTriggered, isHistoricalEntry) {
+                    actionItem.isTriggered || (!isHistoricalEntry && com.fl0w.speye.utils.NotificationActionManager.wasActionTriggered(
+                        sbnKey = notification.sbnKey,
+                        title = actionLabel
+                    ))
+                }
+                val isReplyExpanded = activeReplyIndex == idx && isReplyAction
 
-            val borderColor = when {
-                isLive -> SpeyeTheme.colors.primary
-                wasTriggered -> SpeyeTheme.colors.secondary
-                else -> SpeyeTheme.colors.divider
-            }
-            val textColor = when {
-                isLive -> SpeyeTheme.colors.primary
-                wasTriggered -> SpeyeTheme.colors.secondary
-                else -> SpeyeTheme.colors.textSecondary.copy(alpha = 0.6f)
-            }
-            val bgColor = when {
-                isLive -> SpeyeTheme.colors.primary.copy(alpha = 0.12f)
-                wasTriggered -> SpeyeTheme.colors.secondary.copy(alpha = 0.12f)
-                else -> SpeyeTheme.colors.surface
-            }
+                val borderColor = when {
+                    isReplyExpanded -> SpeyeTheme.colors.primary
+                    isLive -> SpeyeTheme.colors.primary
+                    wasTriggered -> SpeyeTheme.colors.secondary
+                    else -> SpeyeTheme.colors.divider
+                }
+                val textColor = when {
+                    isReplyExpanded -> Color.Black
+                    isLive -> SpeyeTheme.colors.primary
+                    wasTriggered -> SpeyeTheme.colors.secondary
+                    else -> SpeyeTheme.colors.textSecondary.copy(alpha = 0.6f)
+                }
+                val bgColor = when {
+                    isReplyExpanded -> SpeyeTheme.colors.primary
+                    isLive -> SpeyeTheme.colors.primary.copy(alpha = 0.12f)
+                    wasTriggered -> SpeyeTheme.colors.secondary.copy(alpha = 0.12f)
+                    else -> SpeyeTheme.colors.surface
+                }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(bgColor)
-                    .border(1.dp, borderColor, RoundedCornerShape(10.dp))
-                    .clickable {
-                        com.fl0w.speye.utils.NotificationActionManager.triggerAction(
-                            context = context,
-                            sbnKey = notification.sbnKey,
-                            index = idx,
-                            title = actionLabel
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(bgColor)
+                        .border(1.dp, borderColor, RoundedCornerShape(10.dp))
+                        .clickable {
+                            if (isReplyAction) {
+                                activeReplyIndex = if (activeReplyIndex == idx) null else idx
+                            } else {
+                                activeReplyIndex = null
+                                com.fl0w.speye.utils.NotificationActionManager.triggerAction(
+                                    context = context,
+                                    sbnKey = notification.sbnKey,
+                                    index = idx,
+                                    title = actionLabel
+                                )
+                            }
+                        }
+                        .padding(horizontal = 14.dp, vertical = 7.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (wasTriggered && !isReplyExpanded) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = if (isLive) SpeyeTheme.colors.primary else SpeyeTheme.colors.secondary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        } else if (isReplyAction) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Reply,
+                                contentDescription = null,
+                                tint = textColor,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Text(
+                            text = actionLabel,
+                            color = textColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                    .padding(horizontal = 14.dp, vertical = 7.dp),
-                contentAlignment = Alignment.Center
+                }
+            }
+        }
+
+        val currentReplyIdx = activeReplyIndex
+        val replyActionItem = currentReplyIdx?.let { actions.getOrNull(it) }
+        if (currentReplyIdx != null && replyActionItem != null && !isHistoricalEntry) {
+            val replyHint = remember(actionVersion, notification.sbnKey, currentReplyIdx, replyActionItem.title) {
+                com.fl0w.speye.utils.NotificationActionManager.getReplyHint(
+                    sbnKey = notification.sbnKey,
+                    index = currentReplyIdx,
+                    title = replyActionItem.title
+                ) ?: replyActionItem.title
+            }
+            val submitReply = {
+                val trimmed = replyText.trim()
+                if (trimmed.isNotEmpty()) {
+                    val sent = com.fl0w.speye.utils.NotificationActionManager.triggerReplyAction(
+                        context = context,
+                        sbnKey = notification.sbnKey,
+                        index = currentReplyIdx,
+                        title = replyActionItem.title,
+                        replyText = trimmed
+                    )
+                    if (sent) {
+                        replyText = ""
+                        activeReplyIndex = null
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (wasTriggered) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = SpeyeTheme.colors.secondary,
-                            modifier = Modifier.size(14.dp)
+                OutlinedTextField(
+                    value = replyText,
+                    onValueChange = { replyText = it },
+                    placeholder = {
+                        Text(
+                            text = replyHint,
+                            color = SpeyeTheme.colors.textSecondary.copy(alpha = 0.6f),
+                            fontSize = 13.sp
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
-                    Text(
-                        text = actionLabel,
-                        color = textColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { submitReply() }),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = SpeyeTheme.colors.textPrimary,
+                        unfocusedTextColor = SpeyeTheme.colors.textPrimary,
+                        cursorColor = SpeyeTheme.colors.primary,
+                        focusedBorderColor = SpeyeTheme.colors.primary,
+                        unfocusedBorderColor = SpeyeTheme.colors.primary.copy(alpha = 0.5f),
+                        focusedContainerColor = SpeyeTheme.colors.surface,
+                        unfocusedContainerColor = SpeyeTheme.colors.surface
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    onClick = { submitReply() },
+                    enabled = replyText.isNotBlank(),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (replyText.isNotBlank()) SpeyeTheme.colors.primary
+                            else SpeyeTheme.colors.surface
+                        )
+                        .border(
+                            1.dp,
+                            if (replyText.isNotBlank()) SpeyeTheme.colors.primary else SpeyeTheme.colors.divider,
+                            RoundedCornerShape(12.dp)
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = replyActionItem.title,
+                        tint = if (replyText.isNotBlank()) Color.Black else SpeyeTheme.colors.textSecondary.copy(alpha = 0.5f),
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }

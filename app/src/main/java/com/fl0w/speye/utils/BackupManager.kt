@@ -31,9 +31,13 @@ class EncryptedBackupException(
 
 object BackupManager {
     private const val TAG = "BackupManager"
-    private val MAGIC_HEADER = "SPYE_ENC1".toByteArray(Charsets.UTF_8)
+    private val MAGIC_HEADER_V1 = "SPYE_ENC1".toByteArray(Charsets.UTF_8)
+    private val MAGIC_HEADER_V2 = "SPYE_ENC2".toByteArray(Charsets.UTF_8)
     private const val SALT_LENGTH = 16
     private const val IV_LENGTH = 12
+    private const val GCM_TAG_BITS = 128
+    private const val GCM_TAG_BYTES = 16
+    private const val STREAM_CHUNK_SIZE = 64 * 1024
     private const val PBKDF2_ITERATIONS = 65536
     private const val KEY_LENGTH_BITS = 256
 
@@ -44,15 +48,19 @@ object BackupManager {
     }
 
     suspend fun exportData(context: Context, uri: Uri, password: String? = null) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
             try {
                 SpeyeLogger.d(TAG, "Starting export to $uri (password protected: ${!password.isNullOrBlank()})")
-                val outputStream = context.contentResolver.openOutputStream(uri)
-                    ?: throw IOException("Could not open output stream for URI: $uri")
-                if (password.isNullOrBlank()) {
-                    performExportToStream(context, outputStream)
-                } else {
-                    outputStream.use { os ->
+                val outputStream = try {
+                    context.contentResolver.openOutputStream(uri, "wt")
+                } catch (_: Exception) {
+                    context.contentResolver.openOutputStream(uri)
+                } ?: throw IOException("Could not open output stream for URI: $uri")
+
+                outputStream.use { os ->
+                    if (password.isNullOrBlank()) {
+                        performExportToStream(context, os)
+                    } else {
                         createEncryptingStream(os, password).use { cos ->
                             performExportToStream(context, cos)
                         }
@@ -71,7 +79,7 @@ object BackupManager {
     }
 
     suspend fun importData(context: Context, uri: Uri, password: String? = null) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
             try {
                 SpeyeLogger.d(TAG, "Starting import from $uri")
                 val db = AppDatabase.getDatabase(context)
@@ -79,7 +87,7 @@ object BackupManager {
                 val inputStream = context.contentResolver.openInputStream(uri)
                     ?: throw IOException("Could not open input stream for URI: $uri")
 
-                val backupData = extractBackupZip(inputStream, tempDir, password)
+                val backupData = inputStream.use { extractBackupZip(it, tempDir, password) }
 
                 SpeyeLogger.d(TAG, "Importing ${backupData.notifications.size} notifications, ${backupData.ignoredApps.size} ignored apps, ${backupData.appFilters.size} app filters")
 
@@ -272,6 +280,214 @@ object BackupManager {
         return result
     }
 
+    internal fun deriveChunkIv(baseIv: ByteArray, chunkIndex: Long): ByteArray {
+        val iv = baseIv.clone()
+        for (i in 0 until 8) {
+            val shift = (7 - i) * 8
+            val byteVal = ((chunkIndex ushr shift) and 0xFFL).toInt()
+            val pos = iv.size - 8 + i
+            iv[pos] = (iv[pos].toInt() xor byteVal).toByte()
+        }
+        return iv
+    }
+
+    internal fun buildChunkAad(chunkIndex: Long, isFinal: Boolean): ByteArray {
+        val aad = ByteArray(9)
+        for (i in 0 until 8) {
+            val shift = (7 - i) * 8
+            aad[i] = ((chunkIndex ushr shift) and 0xFFL).toByte()
+        }
+        aad[8] = if (isFinal) 1 else 0
+        return aad
+    }
+
+    private class ChunkedAesGcmOutputStream(
+        private val destination: OutputStream,
+        private val secretKey: SecretKeySpec,
+        private val baseIv: ByteArray,
+        private val chunkSize: Int = STREAM_CHUNK_SIZE
+    ) : OutputStream() {
+        private val buffer = ByteArray(chunkSize)
+        private var bufferedCount = 0
+        private var chunkIndex = 0L
+        private var closed = false
+
+        override fun write(b: Int) {
+            check(!closed) { "Stream is closed" }
+            buffer[bufferedCount++] = b.toByte()
+            if (bufferedCount == chunkSize) {
+                flushChunk(isFinal = false)
+            }
+        }
+
+        override fun write(b: ByteArray, off: Int, len: Int) {
+            check(!closed) { "Stream is closed" }
+            var offset = off
+            var remaining = len
+            while (remaining > 0) {
+                val space = chunkSize - bufferedCount
+                val toCopy = minOf(space, remaining)
+                System.arraycopy(b, offset, buffer, bufferedCount, toCopy)
+                bufferedCount += toCopy
+                offset += toCopy
+                remaining -= toCopy
+                if (bufferedCount == chunkSize) {
+                    flushChunk(isFinal = false)
+                }
+            }
+        }
+
+        private fun flushChunk(isFinal: Boolean) {
+            val chunkIv = deriveChunkIv(baseIv, chunkIndex)
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_BITS, chunkIv))
+            cipher.updateAAD(buildChunkAad(chunkIndex, isFinal))
+            val encrypted = cipher.doFinal(buffer, 0, bufferedCount)
+            writeIntBe(destination, encrypted.size)
+            destination.write(encrypted)
+            bufferedCount = 0
+            chunkIndex++
+        }
+
+        override fun flush() {
+            if (!closed) {
+                destination.flush()
+            }
+        }
+
+        override fun close() {
+            if (closed) return
+            closed = true
+            try {
+                if (bufferedCount > 0) {
+                    flushChunk(isFinal = false)
+                }
+                flushChunk(isFinal = true)
+                writeIntBe(destination, 0)
+                destination.flush()
+            } finally {
+                destination.close()
+            }
+        }
+
+        private fun writeIntBe(out: OutputStream, value: Int) {
+            out.write((value ushr 24) and 0xFF)
+            out.write((value ushr 16) and 0xFF)
+            out.write((value ushr 8) and 0xFF)
+            out.write(value and 0xFF)
+        }
+    }
+
+    private class ChunkedAesGcmInputStream(
+        private val source: InputStream,
+        private val secretKey: SecretKeySpec,
+        private val baseIv: ByteArray,
+        private val maxChunkSize: Int = STREAM_CHUNK_SIZE
+    ) : InputStream() {
+        private var currentPlaintext = ByteArray(0)
+        private var currentPos = 0
+        private var currentLen = 0
+        private var chunkIndex = 0L
+        private var sawFinalChunk = false
+        private var eof = false
+
+        init {
+            loadNextChunk()
+        }
+
+        private fun readFully(buf: ByteArray, len: Int): Int {
+            var total = 0
+            while (total < len) {
+                val r = source.read(buf, total, len - total)
+                if (r == -1) break
+                total += r
+            }
+            return total
+        }
+
+        private fun readIntBe(): Int {
+            val b = ByteArray(4)
+            val read = readFully(b, 4)
+            if (read != 4) {
+                throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
+            }
+            return ((b[0].toInt() and 0xFF) shl 24) or
+                ((b[1].toInt() and 0xFF) shl 16) or
+                ((b[2].toInt() and 0xFF) shl 8) or
+                (b[3].toInt() and 0xFF)
+        }
+
+        private fun loadNextChunk() {
+            if (sawFinalChunk) {
+                eof = true
+                return
+            }
+            val encryptedLen = readIntBe()
+            if (encryptedLen < GCM_TAG_BYTES || encryptedLen > maxChunkSize + GCM_TAG_BYTES) {
+                throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
+            }
+            val encryptedBuf = ByteArray(encryptedLen)
+            if (readFully(encryptedBuf, encryptedLen) != encryptedLen) {
+                throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
+            }
+            val isFinal = (encryptedLen == GCM_TAG_BYTES)
+            val chunkIv = deriveChunkIv(baseIv, chunkIndex)
+            val plain = try {
+                val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_BITS, chunkIv))
+                cipher.updateAAD(buildChunkAad(chunkIndex, isFinal))
+                cipher.doFinal(encryptedBuf)
+            } catch (e: Exception) {
+                throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
+            }
+            chunkIndex++
+            if (isFinal) {
+                sawFinalChunk = true
+                eof = true
+                currentPlaintext = ByteArray(0)
+                currentPos = 0
+                currentLen = 0
+            } else {
+                currentPlaintext = plain
+                currentPos = 0
+                currentLen = plain.size
+            }
+        }
+
+        fun ensureVerifiedToEnd() {
+            while (!sawFinalChunk) {
+                loadNextChunk()
+            }
+        }
+
+        override fun read(): Int {
+            if (currentPos >= currentLen) {
+                if (eof) return -1
+                loadNextChunk()
+                if (eof) return -1
+            }
+            return currentPlaintext[currentPos++].toInt() and 0xFF
+        }
+
+        override fun read(b: ByteArray, off: Int, len: Int): Int {
+            if (len == 0) return 0
+            if (currentPos >= currentLen) {
+                if (eof) return -1
+                loadNextChunk()
+                if (eof) return -1
+            }
+            val available = currentLen - currentPos
+            val toCopy = minOf(available, len)
+            System.arraycopy(currentPlaintext, currentPos, b, off, toCopy)
+            currentPos += toCopy
+            return toCopy
+        }
+
+        override fun close() {
+            source.close()
+        }
+    }
+
     fun createEncryptingStream(destination: OutputStream, password: String): OutputStream {
         val random = SecureRandom()
         val salt = ByteArray(SALT_LENGTH).apply { random.nextBytes(this) }
@@ -280,20 +496,17 @@ object BackupManager {
         val secretKeyBytes = deriveKey(password, salt)
         val secretKey = SecretKeySpec(secretKeyBytes, "AES")
 
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, GCMParameterSpec(128, iv))
-
-        destination.write(MAGIC_HEADER)
+        destination.write(MAGIC_HEADER_V2)
         destination.write(salt)
         destination.write(iv)
 
-        return CipherOutputStream(destination, cipher)
+        return ChunkedAesGcmOutputStream(destination, secretKey, iv)
     }
 
     fun encryptZipStream(rawStreamWriter: (OutputStream) -> Unit, destination: OutputStream, password: String) {
-        val cos = createEncryptingStream(destination, password)
-        rawStreamWriter(cos)
-        cos.close()
+        createEncryptingStream(destination, password).use { cos ->
+            rawStreamWriter(cos)
+        }
     }
 
     fun encryptZipBytes(rawBytes: ByteArray, password: String): ByteArray {
@@ -303,26 +516,46 @@ object BackupManager {
     }
 
     fun decryptZipBytes(encryptedBytes: ByteArray, password: String?): ByteArray {
-        val headerLen = MAGIC_HEADER.size
-        if (encryptedBytes.size < headerLen + SALT_LENGTH + IV_LENGTH + 16) {
+        val headerLen = MAGIC_HEADER_V2.size
+        if (encryptedBytes.size < headerLen + SALT_LENGTH + IV_LENGTH + GCM_TAG_BYTES) {
             throw EncryptedBackupException("Invalid encrypted backup: file too short")
         }
         if (password.isNullOrEmpty()) {
             throw EncryptedBackupException("Password required for encrypted backup", needsPassword = true)
         }
+        val header = encryptedBytes.copyOfRange(0, headerLen)
+        val isV2 = header.contentEquals(MAGIC_HEADER_V2)
+        val isV1 = header.contentEquals(MAGIC_HEADER_V1)
+        if (!isV2 && !isV1) {
+            throw EncryptedBackupException("Invalid encrypted backup: unrecognized header")
+        }
+
         val salt = encryptedBytes.copyOfRange(headerLen, headerLen + SALT_LENGTH)
         val iv = encryptedBytes.copyOfRange(headerLen + SALT_LENGTH, headerLen + SALT_LENGTH + IV_LENGTH)
-        val ciphertext = encryptedBytes.copyOfRange(headerLen + SALT_LENGTH + IV_LENGTH, encryptedBytes.size)
-
         val secretKeyBytes = deriveKey(password, salt)
         val secretKey = SecretKeySpec(secretKeyBytes, "AES")
 
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        return try {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(128, iv))
-            cipher.doFinal(ciphertext)
-        } catch (e: Exception) {
-            throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
+        if (isV2) {
+            val bodyStream = ByteArrayInputStream(
+                encryptedBytes,
+                headerLen + SALT_LENGTH + IV_LENGTH,
+                encryptedBytes.size - (headerLen + SALT_LENGTH + IV_LENGTH)
+            )
+            return ChunkedAesGcmInputStream(bodyStream, secretKey, iv).use { cis ->
+                val out = ByteArrayOutputStream()
+                cis.copyTo(out)
+                cis.ensureVerifiedToEnd()
+                out.toByteArray()
+            }
+        } else {
+            val ciphertext = encryptedBytes.copyOfRange(headerLen + SALT_LENGTH + IV_LENGTH, encryptedBytes.size)
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            return try {
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_BITS, iv))
+                cipher.doFinal(ciphertext)
+            } catch (e: Exception) {
+                throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
+            }
         }
     }
 
@@ -366,20 +599,24 @@ object BackupManager {
         targetDir: File,
         password: String? = null
     ): BackupData {
-        val pushback = PushbackInputStream(inputStream, MAGIC_HEADER.size)
-        val header = ByteArray(MAGIC_HEADER.size)
+        val headerSize = MAGIC_HEADER_V2.size
+        val pushback = PushbackInputStream(inputStream, headerSize)
+        val header = ByteArray(headerSize)
         var totalHeaderRead = 0
-        while (totalHeaderRead < MAGIC_HEADER.size) {
-            val r = pushback.read(header, totalHeaderRead, MAGIC_HEADER.size - totalHeaderRead)
+        while (totalHeaderRead < headerSize) {
+            val r = pushback.read(header, totalHeaderRead, headerSize - totalHeaderRead)
             if (r == -1) break
             totalHeaderRead += r
         }
-        val isEncrypted = (totalHeaderRead == MAGIC_HEADER.size && header.contentEquals(MAGIC_HEADER))
+        val isEncryptedV2 = (totalHeaderRead == headerSize && header.contentEquals(MAGIC_HEADER_V2))
+        val isEncryptedV1 = (totalHeaderRead == headerSize && header.contentEquals(MAGIC_HEADER_V1))
+        val isEncrypted = isEncryptedV2 || isEncryptedV1
         if (!isEncrypted && totalHeaderRead > 0) {
             pushback.unread(header, 0, totalHeaderRead)
         }
 
         var tempDecryptedFile: File? = null
+        var chunkedDecryptStream: ChunkedAesGcmInputStream? = null
 
         val effectiveStream: InputStream = if (isEncrypted) {
             if (password.isNullOrEmpty()) {
@@ -406,31 +643,37 @@ object BackupManager {
             val secretKeyBytes = deriveKey(password, salt)
             val secretKey = SecretKeySpec(secretKeyBytes, "AES")
 
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(128, iv))
+            if (isEncryptedV2) {
+                val cis = ChunkedAesGcmInputStream(pushback, secretKey, iv)
+                chunkedDecryptStream = cis
+                cis
+            } else {
+                val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_BITS, iv))
 
-            val tempFile = File.createTempFile("speye_decrypted_", ".zip", targetDir.parentFile ?: targetDir)
-            tempDecryptedFile = tempFile
+                val tempFile = File.createTempFile("speye_decrypted_", ".zip", targetDir.parentFile ?: targetDir)
+                tempDecryptedFile = tempFile
 
-            try {
-                FileOutputStream(tempFile).use { fos ->
-                    val buffer = ByteArray(16384)
-                    var bytesRead: Int
-                    while (pushback.read(buffer).also { bytesRead = it } != -1) {
-                        val outputChunk = cipher.update(buffer, 0, bytesRead)
-                        if (outputChunk != null && outputChunk.isNotEmpty()) {
-                            fos.write(outputChunk)
+                try {
+                    FileOutputStream(tempFile).use { fos ->
+                        val buffer = ByteArray(16384)
+                        var bytesRead: Int
+                        while (pushback.read(buffer).also { bytesRead = it } != -1) {
+                            val outputChunk = cipher.update(buffer, 0, bytesRead)
+                            if (outputChunk != null && outputChunk.isNotEmpty()) {
+                                fos.write(outputChunk)
+                            }
+                        }
+                        val finalChunk = cipher.doFinal()
+                        if (finalChunk != null && finalChunk.isNotEmpty()) {
+                            fos.write(finalChunk)
                         }
                     }
-                    val finalChunk = cipher.doFinal()
-                    if (finalChunk != null && finalChunk.isNotEmpty()) {
-                        fos.write(finalChunk)
-                    }
+                    FileInputStream(tempFile)
+                } catch (e: Exception) {
+                    tempFile.delete()
+                    throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
                 }
-                FileInputStream(tempFile)
-            } catch (e: Exception) {
-                tempFile.delete()
-                throw EncryptedBackupException("Invalid password or corrupted backup file", isInvalidPassword = true)
             }
         } else {
             pushback
@@ -457,6 +700,7 @@ object BackupManager {
                     zis.closeEntry()
                     entry = zis.nextEntry
                 }
+                chunkedDecryptStream?.ensureVerifiedToEnd()
             }
 
             val dataFile = File(targetDir, "data.json")
